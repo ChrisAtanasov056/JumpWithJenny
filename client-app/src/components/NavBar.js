@@ -1,8 +1,11 @@
+import React from 'react';
+import { Link, NavLink } from 'react-router-dom';
+
 export const NavBar = (props) =>{
     return(
 <nav className="navbar navbar-expand-lg fixed-top">
         <div className="container">
-            <a className="navbar-brand" href="index.html">Gymso Fitness</a>
+            <NavLink className="navbar-brand" to="/">Jump With Jenny</NavLink>
             <button className="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false"
                 aria-label="Toggle navigation">
                 <span className="navbar-toggler-icon"></span>
@@ -11,7 +14,7 @@ export const NavBar = (props) =>{
             <div className="collapse navbar-collapse" id="navbarNav">
                 <ul className="navbar-nav ml-lg-auto">
                     <li className="nav-item">
-                        <a href="#home" className="nav-link smoothScroll">Home</a>
+                        <NavLink className="nav-link smoothScroll" to="/">Home</NavLink>
                     </li>
 
                     <li className="nav-item">
@@ -28,6 +31,9 @@ export const NavBar = (props) =>{
 
                     <li className="nav-item">
                         <a href="#contact" className="nav-link smoothScroll">Contact</a>
+                    </li>
+                    <li className="nav-item">
+                        <NavLink className="nav-link smoothScroll" to="/login">Login</NavLink>
                     </li>
                 </ul>
 

@@ -13,20 +13,20 @@ namespace ServerAPI.Models
             Appointments = new LinkedList<Appointment>();
         }
         [Column(TypeName = "nvarchar(50)")]
-        public string FirstName { get; set; }
+        public string? FirstName { get; set; }
         [Column(TypeName = "nvarchar(50)")]
-        public string LastName { get; set; }
+        public string? LastName { get; set; }
 
-        public int Age { get; set; }
+        public int? Age { get; set; }
 
         [Column(TypeName = "nvarchar(100)")]
-        public string City { get; set; }
+        public string? City { get; set; }
 
-        public string ProfilePictureUrl { get; set; }
+        public string? ProfilePictureUrl { get; set; }
 
         [Column(TypeName = "nvarchar(500)")]
 
-        public string Description { get; set; }
+        public string? Description { get; set; }
 
         public ICollection<Appointment> Appointments { get; set; }
 

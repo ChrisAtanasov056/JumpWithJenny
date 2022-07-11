@@ -39,7 +39,6 @@
                 var method = SetIsDeletedQueryFilterMethod.MakeGenericMethod(deletableEntityType.ClrType);
                 method.Invoke(null, new object[] { builder });
             }
-
             // Disable Cascade Delete
             var foreignKeys = entityTypes
                 .SelectMany(e => e.GetForeignKeys().Where(f => f.DeleteBehavior == DeleteBehavior.Cascade));

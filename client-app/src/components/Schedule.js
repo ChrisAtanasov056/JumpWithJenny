@@ -1,3 +1,5 @@
+import React from 'react';
+
 export const Schedules = (props) =>{
     return (
       <section className="schedule section" id="schedule">
