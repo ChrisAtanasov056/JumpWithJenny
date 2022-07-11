@@ -1,12 +1,8 @@
-import React from 'react';
-import { About } from './components/About';
+import React from 'react'
+import { Route, Routes, Redirect } from 'react-router-dom'
 import { NavBar } from './components/NavBar';
-import { Class } from './components/Class';
-import { Schedules } from './components/Schedule';
-import { Contacts } from './components/Contacts';
-import { Footer } from './components/Footer';
-import { Modal } from './components/Modal';
-
+import { Login } from './components/Login/Login';
+import { Home } from './components/Home'
 import logo from './logo.svg';
 import './App.css';
 
@@ -14,12 +10,16 @@ function App() {
   return (
     <div className="App">
       <NavBar />
-      <About />
-      <Class />
-      <Schedules />
-      <Contacts />
-      <Footer />
-      <Modal />
+      <Routes>
+                    <Route path='/'  element={<Home />} exact/>
+                    <Route path="/login" element={<Login />} exact />
+                   
+                    <Route path="/logout" render={(props) => {
+                        console.log('Logged Out!!!');
+
+                        return <Redirect to="/" />
+                    }} />
+                </Routes>
     </div>
   );
 }

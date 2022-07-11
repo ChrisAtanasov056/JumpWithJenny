@@ -1,3 +1,4 @@
+import React from 'react';
 export const Contacts = (props) =>{
     return (
         <section className="contact section" id="contact">

@@ -4,19 +4,22 @@ using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json.Serialization;
 using ServerAPI.Data;
 using ServerAPI.Data.Common;
+using ServerAPI.Data.Seeding;
 using ServerAPI.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-
-builder.Services.AddControllers();
-builder.Services.AddCors(   c=>
-            c.AddPolicy("AllowOrigin", 
-            option =>option.AllowAnyOrigin()
-                           .AllowAnyMethod()
-                           .AllowAnyHeader())
+builder.Services.AddCors(c =>
+         c.AddPolicy("AllowOrigin",
+         option => option
+                .AllowAnyMethod()
+                .AllowAnyHeader()
+                .SetIsOriginAllowed(origin => true) // allow any origin
+                .AllowCredentials()) // allow credentials
 );
+builder.Services.AddControllers();
+
 builder.Services.AddSingleton(builder.Configuration);
 builder.Services.AddDbContext<JumpWithJennyDbContext>(options =>
                 options.UseSqlServer(
@@ -33,6 +36,14 @@ builder.Services.AddIdentity<User, UserRole>
     .AddRoles<UserRole>()
     .AddEntityFrameworkStores<JumpWithJennyDbContext>()
     .AddDefaultTokenProviders();
+builder.Services.Configure<IdentityOptions>(options =>
+{
+    options.Password.RequireNonAlphanumeric = false;
+    options.Password.RequireDigit = false;
+    options.Password.RequireLowercase = false;
+    options.Password.RequireUppercase = false;
+    options.Password.RequiredLength = 5;
+});
 builder.Services.AddScoped<IDbQueryRunner, DbQueryRunner>();
 
 builder.Services.AddMemoryCache();
@@ -40,7 +51,8 @@ builder.Services.AddMemoryCache();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-
+builder.Services.AddLogging();
+builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 var app = builder.Build();
 // Configure the HTTP request pipeline.
 using (var serviceScope = app.Services.CreateScope())
@@ -52,7 +64,7 @@ using (var serviceScope = app.Services.CreateScope())
         dbContext.Database.Migrate();
     }
 
-    //new FitForLifeDbContextSeeder().SeedAsync(dbContext, serviceScope.ServiceProvider).GetAwaiter().GetResult();
+    new JumpWithJennyDbSeeder().SeedAsync(dbContext, serviceScope.ServiceProvider).GetAwaiter().GetResult();
 }
 if (app.Environment.IsDevelopment())
 {
@@ -79,5 +91,4 @@ app.UseStaticFiles();
 app.UseAuthorization();
 //app.UseAuthentication();
 app.MapControllers();
-
 app.Run();
