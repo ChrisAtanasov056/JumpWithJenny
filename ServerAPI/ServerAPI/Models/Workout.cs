@@ -7,13 +7,9 @@
     {
         public Workout()
         {
-            this.WorkoutEnd = WorkoutStart.AddHours(1);
             this.Appointments = new List<Appointment>();
             this.Shoes = new List<Shoes>();
-            this.AvailableSpots = Shoes
-                .Where(x => x.IsTaken == true)
-                .ToList()
-                .Count;
+           
         }
 
         [Required]

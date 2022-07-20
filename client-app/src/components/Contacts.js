@@ -1,4 +1,6 @@
 import React from 'react';
+/* eslint-disable */
+
 export const Contacts = (props) =>{
     return (
         <section className="contact section" id="contact">

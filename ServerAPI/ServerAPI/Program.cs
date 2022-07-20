@@ -89,6 +89,6 @@ app.UseCors(option => option.AllowAnyOrigin()
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseAuthorization();
-//app.UseAuthentication();
+app.UseAuthentication();
 app.MapControllers();
 app.Run();

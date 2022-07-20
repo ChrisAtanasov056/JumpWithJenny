@@ -9,6 +9,7 @@
     using System.Threading;
     using System.Threading.Tasks;
     using ServerAPI.Models.Common;
+    using Microsoft.AspNetCore.Identity;
 
     public class JumpWithJennyDbContext : IdentityDbContext<User, UserRole, string>
     {
@@ -46,6 +47,10 @@
             builder
                 .Entity<Appointment>()
                 .HasKey(k => new { k.UserId, k.WorkoutId });
+            builder.Entity<IdentityUserRole<string>>(entity =>
+            {
+                entity.ToTable("UserRoles");
+            });
         }
         public override int SaveChanges(bool acceptAllChangesOnSuccess)
         {

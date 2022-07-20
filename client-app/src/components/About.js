@@ -1,5 +1,5 @@
 import React from 'react';
-
+/* eslint-disable */
 export const About = (props) =>{
     return (
         <section className="about section" id="about">
