@@ -1,5 +1,5 @@
 import React from 'react';
-
+/* eslint-disable */
 export const Class = (props) => {
     return (
     <section className="class section" id="class">

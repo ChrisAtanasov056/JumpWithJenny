@@ -8,6 +8,7 @@
         public BaseModel()
         {
             this.Id = Guid.NewGuid().ToString();
+            this.CreatedOn = DateTime.Now;
         }
         [Key]
         public string Id { get; set; }

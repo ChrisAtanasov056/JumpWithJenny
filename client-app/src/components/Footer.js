@@ -1,5 +1,5 @@
 import React from 'react';
-
+/* eslint-disable */
 export const Footer = (props) =>{
     return (
     <footer className="site-footer">

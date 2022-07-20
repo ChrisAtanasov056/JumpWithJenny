@@ -10,8 +10,9 @@ namespace ServerAPI.Models
         public User()
         {
             Id = Guid.NewGuid().ToString();
-            Appointments = new LinkedList<Appointment>();
+            Appointments = new List<Appointment>();
         }
+
         [Column(TypeName = "nvarchar(50)")]
         public string? FirstName { get; set; }
         [Column(TypeName = "nvarchar(50)")]
@@ -40,5 +41,7 @@ namespace ServerAPI.Models
         public DateTime? DeletedOn { get; set; }
 
         public bool IsDeleted { get; set; }
+
+
     }
 }

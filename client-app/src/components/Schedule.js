@@ -1,5 +1,5 @@
 import React from 'react';
-
+/* eslint-disable */
 export const Schedules = (props) =>{
     return (
       <section className="schedule section" id="schedule">
