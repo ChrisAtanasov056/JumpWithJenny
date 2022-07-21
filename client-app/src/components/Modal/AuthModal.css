@@ -1,0 +1,123 @@
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.modal-content {
+  background: white;
+  padding: 2rem;
+  border-radius: 8px;
+  width: 100%;
+  max-width: 400px;
+  position: relative;
+  overflow: hidden;
+}
+
+.close-button {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: transparent;
+  border: none;
+  font-size: 1.2rem;
+  cursor: pointer;
+}
+
+.form-container {
+  transition: transform 0.5s ease, opacity 0.5s ease;
+}
+
+.slide-in {
+  animation: slideIn 0.5s forwards;
+}
+
+.slide-out {
+  animation: slideOut 0.5s forwards;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideOut {
+  from {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateX(-100%);
+  }
+}
+
+.toggle-button {
+  background: transparent;
+  border: none;
+  color: #007bff;
+  font-size: 1rem;
+  cursor: pointer;
+  margin-left: 5px;
+}
+
+.social-login {
+  margin-top: 1rem;
+  display: flex;
+  justify-content: center; /* Center buttons horizontally */
+  gap: 1rem; /* Space between buttons */
+}
+
+.social-login button {
+  width: 50px; /* Set a fixed width */
+  height: 50px; /* Set the same height for circular shape */
+  border: none; /* No border */
+  border-radius: 50%; /* Make it circular */
+  cursor: pointer; /* Pointer cursor on hover */
+  transition: background-color 0.3s, transform 0.2s; /* Smooth transitions */
+  display: flex; /* Flexbox for centering icon */
+  justify-content: center; /* Center icon horizontally */
+  align-items: center; /* Center icon vertically */
+}
+
+.fb-btn {
+  background-color: #3b5998; /* Facebook color */
+}
+
+.fb-btn:hover {
+  background-color: #30487b; /* Darker shade on hover */
+}
+
+.google-btn {
+  background-color: #db4437; /* Google color */
+}
+
+.google-btn:hover {
+  background-color: #c13527; /* Darker shade on hover */
+}
+
+.instagram-btn {
+  background-color: #c32aa3; /* Instagram color */
+}
+
+.instagram-btn:hover {
+  background-color: #a62673; /* Darker shade on hover */
+}
+
+/* Optional: Style for icons inside buttons */
+.social-login i {
+  color: white; /* Icon color */
+  font-size: 1.5rem; /* Adjust icon size */
+}

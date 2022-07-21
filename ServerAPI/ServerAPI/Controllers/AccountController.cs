@@ -1,12 +1,13 @@
 ﻿using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using ServerAPI.Data;
-using ServerAPI.Models;
 using ServerAPI.Models.Authentication;
+using ServerAPI.Models;
+using System.Threading.Tasks;
 using System;
-
-// For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+using Microsoft.Extensions.Configuration;
+using ServerAPI.Services;
+using Microsoft.IdentityModel.Tokens;
 
 namespace ServerAPI.Controllers
 {
@@ -17,15 +18,16 @@ namespace ServerAPI.Controllers
     {
         private readonly SignInManager<User> _signInManager;
         private readonly UserManager<User> _userManager;
-        //private readonly ILogger<AccountController> _logger;
+        private readonly JwtTokenService _jwtTokenService;
 
-        public AccountController(UserManager<User> userManager, SignInManager<User> signInManager)
+        public AccountController(UserManager<User> userManager, SignInManager<User> signInManager, JwtTokenService jwtTokenService)
         {
-            this._userManager = userManager;
-            this._signInManager = signInManager;
-            //this._logger = logger;
+            _userManager = userManager;
+            _signInManager = signInManager;
+            _jwtTokenService = jwtTokenService;
         }
-        // POST api/<LoginController>
+
+        // POST /Account/signup
         [HttpPost]
         [Route("signup")]
         public async Task<IActionResult> SignUp([FromBody] SignUpModel model)
@@ -33,8 +35,8 @@ namespace ServerAPI.Controllers
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
-
             }
+
             try
             {
                 var user = new User
@@ -42,7 +44,8 @@ namespace ServerAPI.Controllers
                     UserName = model.UserName,
                     Email = model.Email
                 };
-                var result = await this._userManager.CreateAsync(user, model.Password);
+
+                var result = await _userManager.CreateAsync(user, model.Password);
                 if (!result.Succeeded)
                 {
                     foreach (var error in result.Errors)
@@ -51,16 +54,16 @@ namespace ServerAPI.Controllers
                     }
                     return BadRequest(ModelState);
                 }
-                
-                return Ok();
+
+                // You can return additional data like the user info or a success message.
+                return Ok(new { Message = "User registered successfully", User = user });
             }
             catch (Exception ex)
             {
-                //_logger.LogError(ex, $"Something Went Wrong in the {nameof(SignUp)}");
-                return Problem ($"Something Went Wrong in the {nameof(SignUp)}", statusCode: 500);
-                throw;
+                return Problem($"Something Went Wrong in the {nameof(SignUp)}", statusCode: 500);
             }
         }
+
         [HttpPost]
         [Route("login")]
         public async Task<IActionResult> Login([FromBody] LoginModel model)
@@ -68,23 +71,34 @@ namespace ServerAPI.Controllers
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
-
             }
-            try
-            {
 
-                var result = await this._signInManager.PasswordSignInAsync(model.Username, model.Password, false, false);
-                if (!result.Succeeded)
+            var user = await _userManager.FindByEmailAsync(model.Email);
+            if (user == null)
+            {
+                return Unauthorized(new { message = "Invalid email or password" });
+            }
+
+            var result = await _signInManager.PasswordSignInAsync(user.UserName, model.Password, false, false);
+            if (!result.Succeeded)
+            {
+                return Unauthorized(new { message = "Invalid email or password" });
+            }
+
+            // Generate token using the injected service
+            var token = _jwtTokenService.GenerateJwtToken(user);
+
+            return Ok(new
+            {
+                token = token,
+                user = new
                 {
-                    return Unauthorized(model);
+                    id = user.Id,  // Include user ID
+                    email = user.Email,
+                    name = user.UserName,
                 }
-                return Ok();
-            }
-            catch (Exception ex)
-            {
-                return Problem($"Something Went Wrong in the {nameof(Login)}", statusCode: 500);
-                throw;
-            }
+            });
         }
+
     }
 }

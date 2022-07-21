@@ -1,0 +1,70 @@
+/* src/components/Schedule/Schedule.css */
+
+.schedule-section {
+  display: flex; /* Use flexbox for centering */
+  flex-direction: column; /* Column layout */
+  align-items: center; /* Center horizontally */
+  padding: 20px; /* Reduced padding around the section */
+  background-color: #f8f9fa; /* Light background */
+  padding-top: 60px; /* Extra padding on top */
+}
+
+.schedule-table {
+  border-collapse: collapse; /* Collapse borders for better appearance */
+  width: 100%; /* Use full width for responsiveness */
+  max-width: 1000px; /* Limit maximum width for larger screens */
+  margin: auto; /* Center table horizontally */
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); /* Add shadow for depth */
+  overflow-x: auto; /* Enable horizontal scrolling on small screens */
+}
+
+.schedule-table th,
+.schedule-table td {
+  padding: 10px; /* Reduced padding for cells */
+  text-align: center; /* Center text */
+  border: 1px solid #dee2e6; /* Border for cells */
+}
+
+.schedule-table th {
+  background-color: #007bff; /* Header background color */
+  color: white; /* Header text color */
+}
+
+.schedule-cell {
+  height: 50px; /* Reduced height for each cell */
+  cursor: pointer; /* Pointer on hover */
+  transition: background-color 0.3s; /* Smooth transition */
+}
+
+.schedule-cell:hover {
+  background-color: #e9ecef; /* Light gray on hover */
+}
+
+/* Responsive styles */
+@media (max-width: 768px) {
+  .schedule-section {
+    padding: 10px; /* Reduced padding for smaller screens */
+  }
+
+  .schedule-table {
+    width: 90%; /* Slightly reduce table width for mobile */
+    font-size: 0.9rem; /* Adjust font size for smaller screens */
+  }
+
+  .schedule-table th,
+  .schedule-table td {
+    padding: 8px; /* Smaller padding on cells */
+    font-size: 0.8rem; /* Smaller font size for readability */
+  }
+
+  .schedule-cell {
+    height: auto; /* Allow height to adjust based on content */
+    min-height: 40px; /* Minimum height for cells */
+  }
+
+  /* Add a scrollbar if table overflows */
+  .schedule-table {
+    overflow-x: auto; /* Allow horizontal scrolling */
+    display: block; /* Make the table behave as a block for scrolling */
+  }
+}
