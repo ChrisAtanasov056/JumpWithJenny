@@ -1,133 +1,70 @@
 import React, { useState } from 'react';
-import {  useNavigate } from 'react-router-dom';
-import axius from '../../api/axius';
-import './Login.module.css';
-const REGISTER_URL = '/Account/signup';
-const LOGIN_URL = '/Account/login';
-export const Login = () => {
-  const [ signup, setSignup] = useState({
-    username: '',
-    password: '',
-    email: '',
-  })
-  const [ login, setLogin] = useState({
-    username: '',
-    password: '',
-  })
-  const [errorMessages, setErrorMessages] = useState({});
-  const navigate = useNavigate();
-  const signupHangler = (e) => {
-    setSignup(state => ({
-      ...state,
-      [e.target.name]: e.target.value
-    }))
-  }
-  const loginHangler = (e) => {
-    setLogin(state => ({
-      ...state,
-      [e.target.name]: e.target.value
-    }))
-  }
-  const onLogin = async (e) => {
+import { useAuth } from '../../services/AuthContext';
+import { login } from '../../services/authService';
+import './Login.css';
+
+const Login = ({ onClose, onLoginSuccess }) => {
+  const { login: authLogin } = useAuth();
+  const [credentials, setCredentials] = useState({ email: '', password: '' });
+  const [errorMessage, setErrorMessage] = useState('');
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setCredentials((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log(login);
-    const result = await axius.post(
-      LOGIN_URL,
-      JSON.stringify(login),
-      {
-        headers: { 'Content-type': 'application/json' },
-        withCredentials: true,
+    try {
+      const response = await login(credentials);
+      if (response) {
+        const { token, user } = response;
+        const { User: id, name, email } = user; // Extract userId, name, and email
+        if (id && name && email && token) {
+          localStorage.setItem('jwtToken', token);
+          localStorage.setItem('user', JSON.stringify({ id, name, email }));
+          authLogin({ id, name, email, token });
+          onLoginSuccess({ id, name, email, token });
+          onClose();
+        } else {
+          setErrorMessage('Login failed. Incomplete user data received.');
+        }
+      } else {
+        setErrorMessage('Login failed. No user data received.');
       }
-    )
-    if (result.status === 200) {
-      console.log(result.status)
-      navigate('/');
+    } catch (error) {
+      console.error('Login error:', error);
+      setErrorMessage('Login failed. Please check your credentials and try again.');
     }
-    navigate('/');
-  }
-  const onCreate = async (e) => {
-    e.preventDefault();
-    console.log(signup);
-    const result = await axius.post(
-      REGISTER_URL,
-      JSON.stringify(signup),
-      {
-        headers: { 'Content-type': 'application/json' },
-        withCredentials: true,
-      }
-    )
-    if (result.status === 200) {
-      navigate('/');
-    }
-  }
-  const renderErrorMessage = (name) =>
-  name === errorMessages.name && (
-    <div className="error">{errorMessages.message}</div>
-  );
+  };
+
   return (
-    <section id="login-page" className="auth">
+    <form onSubmit={handleSubmit}>
+      <h2>Welcome Back</h2>
       <div>
-        <div className="main">
-          <input type="checkbox" id="chk" aria-hidden="true" />
-          <div className="signup">
-            <form onSubmit={onCreate}>
-              <label htmlFor="chk" aria-hidden="true">Sign up</label>
-              <input
-                id="username"
-                type="text"
-                name="username"
-                placeholder="Username"
-                onChange={signupHangler}
-                value={signup.username}
-                required />
-                {renderErrorMessage("username")}
-              <input
-                id="email"
-                type="email"
-                name="email"
-                placeholder="Email"
-                onChange={signupHangler}
-                value={signup.email}
-                required />
-                {renderErrorMessage("email")}
-              <input
-                id="password"
-                type="password"
-                name="password"
-                placeholder="Password"
-                onChange={signupHangler}
-                value={signup.password}
-                required />
-                {renderErrorMessage("password")}
-              <button type="submit">Sign up</button>
-            </form>
-          </div>
-          <div className="login">
-            <form onSubmit={onLogin}>
-              <label htmlFor="chk" aria-hidden="true">Login</label>
-              <input
-                id="loginUsername"
-                type="text"
-                name="username"
-                placeholder="Username"
-                onChange={loginHangler}
-                value={login.username}
-                required />
-                {renderErrorMessage("Username")}
-              <input
-                id="loginPassword"
-                type="password"
-                name="password"
-                placeholder="Password"
-                onChange={loginHangler}
-                value={login.password}
-                required />
-                {renderErrorMessage("Password")}
-              <button type="submit">Login</button>
-            </form>
-          </div>
-        </div>
+        <label>Email</label>
+        <input
+          type="email"
+          name="email"
+          value={credentials.email}
+          onChange={handleChange}
+          required
+        />
       </div>
-    </section>
+      <div>
+        <label>Password</label>
+        <input
+          type="password"
+          name="password"
+          value={credentials.password}
+          onChange={handleChange}
+          required
+        />
+      </div>
+      {errorMessage && <p className="error-message">{errorMessage}</p>}
+      <button type="submit" className="sign-in-button">Sign In</button>
+    </form>
   );
-}
+};
+
+export default Login;

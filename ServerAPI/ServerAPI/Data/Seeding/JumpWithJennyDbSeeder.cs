@@ -28,6 +28,7 @@
                               new RolesSeeder(),
                               new ShoesSeeder(),
                               new WorkoutSeeder(),
+                              new AccountSeeder()
                           };
 
             foreach (var seeder in seeders)

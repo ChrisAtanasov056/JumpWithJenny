@@ -1,94 +1,159 @@
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
 using Newtonsoft.Json.Serialization;
 using ServerAPI.Data;
 using ServerAPI.Data.Common;
+using ServerAPI.Data.Common.Repositories;
+using ServerAPI.Data.Repositories;
 using ServerAPI.Data.Seeding;
 using ServerAPI.Models;
+using ServerAPI.Services;
+using ServerAPI.Services.Mapper;
+using ServerAPI.Services.Schedule;
+using ServerAPI.Services.Users;
+using System.Reflection;
+using System.Text;
 
-var builder = WebApplication.CreateBuilder(args);
-
-// Add services to the container.
-builder.Services.AddCors(c =>
-         c.AddPolicy("AllowOrigin",
-         option => option
-                .AllowAnyMethod()
-                .AllowAnyHeader()
-                .SetIsOriginAllowed(origin => true) // allow any origin
-                .AllowCredentials()) // allow credentials
-);
-builder.Services.AddControllers();
-
-builder.Services.AddSingleton(builder.Configuration);
-builder.Services.AddDbContext<JumpWithJennyDbContext>(options =>
-                options.UseSqlServer(
-                    builder.Configuration.GetConnectionString("DevConnection")));
-
-builder.Services.AddControllersWithViews()
-        .AddNewtonsoftJson(options =>
-            options.SerializerSettings.ReferenceLoopHandling= Newtonsoft.Json.ReferenceLoopHandling.Ignore)
-        .AddNewtonsoftJson(option =>
-            option.SerializerSettings.ContractResolver = new DefaultContractResolver());
-
-builder.Services.AddIdentity<User, UserRole>
-    (IdentityOptionsProvider.GetIdentityOptions)
-    .AddRoles<UserRole>()
-    .AddEntityFrameworkStores<JumpWithJennyDbContext>()
-    .AddDefaultTokenProviders();
-builder.Services.Configure<IdentityOptions>(options =>
+public class Program
 {
-    options.Password.RequireNonAlphanumeric = false;
-    options.Password.RequireDigit = false;
-    options.Password.RequireLowercase = false;
-    options.Password.RequireUppercase = false;
-    options.Password.RequiredLength = 5;
-});
-builder.Services.AddScoped<IDbQueryRunner, DbQueryRunner>();
-
-builder.Services.AddMemoryCache();
-
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
-builder.Services.AddLogging();
-builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
-var app = builder.Build();
-// Configure the HTTP request pipeline.
-using (var serviceScope = app.Services.CreateScope())
-{
-    var dbContext = serviceScope.ServiceProvider.GetRequiredService<JumpWithJennyDbContext>();
-
-    if (app.Environment.IsDevelopment())
+    public static void Main(string[] args)
     {
-        dbContext.Database.Migrate();
+        var builder = WebApplication.CreateBuilder(args);
+        ConfigureServices(builder.Services, builder.Configuration);
+        var app = builder.Build();
+        Configure(app);
+        app.Run();
     }
 
-    new JumpWithJennyDbSeeder().SeedAsync(dbContext, serviceScope.ServiceProvider).GetAwaiter().GetResult();
-}
-if (app.Environment.IsDevelopment())
-{
+    private static void ConfigureServices(IServiceCollection services, IConfiguration configuration)
+    {
+        // CORS configuration
+        services.AddCors(c =>
+            c.AddPolicy("AllowOrigin",
+                option => option
+                    .AllowAnyMethod()
+                    .AllowAnyHeader()
+                    .SetIsOriginAllowed(origin => true) // allow any origin
+                    .AllowCredentials())); // allow credentials
 
-    app.UseDeveloperExceptionPage();
+        services.AddControllers();
+
+        // Database context
+        services.AddDbContext<JumpWithJennyDbContext>(options =>
+            options.UseSqlServer(configuration.GetConnectionString("DevConnection")));
+
+        var jwtSection = configuration.GetSection("Jwt");
+        services.Configure<JwtSettings>(jwtSection);
+        var jwtSettings = jwtSection.Get<JwtSettings>();
+        var key = Encoding.ASCII.GetBytes(jwtSettings.Secret);
+
+        services.AddAuthentication(x =>
+        {
+            x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+            x.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+        })
+        .AddJwtBearer(x =>
+        {
+            x.RequireHttpsMetadata = false; // Change to false for development
+            x.SaveToken = true;
+            x.TokenValidationParameters = new TokenValidationParameters
+            {
+                ValidateIssuerSigningKey = true,
+                IssuerSigningKey = new SymmetricSecurityKey(key),
+                ValidateIssuer = false,
+                ValidateAudience = false
+            };
+        });
+
+        // Identity configuration
+        services.AddIdentity<User, UserRole>(IdentityOptionsProvider.GetIdentityOptions)
+            .AddRoles<UserRole>()
+            .AddEntityFrameworkStores<JumpWithJennyDbContext>()
+            .AddDefaultTokenProviders();
+
+        services.Configure<IdentityOptions>(options =>
+        {
+            options.Password.RequireNonAlphanumeric = false;
+            options.Password.RequireDigit = false;
+            options.Password.RequireLowercase = false;
+            options.Password.RequireUppercase = false;
+            options.Password.RequiredLength = 5;
+        });
+
+        // Repositories
+        services.AddScoped<IDbQueryRunner, DbQueryRunner>();
+        services.AddScoped(typeof(IDeletableEntityRepository<>), typeof(EfDeletableEntityRepository<>));
+        services.AddScoped(typeof(IRepository<>), typeof(EfRepository<>));
+
+        // App Services
+        services.AddTransient<IScheduleService, ScheduleService>();
+        services.AddTransient<IUserService, UserService>();
+        
+
+        // Register JwtTokenService
+        services.AddTransient<JwtTokenService>(); // Add this line
+
+        // Logging and Swagger
+        services.AddLogging();
+        services.AddEndpointsApiExplorer();
+        services.AddSwaggerGen(c =>
+        {
+            c.SwaggerDoc("v1", new OpenApiInfo { Title = "My API", Version = "v1" });
+        });
+
+        // AutoMapper configuration
+        services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
+    }
+
+
+    private static void Configure(WebApplication app)
+    {
+        // AutoMapper configuration
+        AutoMapperConfig.RegisterMappings(typeof(User).GetTypeInfo().Assembly);
+
+        // Seed data on application startup
+        using (var serviceScope = app.Services.CreateScope())
+        {
+            var dbContext = serviceScope.ServiceProvider.GetRequiredService<JumpWithJennyDbContext>();
+            if (app.Environment.IsDevelopment())
+            {
+                dbContext.Database.Migrate(); // Apply migrations only in development
+            }
+
+            new JumpWithJennyDbSeeder().SeedAsync(dbContext, serviceScope.ServiceProvider).GetAwaiter().GetResult();
+        }
+
+        
+
+        // Middleware configuration
+        app.UseHttpsRedirection();
+        app.UseStaticFiles();
+        app.UseRouting();
+        app.UseCors("AllowOrigin");
+        app.UseAuthentication();
+        app.UseAuthorization();
+        // Exception handling
+        if (app.Environment.IsDevelopment())
+        {
+            app.UseDeveloperExceptionPage();
+            app.UseSwagger();
+            app.UseSwaggerUI(c =>
+            {
+                c.SwaggerEndpoint("/swagger/v1/swagger.json", "Your API V1");
+                c.RoutePrefix = "swagger"; // You could set this to an empty string to make Swagger UI accessible at the root
+            });
+        }
+        else
+        {
+            app.UseExceptionHandler("/Home/Error");
+            app.UseStatusCodePagesWithReExecute("/Home/Error/{0}");
+            app.UseHsts();
+        }
+        // Endpoint mapping
+        app.MapControllers();
+    }
 }
-else
-{
-    //app.UseExceptionHandler("/Home/Error");
-    //app.UseStatusCodePagesWithReExecute("/Home/Error/{0}");
-    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
-    //app.UseHsts();
-}
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
-app.UseCors(option => option.AllowAnyOrigin()
-                           .AllowAnyMethod()
-                           .AllowAnyHeader());
-app.UseHttpsRedirection();
-app.UseStaticFiles();
-app.UseAuthorization();
-app.UseAuthentication();
-app.MapControllers();
-app.Run();

@@ -1,43 +1,79 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Cors;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ActionConstraints;
+using ServerAPI.Data.Common.Repositories;
+using ServerAPI.Models;
+using ServerAPI.Services.Users;
+using ServerAPI.ViewModels.Users;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
 namespace ServerAPI.Controllers
 {
-    [Route("api/[controller]")]
+
+    [Route("/[controller]")]
+    [EnableCors("AllowOrigin")]
     [ApiController]
     public class UserController : ControllerBase
     {
-        // GET: api/<UserController>
-        [HttpGet]
-        public IEnumerable<string> Get()
-        {
-            return new string[] { "value1", "value2" };
-        }
+        private readonly IUserService userService;
 
-        // GET api/<UserController>/5
+        public UserController(IUserService userService)
+        {
+            this.userService = userService;
+        }
+        [HttpGet("all")]
+        public async Task<IActionResult> All()
+        {
+            var users = new AllUsersViewModels
+            {
+                Users = await this.userService.GetAllUsersAsync<UserViewModel>()
+            };
+            return Ok(users);
+        }
         [HttpGet("{id}")]
-        public string Get(int id)
+        public async Task<IActionResult> Get(string id)
         {
-            return "value";
+            var user = await this.userService.GetUserByIdAsync(id);
+            if (user == null)
+            {
+                return NotFound();
+            }
+            return Ok(user);
         }
+        // PUT api/<UserController>/change-password
+        [HttpPut("change-password")]
+        public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordViewModel model)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
 
-        // POST api/<UserController>
+            var result = await this.userService.ChangePasswordAsync(model.Id, model.CurrentPassword, model.NewPassword);
+            if (!result)
+            {
+                return BadRequest("Password change failed. Please ensure the current password is correct.");
+            }
+
+            return Ok("Password changed successfully.");
+        }
+        // POST <UserController>
         [HttpPost]
         public void Post([FromBody] string value)
         {
         }
 
-        // PUT api/<UserController>/5
-        [HttpPut("{id}")]
-        public void Put(int id, [FromBody] string value)
-        {
-        }
-
-        // DELETE api/<UserController>/5
         [HttpDelete("{id}")]
-        public void Delete(int id)
+        public async Task<IActionResult> Delete(string id)
         {
+            var result = await this.userService.DeleteUserAsync(id);
+            if (!result)
+            {
+                return NotFound("User not found or could not be deleted.");
+            }
+
+            return Ok("User deleted successfully.");
         }
     }
 }
