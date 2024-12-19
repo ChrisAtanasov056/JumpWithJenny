@@ -11,6 +11,7 @@ using ServerAPI.Data.Common.Repositories;
 using ServerAPI.Data.Repositories;
 using ServerAPI.Data.Seeding;
 using ServerAPI.Models;
+
 using ServerAPI.Services;
 using ServerAPI.Services.Mapper;
 using ServerAPI.Services.Schedule;
@@ -37,15 +38,20 @@ public class Program
                 option => option
                     .AllowAnyMethod()
                     .AllowAnyHeader()
-                    .SetIsOriginAllowed(origin => true) // allow any origin
-                    .AllowCredentials())); // allow credentials
+                    .SetIsOriginAllowed(origin => true)
+                    .AllowCredentials()));
 
-        services.AddControllers();
+        services.AddControllers()
+            .AddNewtonsoftJson(options =>
+                options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore)
+            .AddNewtonsoftJson(option =>
+                option.SerializerSettings.ContractResolver = new DefaultContractResolver());
 
         // Database context
         services.AddDbContext<JumpWithJennyDbContext>(options =>
             options.UseSqlServer(configuration.GetConnectionString("DevConnection")));
 
+        // JWT configuration
         var jwtSection = configuration.GetSection("Jwt");
         services.Configure<JwtSettings>(jwtSection);
         var jwtSettings = jwtSection.Get<JwtSettings>();
@@ -58,7 +64,7 @@ public class Program
         })
         .AddJwtBearer(x =>
         {
-            x.RequireHttpsMetadata = false; // Change to false for development
+            x.RequireHttpsMetadata = false;
             x.SaveToken = true;
             x.TokenValidationParameters = new TokenValidationParameters
             {
@@ -92,10 +98,6 @@ public class Program
         // App Services
         services.AddTransient<IScheduleService, ScheduleService>();
         services.AddTransient<IUserService, UserService>();
-        
-
-        // Register JwtTokenService
-        services.AddTransient<JwtTokenService>(); // Add this line
 
         // Logging and Swagger
         services.AddLogging();
@@ -109,7 +111,6 @@ public class Program
         services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
     }
 
-
     private static void Configure(WebApplication app)
     {
         // AutoMapper configuration
@@ -121,13 +122,11 @@ public class Program
             var dbContext = serviceScope.ServiceProvider.GetRequiredService<JumpWithJennyDbContext>();
             if (app.Environment.IsDevelopment())
             {
-                dbContext.Database.Migrate(); // Apply migrations only in development
+                dbContext.Database.Migrate();
             }
 
             new JumpWithJennyDbSeeder().SeedAsync(dbContext, serviceScope.ServiceProvider).GetAwaiter().GetResult();
         }
-
-        
 
         // Middleware configuration
         app.UseHttpsRedirection();
@@ -136,7 +135,7 @@ public class Program
         app.UseCors("AllowOrigin");
         app.UseAuthentication();
         app.UseAuthorization();
-        // Exception handling
+
         if (app.Environment.IsDevelopment())
         {
             app.UseDeveloperExceptionPage();
@@ -144,7 +143,7 @@ public class Program
             app.UseSwaggerUI(c =>
             {
                 c.SwaggerEndpoint("/swagger/v1/swagger.json", "Your API V1");
-                c.RoutePrefix = "swagger"; // You could set this to an empty string to make Swagger UI accessible at the root
+                c.RoutePrefix = "swagger";
             });
         }
         else
@@ -153,7 +152,7 @@ public class Program
             app.UseStatusCodePagesWithReExecute("/Home/Error/{0}");
             app.UseHsts();
         }
-        // Endpoint mapping
+
         app.MapControllers();
     }
 }
