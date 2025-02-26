@@ -26,28 +26,31 @@ const ProfileModal = ({ onClose, user, onLogout }) => {
     e.preventDefault();
 
     // Check if passwords match and validate new password
-    if (newPassword !== confirmPassword) {
-      setError("New password and confirm password don't match.");
-      return;
-    }
-    if (!newPassword) {
-      setError('New password is required.');
-      return;
-    }
-    if (newPassword.length < 6) {
-      setError('Password must be at least 6 characters long.');
-      return;
-    }
+  if (newPassword !== confirmPassword) {
+    setError("New password and confirm password don't match.");
+    return;
+  }
+  if (!currentPassword) {
+    setError('Current password is required.');
+    return;
+  }
+  if (!newPassword) {
+    setError('New password is required.');
+    return;
+  }
+  if (newPassword.length < 6) {
+    setError('Password must be at least 6 characters long.');
+    return;
+  }
 
     setIsLoading(true);
     try {
       const response = await changePassword({
-        id: user.userId,  // Ensure this comes from the correct user object
+        id: user.id,  // Ensure this comes from the correct user object
         currentPassword, 
         newPassword
       });
       console.log('TEST RESPONSE:', response);
-      alert('Password changed successfully!');
       handleClosePasswordModal();
     } catch (err) {
       console.log('ERROR:', err);

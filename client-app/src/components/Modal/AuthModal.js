@@ -2,11 +2,12 @@ import React, { useState } from 'react';
 import './AuthModal.css';
 import Login from '../Login/Login';
 import Register from '../Register/Register';
+
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faFacebook, faGoogle, faInstagram } from '@fortawesome/free-brands-svg-icons';
 import { signInWithFacebook, signInWithGoogle } from '../../services/firebase.js';
 
-const AuthModal = ({ onClose, onLoginSuccess }) => {
+const AuthModal = ({ onClose, onLoginSuccess, setModalOpen }) => {
   const [isLogin, setIsLogin] = useState(true);
   const [animationClass, setAnimationClass] = useState('slide-in');
 
@@ -27,7 +28,8 @@ const AuthModal = ({ onClose, onLoginSuccess }) => {
       } else if (platform === 'Instagram') {
         // await signInWithInstagram();
       }
-      onLoginSuccess();
+      onLoginSuccess(); // Call the onLoginSuccess callback when login is successful
+      setModalOpen(false); // Close the modal after successful login
     } catch (error) {
       console.error(`Error logging in with ${platform}:`, error);
     }
@@ -41,7 +43,7 @@ const AuthModal = ({ onClose, onLoginSuccess }) => {
           {isLogin ? (
             <Login onClose={onClose} onLoginSuccess={onLoginSuccess} />
           ) : (
-            <Register onClose={onClose} onLoginSuccess={onLoginSuccess} />
+            <Register onClose={onClose} onLoginSuccess={onLoginSuccess} setModalOpen={setModalOpen} />
           )}
         </div>
 

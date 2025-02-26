@@ -16,7 +16,7 @@
 
             var builder = new DbContextOptionsBuilder<JumpWithJennyDbContext>();
             var connectionString = configuration.GetConnectionString("DevConnection");
-            builder.UseSqlServer(connectionString);
+            builder.UseNpgsql(connectionString);
 
             return new JumpWithJennyDbContext(builder.Options);
         }

@@ -1,10 +1,11 @@
 ﻿using ServerAPI.Models.Common;
+using Microsoft.AspNetCore.Identity;
+using System.ComponentModel.DataAnnotations.Schema;
+using System;
+using System.Collections.Generic;
 
 namespace ServerAPI.Models
 {
-    using Microsoft.AspNetCore.Identity;
-    using System.ComponentModel.DataAnnotations.Schema;
-
     public class User : IdentityUser<string>, IAuditInfo, IDeletableEntity
     {
         public User()
@@ -13,24 +14,22 @@ namespace ServerAPI.Models
             Appointments = new List<Appointment>();
         }
 
-        [Column(TypeName = "nvarchar(50)")]
+        [Column(TypeName = "varchar(50)")] // Adjusted for PostgreSQL
         public string? FirstName { get; set; }
-        [Column(TypeName = "nvarchar(50)")]
+        [Column(TypeName = "varchar(50)")] // Adjusted for PostgreSQL
         public string? LastName { get; set; }
 
         public int? Age { get; set; }
 
-        [Column(TypeName = "nvarchar(100)")]
+        [Column(TypeName = "varchar(100)")] // Adjusted for PostgreSQL
         public string? City { get; set; }
 
         public string? ProfilePictureUrl { get; set; }
 
-        [Column(TypeName = "nvarchar(500)")]
-
+        [Column(TypeName = "text")] // Adjusted for PostgreSQL
         public string? Description { get; set; }
 
         public ICollection<Appointment> Appointments { get; set; }
-
 
         // Audit Info
         public DateTime CreatedOn { get; set; }
@@ -41,7 +40,5 @@ namespace ServerAPI.Models
         public DateTime? DeletedOn { get; set; }
 
         public bool IsDeleted { get; set; }
-
-
     }
 }
