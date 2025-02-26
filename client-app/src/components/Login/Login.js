@@ -17,11 +17,14 @@ const Login = ({ onClose, onLoginSuccess }) => {
     e.preventDefault();
     try {
       const response = await login(credentials);
+      console.log('response: ',response)
       if (response) {
         const { token, user } = response; // Correctly extract token & user
-        if (user?.id && user?.name && user?.email && token) {
+        console.log("login resposne: ",user)
+        if (user?.id && user?.username && user?.firstname && user?.lastname && user?.email && token) {
           localStorage.setItem('jwtToken', token);
           localStorage.setItem('user', JSON.stringify(user));
+          
           authLogin({ ...user, token });
           onLoginSuccess({ ...user, token });
           onClose();

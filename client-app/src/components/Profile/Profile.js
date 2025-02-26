@@ -8,10 +8,13 @@ const ProfileModal = ({ onClose, user, onLogout }) => {
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
-  const [isLoading, setIsLoading] = useState(false); // New loading state
+  const [successMessage, setSuccessMessage] = useState('');
+  const [isLoading, setIsLoading] = useState(false);  // Handle loading state here
 
   const handleChangePassword = () => {
     setPasswordModalOpen(true);
+    setError('');
+    setSuccessMessage('');
   };
 
   const handleClosePasswordModal = () => {
@@ -20,47 +23,37 @@ const ProfileModal = ({ onClose, user, onLogout }) => {
     setNewPassword('');
     setConfirmPassword('');
     setError('');
+    setSuccessMessage('');
   };
 
   const handlePasswordSubmit = async (e) => {
     e.preventDefault();
 
-    // Check if passwords match and validate new password
-  if (newPassword !== confirmPassword) {
-    setError("New password and confirm password don't match.");
-    return;
-  }
-  if (!currentPassword) {
-    setError('Current password is required.');
-    return;
-  }
-  if (!newPassword) {
-    setError('New password is required.');
-    return;
-  }
-  if (newPassword.length < 6) {
-    setError('Password must be at least 6 characters long.');
-    return;
-  }
+    // ✅ Validate Inputs
+    if (!currentPassword) return setError('Current password is required.');
+    if (!newPassword) return setError('New password is required.');
+    if (newPassword.length < 6) return setError('Password must be at least 6 characters.');
+    if (newPassword !== confirmPassword) return setError("New password and confirm password don't match.");
 
+    // Set loading state before making API call
     setIsLoading(true);
+
     try {
-      const response = await changePassword({
-        id: user.id,  // Ensure this comes from the correct user object
-        currentPassword, 
+      // Call changePassword API from authService.js
+      await changePassword({
+        id: user.id,
+        currentPassword,
         newPassword
       });
-      console.log('TEST RESPONSE:', response);
-      handleClosePasswordModal();
+
+      setSuccessMessage('Password changed successfully! ✅');
+      setError('');
+      setTimeout(handleClosePasswordModal, 2000); // Close modal after 2 seconds
     } catch (err) {
-      console.log('ERROR:', err);
-      if (err.response) {
-        setError(err.response.data.message || 'Failed to change password. Please try again.');
-      } else {
-        setError('Failed to change password. Please try again.');
-      }
+      console.error('ERROR:', err);
+      setError(err.response?.data?.message || 'Failed to change password. Please try again.');
     } finally {
-      setIsLoading(false);
+      setIsLoading(false);  // Set loading state back to false
     }
   };
 
@@ -68,7 +61,9 @@ const ProfileModal = ({ onClose, user, onLogout }) => {
     <div className="profile-modal">
       <div className="modal-content">
         <h2>Your Profile</h2>
-        <p><strong>Name:</strong> {user.name || "N/A"}</p>
+        <p><strong>Username:</strong> {user.username || "N/A"}</p>
+        <p><strong>First Name:</strong> {user.firstname || "N/A"}</p>
+        <p><strong>Last Name:</strong> {user.lastname || "N/A"}</p>
         <p><strong>Email:</strong> {user.email || "N/A"}</p>
 
         <div className="modal-buttons">
@@ -82,7 +77,9 @@ const ProfileModal = ({ onClose, user, onLogout }) => {
         <div className="password-modal">
           <div className="password-modal-content">
             <h3>Change Password</h3>
+
             {error && <div className="error-message">{error}</div>}
+            {successMessage && <div className="success-message">{successMessage}</div>} {/* Success message */}
 
             <form onSubmit={handlePasswordSubmit}>
               <div className="input-group">
@@ -123,7 +120,7 @@ const ProfileModal = ({ onClose, user, onLogout }) => {
 
               <div className="modal-buttons">
                 {isLoading ? (
-                  <div className="loading-spinner">Loading...</div>
+                  <div className="loading-spinner">Loading...</div> // Loading spinner
                 ) : (
                   <button type="submit" className="submit-btn">Change Password</button>
                 )}

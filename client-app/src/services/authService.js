@@ -3,10 +3,11 @@ import axios from '../api/axius';
 
 // Register a new user
 export const create = async (userData) => {
-  
+  console.log("Create: ", userData)
   try {
     const response = await axios.post('/Account/signup', userData)
-    console.log("Create: ", response.data.user)
+    console.log("Create: ", userData)
+    console.log("Response: ", response)
     return response.data; // Adjust according to your API response structure
   } catch (error) {
     if (error.response) {
@@ -22,7 +23,7 @@ export const create = async (userData) => {
 
 // Login an existing user
 export const login = async (userData) => {
-  console.log("login ", userData)
+
     try {
       const response = await axios.post('/Account/login', {
         Email: userData.email, // Use Email instead of Username
@@ -35,22 +36,16 @@ export const login = async (userData) => {
     }
   };
 
-export const changePassword = async (userData) => {
-  console.log('Payload:', {
-    id: userData.id,
-    currentPassword: userData.currentPassword,
-    newPassword: userData.newPassword,
-  });
-  try {
-    const response = await axios.put('/User/change-password', {
-      id: userData.id,
-      currentPassword: userData.currentPassword,
-      newPassword: userData.newPassword, // Ensure the frontend sends this value
-    });
-    console.log('Response: ', response);
-    return response.data; // Depending on your API, adjust this as needed
-  } catch (error) {
-    console.error('Change password error:', error);
-    throw error; // This will propagate the error to your component
-  }
+ export const changePassword = async (userData) => {
+    try {
+      const response = await axios.put('/User/change-password', {
+        id: userData.id,
+        currentPassword: userData.currentPassword,
+        newPassword: userData.newPassword, 
+      });
+      return response.data;  // return the response directly
+    } catch (error) {
+      console.error('Change password error:', error);
+      throw error;  // Throw the error to propagate it to the component
+    }
 };

@@ -6,7 +6,12 @@ import './Register.css';
 
 const Register = ({ onClose, onLoginSuccess }) => {
   const { login: authLogin } = useAuth();
-  const [credentials, setCredentials] = useState({ userName: '', email: '', password: '' });
+  const [credentials, setCredentials] = useState({ 
+    userName: '',
+    firstName: '',
+    lastName: '', 
+    email: '', 
+    password: '' });
   const [errorMessage, setErrorMessage] = useState('');
 
   const handleChange = (e) => {
@@ -20,11 +25,11 @@ const Register = ({ onClose, onLoginSuccess }) => {
       const response = await create(credentials); // Register the user
       if (response) {
         const { token, user } = response; // Extract user and token from the response
-        if (user?.id && user?.name && user?.email && token) {
+        if (user?.id && user?.username && user?.firstname && user?.lastname && user?.email && token) {
           localStorage.setItem('jwtToken', token); // Store the token
           localStorage.setItem('user', JSON.stringify(user)); // Store the user info
           authLogin({ ...user, token }); // Update auth context with user data and token
-
+          console.log("User :" , user)
           // Automatically log in after successful registration
           const loginResponse = await login({ email: credentials.email, password: credentials.password });
           if (loginResponse) {
@@ -53,11 +58,31 @@ const Register = ({ onClose, onLoginSuccess }) => {
     <form onSubmit={handleSubmit} className="form-container">
       <h2>Create Account</h2>
       <div className="form-group">
-        <label>Name</label>
+        <label>Username</label>
         <input
           type="text"
           name="userName"
           value={credentials.userName}
+          onChange={handleChange}
+          required
+        />
+      </div>
+      <div className="form-group">
+        <label>First Name</label>
+        <input
+          type="text"
+          name="firstName"
+          value={credentials.firstName}
+          onChange={handleChange}
+          required
+        />
+      </div>
+      <div className="form-group">
+        <label>Last Name</label>
+        <input
+          type="text"
+          name="lastName"
+          value={credentials.lastName}
           onChange={handleChange}
           required
         />
