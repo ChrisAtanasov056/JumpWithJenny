@@ -96,6 +96,8 @@
                 Id = user.Id,
                 Username = user.UserName,
                 Email = user.Email,
+                FirstName = user.FirstName,
+                LastName = user.LastName,
                 // Add other properties as needed
             };
 

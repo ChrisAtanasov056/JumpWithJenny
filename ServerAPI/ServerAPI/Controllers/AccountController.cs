@@ -38,7 +38,9 @@
                     var user = new User
                     {
                         UserName = model.UserName,
-                        Email = model.Email
+                        Email = model.Email,
+                        FirstName = model.FirstName,
+                        LastName = model.LastName,
                     };
 
                     // Create the user
@@ -70,7 +72,9 @@
                         {
                             id = user.Id,
                             email = user.Email,
-                            name = user.UserName,
+                            username = user.UserName,
+                            firstname = user.FirstName,
+                            lastname = user.LastName,
                         }
                     });
                 }
@@ -111,7 +115,9 @@
                     {
                         id = user.Id,  // Include user ID
                         email = user.Email,
-                        name = user.UserName,
+                        username = user.UserName,
+                        firstname = user.FirstName,
+                        lastname = user.LastName,
                     }
                 });
             }

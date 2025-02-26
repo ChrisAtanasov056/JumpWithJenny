@@ -63,36 +63,58 @@
 .profile-area {
   display: flex;
   align-items: center;
-  background-color: #ffffff; /* Change to a clean white background */
-  color: #333; /* Darker text color for better contrast */
-  border-radius: 8px; /* Slightly more rounded corners */
-  padding: 12px 20px; /* Increased padding for a more spacious feel */
-  cursor: pointer; /* Change cursor to pointer */
-  transition: background-color 0.3s, transform 0.2s, box-shadow 0.2s; /* Smooth transitions */
+  justify-content: center;
+  background-color: #ffffff; /* Clean white background */
+  color: #333; /* Darker text color for contrast */
+  border-radius: 50%; /* Makes it a perfect circle */
+  padding: 12px; /* Adjusted padding */
+  width: 50px; /* Fixed width for circular shape */
+  height: 50px; /* Fixed height for circular shape */
+  cursor: pointer; /* Pointer cursor for interactivity */
+  transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease; /* Smooth transitions */
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); /* Softer shadow for a modern touch */
-  border: 1px solid transparent; /* Transparent border for focus state */
+  border: 1px solid transparent; /* Subtle border */
+  font-weight: 500; /* Slightly bolder text for readability */
+  font-size: 16px;
+  overflow: hidden; /* Prevents content from spilling out */
 }
 
+/* If using an icon or profile image inside */
+.profile-area img {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover; /* Ensures the image fits properly */
+}
+
+/* Hover Effect */
 .profile-area:hover {
-  background-color: #f8f9fa; /* Light gray on hover for subtle feedback */
-  transform: translateY(-3px); /* Slight lift effect on hover */
-  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15); /* More pronounced shadow on hover */
+  background-color: #f8f9fa; /* Light gray for a subtle hover effect */
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.15); /* Slightly deeper shadow */
+  transform: translateY(-2px); /* Lift effect */
 }
 
+/* Active Click Effect */
+.profile-area:active {
+  background-color: #f0f0f0;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
+  transform: translateY(0);
+}
+
+/* Focus (for keyboard users) */
 .profile-area:focus {
-  outline: none; /* Remove default outline */
-  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.5); /* Custom outline for focus */
-  border-color: #007bff; /* Border color on focus for clear indication */
+  outline: none;
+  border: 1px solid #007bff; /* Blue border for accessibility */
+  box-shadow: 0 0 8px rgba(0, 123, 255, 0.5);
 }
 
-.profile-icon {
-  margin-right: 12px; /* Increased space between icon and text for a cleaner look */
-  font-size: 1.5em; /* Slightly larger icon for better visibility */
-  transition: transform 0.2s; /* Smooth transition for icon */
-}
-
-.profile-area:hover .profile-icon {
-  transform: scale(1.1); /* Scale the icon slightly on hover for effect */
+/* Responsive Tweaks */
+@media (max-width: 768px) {
+  .profile-area {
+    width: 40px;
+    height: 40px;
+    font-size: 14px;
+  }
 }
 
 
