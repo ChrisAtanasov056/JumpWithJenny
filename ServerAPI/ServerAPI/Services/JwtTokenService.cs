@@ -15,15 +15,19 @@ namespace ServerAPI.Services
         {
             _jwtSettings = jwtSettings.Value;
         }
-
-        public string GenerateJwtToken(User user)
+        public string GenerateJwtToken(User user, IEnumerable<Claim> additionalClaims = null)
         {
-            var claims = new[]
+            var claims = new List<Claim>
             {
-            new Claim(ClaimTypes.NameIdentifier, user.Id),
-            new Claim(ClaimTypes.Email, user.Email),
-            new Claim(ClaimTypes.Name, user.UserName),
-        };
+                new Claim(ClaimTypes.NameIdentifier, user.Id),
+                new Claim(ClaimTypes.Email, user.Email),
+                new Claim(ClaimTypes.Name, user.UserName),
+            };
+
+            if (additionalClaims != null)
+            {
+                claims.AddRange(additionalClaims);
+            }
 
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtSettings.Secret));
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
@@ -32,7 +36,7 @@ namespace ServerAPI.Services
                 issuer: _jwtSettings.Issuer,
                 audience: _jwtSettings.Audience,
                 claims: claims,
-                expires: DateTime.Now.AddDays(30),
+                expires: DateTime.UtcNow.AddMinutes(_jwtSettings.TokenLifetime),
                 signingCredentials: creds);
 
             return new JwtSecurityTokenHandler().WriteToken(token);

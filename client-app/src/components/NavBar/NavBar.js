@@ -80,7 +80,7 @@ const Navbar = () => {
             </li>
           )}
         </div>
-        {isModalOpen && <AuthModal onClose={toggleModal} onLoginSuccess={handleLoginSuccess} />}
+        {isModalOpen && <AuthModal onClose={toggleModal} onLoginSuccess={handleLoginSuccess} setModalOpen={setModalOpen} />}
         {isProfileOpen && <ProfileModal onClose={toggleProfileModal} user={user} onLogout={handleLogout} />}
         <ul className="social-icon ml-3">
           <li>

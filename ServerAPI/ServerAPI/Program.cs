@@ -11,7 +11,6 @@ using ServerAPI.Data.Common.Repositories;
 using ServerAPI.Data.Repositories;
 using ServerAPI.Data.Seeding;
 using ServerAPI.Models;
-
 using ServerAPI.Services;
 using ServerAPI.Services.Mapper;
 using ServerAPI.Services.Schedule;
@@ -49,7 +48,10 @@ public class Program
 
         // Database context
         services.AddDbContext<JumpWithJennyDbContext>(options =>
-            options.UseSqlServer(configuration.GetConnectionString("DevConnection")));
+            options.UseNpgsql(configuration.GetConnectionString("DevConnection")));
+
+        services.AddTransient<JwtTokenService>();
+
 
         // JWT configuration
         var jwtSection = configuration.GetSection("Jwt");
@@ -106,6 +108,9 @@ public class Program
         {
             c.SwaggerDoc("v1", new OpenApiInfo { Title = "My API", Version = "v1" });
         });
+
+        AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
+
 
         // AutoMapper configuration
         services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());

@@ -18,13 +18,12 @@ const Login = ({ onClose, onLoginSuccess }) => {
     try {
       const response = await login(credentials);
       if (response) {
-        const { token, user } = response;
-        const { User: id, name, email } = user; // Extract userId, name, and email
-        if (id && name && email && token) {
+        const { token, user } = response; // Correctly extract token & user
+        if (user?.id && user?.name && user?.email && token) {
           localStorage.setItem('jwtToken', token);
-          localStorage.setItem('user', JSON.stringify({ id, name, email }));
-          authLogin({ id, name, email, token });
-          onLoginSuccess({ id, name, email, token });
+          localStorage.setItem('user', JSON.stringify(user));
+          authLogin({ ...user, token });
+          onLoginSuccess({ ...user, token });
           onClose();
         } else {
           setErrorMessage('Login failed. Incomplete user data received.');

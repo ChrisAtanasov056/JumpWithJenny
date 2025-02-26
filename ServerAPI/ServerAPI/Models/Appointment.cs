@@ -7,15 +7,15 @@
     {
         [Key]
         [Required]
-        public string UserId { get; set; }
+        public string ?UserId { get; set; }
 
-        public User User { get; set; }
+        public User ?User { get; set; }
         
         [Key]
         [Required]
-        public string WorkoutId { get; set; }
+        public string ?WorkoutId { get; set; }
 
-        public Workout Workout { get; set; }
+        public Workout ?Workout { get; set; }
 
         public bool IsDeleted { get; set; }
 

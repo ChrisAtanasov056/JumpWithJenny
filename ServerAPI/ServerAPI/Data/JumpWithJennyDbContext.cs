@@ -14,13 +14,15 @@
     public class JumpWithJennyDbContext : IdentityDbContext<User, UserRole, string>
     {
         private static readonly MethodInfo SetIsDeletedQueryFilterMethod =
-        typeof(JumpWithJennyDbContext).GetMethod(
-          nameof(SetIsDeletedQueryFilter),
-          BindingFlags.NonPublic | BindingFlags.Static);
+            typeof(JumpWithJennyDbContext).GetMethod(
+                nameof(SetIsDeletedQueryFilter),
+                BindingFlags.NonPublic | BindingFlags.Static);
+
         public JumpWithJennyDbContext(DbContextOptions<JumpWithJennyDbContext> options)
             : base(options)
         {
         }
+
         public DbSet<Appointment> Appointments { get; set; }
         public DbSet<Shoes> Shoes { get; set; }
         public DbSet<Workout> Workouts { get; set; }
@@ -40,6 +42,7 @@
                 var method = SetIsDeletedQueryFilterMethod.MakeGenericMethod(deletableEntityType.ClrType);
                 method.Invoke(null, new object[] { builder });
             }
+
             // Disable Cascade Delete
             var foreignKeys = entityTypes
                 .SelectMany(e => e.GetForeignKeys().Where(f => f.DeleteBehavior == DeleteBehavior.Cascade));
@@ -47,11 +50,13 @@
             builder
                 .Entity<Appointment>()
                 .HasKey(k => new { k.UserId, k.WorkoutId });
+
             builder.Entity<IdentityUserRole<string>>(entity =>
             {
                 entity.ToTable("UserRoles");
             });
         }
+
         public override int SaveChanges(bool acceptAllChangesOnSuccess)
         {
             this.ApplyAuditInfoRules();
@@ -60,6 +65,7 @@
 
         public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default) =>
             this.SaveChangesAsync(true, cancellationToken);
+
         public override Task<int> SaveChangesAsync(
             bool acceptAllChangesOnSuccess,
             CancellationToken cancellationToken = default)
