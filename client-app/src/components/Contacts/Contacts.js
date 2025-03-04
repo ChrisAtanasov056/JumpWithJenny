@@ -1,6 +1,5 @@
-// src/components/Contacts/Contacts.js
 import React, { useState } from 'react';
-import './Contacts.css'; // Import the CSS file
+import './Contacts.scss'; // Updated import for SCSS
 
 const Contacts = () => {
   const [formData, setFormData] = useState({
@@ -70,7 +69,7 @@ const Contacts = () => {
             <iframe
               title="Google Map Location"
               src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d526.4989883006733!2d27.466541253362816!3d42.519356308306406!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x40a695df713ef1f3%3A0x7d40c314b363a210!2z0J_Rg9C70YEg0JLQuNGC0LDQuyDRgdC_0L7RgNGC!5e1!3m2!1sbg!2sbg!4v1729614985370!5m2!1sbg!2sbg"
-              width="600"
+              width="400"
               height="400"
               style={{ border: 0 }}
               allowFullScreen=""

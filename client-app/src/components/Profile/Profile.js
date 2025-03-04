@@ -1,132 +1,164 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { changePassword } from '../../services/authService';
-import './ProfileModal.css';
+import './ProfileModal.scss';
 
 const ProfileModal = ({ onClose, user, onLogout }) => {
   const [isPasswordModalOpen, setPasswordModalOpen] = useState(false);
-  const [currentPassword, setCurrentPassword] = useState('');
-  const [newPassword, setNewPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
+  const [passwords, setPasswords] = useState({
+    current: '',
+    new: '',
+    confirm: ''
+  });
   const [error, setError] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
-  const [isLoading, setIsLoading] = useState(false);  // Handle loading state here
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleChangePassword = () => {
-    setPasswordModalOpen(true);
-    setError('');
-    setSuccessMessage('');
-  };
-
-  const handleClosePasswordModal = () => {
-    setPasswordModalOpen(false);
-    setCurrentPassword('');
-    setNewPassword('');
-    setConfirmPassword('');
-    setError('');
-    setSuccessMessage('');
-  };
+  useEffect(() => {
+    if (isPasswordModalOpen) {
+      setPasswords({ current: '', new: '', confirm: '' });
+      setError('');
+      setSuccessMessage('');
+    }
+  }, [isPasswordModalOpen]);
 
   const handlePasswordSubmit = async (e) => {
     e.preventDefault();
+    setError('');
+    setSuccessMessage('');
 
-    // ✅ Validate Inputs
-    if (!currentPassword) return setError('Current password is required.');
-    if (!newPassword) return setError('New password is required.');
-    if (newPassword.length < 6) return setError('Password must be at least 6 characters.');
-    if (newPassword !== confirmPassword) return setError("New password and confirm password don't match.");
+    if (!passwords.current) return setError('Current password is required');
+    if (!passwords.new) return setError('New password is required');
+    if (passwords.new.length < 6) return setError('Password must be at least 6 characters');
+    if (passwords.new !== passwords.confirm) return setError("Passwords don't match");
 
-    // Set loading state before making API call
     setIsLoading(true);
 
     try {
-      // Call changePassword API from authService.js
       await changePassword({
         id: user.id,
-        currentPassword,
-        newPassword
+        currentPassword: passwords.current,
+        newPassword: passwords.new
       });
 
-      setSuccessMessage('Password changed successfully! ✅');
-      setError('');
-      setTimeout(handleClosePasswordModal, 2000); // Close modal after 2 seconds
+      setSuccessMessage('Password changed successfully!');
+      setTimeout(() => {
+        setPasswordModalOpen(false);
+      }, 2000);
     } catch (err) {
-      console.error('ERROR:', err);
-      setError(err.response?.data?.message || 'Failed to change password. Please try again.');
+      setError(err.response?.data?.message || 'Password change failed. Please try again.');
     } finally {
-      setIsLoading(false);  // Set loading state back to false
+      setIsLoading(false);
     }
   };
 
   return (
     <div className="profile-modal">
+      {/* Main Profile Modal */}
       <div className="modal-content">
-        <h2>Your Profile</h2>
-        <p><strong>Username:</strong> {user.username || "N/A"}</p>
-        <p><strong>First Name:</strong> {user.firstname || "N/A"}</p>
-        <p><strong>Last Name:</strong> {user.lastname || "N/A"}</p>
-        <p><strong>Email:</strong> {user.email || "N/A"}</p>
+        <div className="modal-header">
+          <h2>Your Profile</h2>
+          <button className="close-icon" onClick={onClose}>
+            &times;
+          </button>
+        </div>
 
-        <div className="modal-buttons">
-          <button onClick={onLogout} className="logout-btn">Logout</button>
-          <button onClick={onClose} className="close-btn">Close</button>
-          <button onClick={handleChangePassword} className="change-password-btn">Change Password</button>
+        <div className="profile-details">
+          <div className="detail-item">
+            <span className="label">Username</span>
+            <span className="value">{user.username || "N/A"}</span>
+          </div>
+          <div className="detail-item">
+            <span className="label">Name</span>
+            <span className="value">{[user.firstname, user.lastname].join(' ') || "N/A"}</span>
+          </div>
+          <div className="detail-item">
+            <span className="label">Email</span>
+            <span className="value">{user.email || "N/A"}</span>
+          </div>
+        </div>
+
+        <div className="modal-actions">
+          <button 
+            className="btn btn-primary"
+            onClick={() => setPasswordModalOpen(true)}
+          >
+            Change Password
+          </button>
+          <button className="btn btn-logout" onClick={onLogout}>
+            Logout
+          </button>
         </div>
       </div>
 
+      {/* Password Change Modal */}
       {isPasswordModalOpen && (
-        <div className="password-modal">
-          <div className="password-modal-content">
-            <h3>Change Password</h3>
+        <div className="password-modal-overlay">
+          <div className="password-modal">
+            <div className="modal-header">
+              <h3>Change Password</h3>
+              <button 
+                className="close-icon" 
+                onClick={() => setPasswordModalOpen(false)}
+                disabled={isLoading}
+              >
+                &times;
+              </button>
+            </div>
 
-            {error && <div className="error-message">{error}</div>}
-            {successMessage && <div className="success-message">{successMessage}</div>} {/* Success message */}
+            <div className="modal-body">
+              {error && <div className="alert error">{error}</div>}
+              {successMessage && <div className="alert success">{successMessage}</div>}
 
-            <form onSubmit={handlePasswordSubmit}>
-              <div className="input-group">
-                <label htmlFor="currentPassword">Current Password:</label>
-                <input 
-                  type="password" 
-                  id="currentPassword" 
-                  name="currentPassword" 
-                  value={currentPassword}
-                  onChange={(e) => setCurrentPassword(e.target.value)} 
-                  required 
-                />
-              </div>
+              <form onSubmit={handlePasswordSubmit}>
+                <div className="form-group">
+                  <label>Current Password</label>
+                  <input
+                    type="password"
+                    value={passwords.current}
+                    onChange={(e) => setPasswords(p => ({...p, current: e.target.value}))}
+                    disabled={isLoading}
+                  />
+                </div>
 
-              <div className="input-group">
-                <label htmlFor="newPassword">New Password:</label>
-                <input 
-                  type="password" 
-                  id="newPassword" 
-                  name="newPassword" 
-                  value={newPassword}
-                  onChange={(e) => setNewPassword(e.target.value)} 
-                  required 
-                />
-              </div>
+                <div className="form-group">
+                  <label>New Password</label>
+                  <input
+                    type="password"
+                    value={passwords.new}
+                    onChange={(e) => setPasswords(p => ({...p, new: e.target.value}))}
+                    disabled={isLoading}
+                  />
+                </div>
 
-              <div className="input-group">
-                <label htmlFor="confirmPassword">Confirm New Password:</label>
-                <input 
-                  type="password" 
-                  id="confirmPassword" 
-                  name="confirmPassword" 
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)} 
-                  required 
-                />
-              </div>
+                <div className="form-group">
+                  <label>Confirm Password</label>
+                  <input
+                    type="password"
+                    value={passwords.confirm}
+                    onChange={(e) => setPasswords(p => ({...p, confirm: e.target.value}))}
+                    disabled={isLoading}
+                  />
+                </div>
 
-              <div className="modal-buttons">
-                {isLoading ? (
-                  <div className="loading-spinner">Loading...</div> // Loading spinner
-                ) : (
-                  <button type="submit" className="submit-btn">Change Password</button>
-                )}
-                <button type="button" onClick={handleClosePasswordModal} className="close-btn">Close</button>
-              </div>
-            </form>
+                <div className="modal-actions">
+                  <button 
+                    type="submit" 
+                    className="btn btn-primary"
+                    disabled={isLoading}
+                  >
+                    {isLoading ? 'Changing...' : 'Update Password'}
+                  </button>
+                  <button
+                    type="button"
+                    className="btn btn-secondary"
+                    onClick={() => setPasswordModalOpen(false)}
+                    disabled={isLoading}
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </form>
+            </div>
           </div>
         </div>
       )}

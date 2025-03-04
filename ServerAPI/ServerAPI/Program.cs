@@ -23,6 +23,8 @@ public class Program
     public static void Main(string[] args)
     {
         var builder = WebApplication.CreateBuilder(args);
+        builder.Logging.AddConsole(); // This enables console logging
+
         ConfigureServices(builder.Services, builder.Configuration);
         var app = builder.Build();
         Configure(app);
@@ -51,7 +53,6 @@ public class Program
             options.UseNpgsql(configuration.GetConnectionString("DevConnection")));
 
         services.AddTransient<JwtTokenService>();
-
 
         // JWT configuration
         var jwtSection = configuration.GetSection("Jwt");
@@ -111,6 +112,8 @@ public class Program
 
         AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
 
+        // Email Service Configuration
+        services.AddSingleton<IEmailService, EmailService>(); // Register EmailService with DI
 
         // AutoMapper configuration
         services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());

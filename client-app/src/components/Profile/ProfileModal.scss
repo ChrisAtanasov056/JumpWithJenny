@@ -1,0 +1,243 @@
+$primary-color: #BDC3C7; 
+$secondary-color: #FFFFFF; // Soft Gray
+$background-color: #ECF0F1; // Warm Beige
+$accent-color: #E74C3C; // Coral Accent
+$white: #FFFFFF; // White
+$text-color: #2C3E50; // Deep Navy for text
+$hover-color: #E74C3C; // Coral Accent for hover effects
+$mobile-breakpoint: 768px; // Breakpoint for mobile view
+$transition-speed: 0.3s; // Transition speed
+$border-radius: 8px; // Rounded corners
+
+
+.profile-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.7);
+  display: flex;
+  justify-content: space-evenly;
+  align-items: center;
+  z-index: 1000;
+  animation: fadeIn 0.3s ease;
+
+  .modal-content {
+    background: $white;
+    border-radius: 12px;
+    width: 90%;
+    max-width: 500px;
+    box-shadow: 0 10px 50px rgba(0, 0, 0, 0.2);
+    animation: slideUp 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    overflow: hidden;
+    border: 1px solid rgba(black, 0.1);
+  }
+
+  .modal-header {
+    padding: 1rem;
+    width: 100%;
+    background: $primary-color;
+    color: $white;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    h2 {
+      margin: 0;
+      font-size: 1.5rem;
+    }
+
+    .close-icon {
+      background: none;
+      border: none;
+      font-size: 1.8rem;
+      cursor: pointer;
+      color: $white;
+      transition: transform 0.2s ease;
+
+      &:hover {
+        transform: scale(1.1);
+      }
+    }
+  }
+
+  .profile-details {
+    padding: 1.5rem;
+
+    .detail-item {
+      display: flex;
+      justify-content: space-between;
+      padding: 1rem 0;
+      border-bottom: 1px solid rgba($secondary-color, 0.3);
+      animation: fadeInUp 0.4s ease;
+
+      &:last-child {
+        border-bottom: none;
+      }
+
+      .label {
+        color: $text-color;
+        font-weight: 500;
+      }
+
+      .value {
+        color: darken($text-color, 10%);
+      }
+    }
+  }
+
+  .modal-actions {
+    padding: 1.5rem;
+    display: flex;
+    gap: 1rem;
+    justify-content: space-between;
+    border-top: 1px solid rgba($secondary-color, 0.3);
+
+    .btn {
+      padding: 0.8rem 1.5rem;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 500;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+
+      &-primary {
+        background: $accent-color;
+        color: $white;
+
+        &:hover {
+          background: darken($accent-color, 10%);
+          transform: translateY(-2px);
+          box-shadow: 0 5px 15px rgba($accent-color, 0.3);
+        }
+      }
+
+      &-logout {
+        background: #e74c3c;
+        color: $white;
+
+        &:hover {
+          background: darken(#e74c3c, 10%);
+          transform: translateY(-2px);
+          box-shadow: 0 5px 15px rgba(#e74c3c, 0.3);
+        }
+      }
+
+      &[disabled] {
+        opacity: 0.7;
+        cursor: not-allowed;
+      }
+    }
+  }
+
+  .password-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.8);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1001;
+    animation: fadeIn 0.3s ease;
+
+    .password-modal {
+      background: $white;
+      border-radius: 12px;
+      width: 90%;
+      max-width: 400px;
+      animation: scaleIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      overflow: hidden;
+      border: 1px solid rgba($primary-color, 0.1);
+
+      .modal-header {
+        background: $primary-color;
+        padding: 1.2rem;
+      }
+
+      .modal-body {
+        padding: 1.5rem;
+
+        .form-group {
+          margin-bottom: 1.5rem;
+          animation: fadeInUp 0.4s ease;
+
+          label {
+            display: block;
+            margin-bottom: 0.8rem;
+            color: $text-color;
+            font-weight: 500;
+            font-size: 0.95rem;
+          }
+
+          input {
+            width: 100%;
+            padding: 0.8rem 1rem;
+            border: 2px solid #BDC3C7;
+            border-radius: 8px;
+            font-size: 1rem;
+            color: $text-color;
+            background: $white;
+            transition: all 0.3s ease;
+
+            &:focus {
+              border-color: $accent-color;
+              outline: none;
+              box-shadow: 0 0 0 3px rgba($accent-color, 0.2);
+              background: lighten($background-color, 5%);
+            }
+
+            &::placeholder {
+              color: lighten($text-color, 30%);
+            }
+          }
+        }
+      }
+    }
+  }
+
+  .alert {
+    padding: 1rem;
+    margin: 1rem 0;
+    border-radius: 8px;
+    animation: fadeIn 0.3s ease;
+
+    &.error {
+      background: rgba($accent-color, 0.1);
+      color: darken($accent-color, 10%);
+      border: 1px solid rgba($accent-color, 0.3);
+    }
+
+    &.success {
+      background: rgba(#2ecc71, 0.1);
+      color: darken(#2ecc71, 10%);
+      border: 1px solid rgba(#2ecc71, 0.3);
+    }
+  }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { transform: translateY(20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes scaleIn {
+  from { transform: scale(0.95); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+@keyframes fadeInUp {
+  from { transform: translateY(10px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}

@@ -1,0 +1,91 @@
+// Variables (Elegant Yet Approachable Palette)
+$primary-color: #2C3E50; // Deep Navy
+$secondary-color: #BDC3C7; // Soft Gray
+$background-color: #ECF0F1; // Warm Beige
+$accent-color: #E74C3C; // Coral Accent
+$white: #FFFFFF; // White
+$text-color: #2C3E50; // Deep Navy for text
+$spacing-unit: 1rem; // Base spacing
+$border-radius: 8px; // Rounded corners
+$box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); // Subtle shadow
+$transition-speed: 0.3s; // Transition speed
+
+// Keyframes for fade-in animation
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+// Keyframes for button hover animation
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+// Welcome section
+#welcome {
+  background-color: $background-color; // Warm Beige background
+  padding: $spacing-unit * 8 0; // Increased padding for a bigger section
+  text-align: center;
+  color: $text-color;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh; // Full viewport height
+
+  .welcome-container {
+    max-width: 1000px; // Wider container
+    margin: 0 auto;
+    padding: 0 $spacing-unit * 2;
+    animation: fadeIn 1s ease-in-out;
+
+    h1 {
+      font-size: 4rem; // Larger heading
+      margin-bottom: $spacing-unit * 1.5; // Increased spacing
+      color: $primary-color; // Deep Navy
+      animation: fadeIn 1s ease-in-out 0.2s backwards;
+    }
+
+    p {
+      font-size: 1.5rem; // Larger paragraph text
+      margin-bottom: $spacing-unit * 2; // Increased spacing
+      color: $text-color;
+      animation: fadeIn 1s ease-in-out 0.4s backwards;
+
+      &:last-of-type {
+        margin-bottom: $spacing-unit * 3; // Increased spacing
+      }
+    }
+
+    .get-started-btn {
+      background-color: $accent-color; // Coral Accent
+      color: $white;
+      border: none;
+      padding: $spacing-unit * 1.5 $spacing-unit * 3; // Larger button
+      border-radius: $border-radius;
+      font-size: 1.25rem; // Larger button text
+      cursor: pointer;
+      transition: background-color $transition-speed, transform $transition-speed;
+      animation: fadeIn 1s ease-in-out 0.6s backwards;
+    
+      &:hover {
+        background-color: darken($accent-color, 10%); // Darker coral on hover
+        transform: scale(1.05); // Slightly scale up on hover
+      }
+    }
+  }
+}

@@ -1,0 +1,118 @@
+// Color Palette
+$primary-color: #BDC3C7; // Deep Navy
+$secondary-color: #FFFFFF; // Soft Gray
+$background-color: #ECF0F1; // Warm Beige (new section background color)
+$accent-color: #E74C3C; // Coral Accent
+$white: #FFFFFF; // White
+$text-color: #2C3E50; // Deep Navy for text
+$hover-color: #E74C3C; // Coral Accent for hover effects
+$transition-speed: 1.0s; // Transition speed
+$border-radius: 8px; // Rounded corners
+
+// General FAQ Section Styles
+.faq-section {
+  background-color: $background-color;
+  height: 60vh; // Full height of the viewport
+  padding: 3rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  border-radius: $border-radius;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0);
+  animation: fadeInUp 1.5s ease-in-out;
+
+  h2 {
+    color: $text-color;
+    font-size: 2.5rem;
+    font-weight: 600;
+    margin-bottom: 1.5rem;
+  }
+
+  .faq-list {
+    width: 100%;
+    max-width: 900px;
+    margin-top: 2rem;
+    padding: 0;
+    list-style: none;
+
+    .faq-item {
+      background-color: $white;
+      margin: 0.8rem 0;
+      padding: 1.2rem;
+      border-radius: $border-radius;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+      transition: all $transition-speed ease;
+
+      &:hover {
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      }
+
+      .faq-question {
+        font-size: 1.2rem;
+        font-weight: bold;
+        color: $text-color;
+        cursor: pointer;
+        transition: color $transition-speed ease;
+
+        &.active {
+          color: $accent-color;
+        }
+      }
+
+      .faq-answer {
+        margin-top: 1rem;
+        font-size: 1rem;
+        color: $text-color;
+        opacity: 0;
+        max-height: 0;
+        overflow: hidden;
+        transition: opacity 0.8s ease, max-height 0.5s ease;
+
+        &.active {
+          opacity: 1;
+          max-height: 500px;
+        }
+      }
+    }
+  }
+}
+
+// Animation for fading and sliding in
+@keyframes fadeInUp {
+  0% {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+// Responsive Design for Mobile
+@media (max-width: 768px) {
+  .faq-section {
+    padding: 2rem;
+  }
+
+  .faq-list {
+    max-width: 100%;
+    padding: 0;
+    margin-top: 1rem;
+  }
+
+  .faq-item {
+    padding: 1rem;
+  }
+
+  .faq-question {
+    font-size: 1.1rem;
+  }
+
+  .faq-answer {
+    font-size: 0.95rem;
+  }
+}
