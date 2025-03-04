@@ -1,13 +1,11 @@
-//authService.js 
 import axios from '../api/axius';
 
 // Register a new user
 export const create = async (userData) => {
-  console.log("Create: ", userData)
+  console.log("Create: ", userData);
   try {
-    const response = await axios.post('/Account/signup', userData)
-    console.log("Create: ", userData)
-    console.log("Response: ", response)
+    const response = await axios.post('/Account/signup', userData);
+    console.log("Response: ", response);
     return response.data; // Adjust according to your API response structure
   } catch (error) {
     if (error.response) {
@@ -23,29 +21,42 @@ export const create = async (userData) => {
 
 // Login an existing user
 export const login = async (userData) => {
+  try {
+    const response = await axios.post('/Account/login', {
+      Email: userData.email, // Use Email instead of Username
+      Password: userData.password,
+    });
+    return response.data; // Adjust this depending on what you want to return
+  } catch (error) {
+    console.error('Login error:', error);
+    throw error; // This allows you to catch it in your component
+  }
+};
 
-    try {
-      const response = await axios.post('/Account/login', {
-        Email: userData.email, // Use Email instead of Username
-        Password: userData.password,
-      });
-      return response.data; // Adjust this depending on what you want to return
-    } catch (error) {
-      console.error('Login error:', error);
-      throw error; // This allows you to catch it in your component
-    }
-  };
+// Verify Email after user clicks on the link
+export const verifyEmail = async (userId, token) => {
+  try {
+    console.log(userId)
+    const response = await axios.get(`/Account/confirmemail?userId=${userId}&token=${token}`);
+    console.log(response);
+    return response.data; // Assuming the response has a success message
+  } catch (error) {
+    console.error('Error during email verification:', error);
+    throw error;
+  }
+};
 
- export const changePassword = async (userData) => {
-    try {
-      const response = await axios.put('/User/change-password', {
-        id: userData.id,
-        currentPassword: userData.currentPassword,
-        newPassword: userData.newPassword, 
-      });
-      return response.data;  // return the response directly
-    } catch (error) {
-      console.error('Change password error:', error);
-      throw error;  // Throw the error to propagate it to the component
-    }
+// Change Password
+export const changePassword = async (userData) => {
+  try {
+    const response = await axios.put('/User/change-password', {
+      id: userData.id,
+      currentPassword: userData.currentPassword,
+      newPassword: userData.newPassword,
+    });
+    return response.data;  // return the response directly
+  } catch (error) {
+    console.error('Change password error:', error);
+    throw error;  // Throw the error to propagate it to the component
+  }
 };

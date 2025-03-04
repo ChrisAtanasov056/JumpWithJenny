@@ -1,21 +1,24 @@
-// src/components/FAQ/FAQ.js
 import React, { useState } from 'react';
-import './FAQ.css'; // Import the CSS file
+import './FAQ.scss'; // Updated import for SCSS
 
 const FAQ = () => {
   // Sample FAQs
   const faqData = [
     {
-      question: "What is your return policy?",
-      answer: "Our return policy allows you to return products within 30 days of purchase with a full refund."
+      question: "What is Kangoo Jump?",
+      answer: "Kangoo Jump is a fun and high-intensity workout that uses special rebound shoes designed to reduce impact and increase calorie burn."
     },
     {
-      question: "How do I schedule an appointment?",
-      answer: "You can schedule an appointment through our online system or by calling our support team."
+      question: "How can I book a Kangoo Jump class?",
+      answer: "You can book a class by visiting our schedule page or contacting us directly through the contact form."
     },
     {
-      question: "Do you offer discounts for new members?",
-      answer: "Yes, we offer a 10% discount for all new members during their first month."
+      question: "What are the benefits of Kangoo Jump?",
+      answer: "Kangoo Jump helps improve cardiovascular fitness, strengthens muscles, and enhances coordination while minimizing joint stress."
+    },
+    {
+      question: "Do I need to bring my own shoes?",
+      answer: "We provide Kangoo Jump shoes for all participants, but feel free to bring your own if you prefer."
     }
   ];
 
@@ -38,7 +41,7 @@ const FAQ = () => {
               {item.question}
             </div>
             {activeIndex === index && (
-              <div className="faq-answer">
+              <div className={`faq-answer ${activeIndex === index ? 'active' : ''}`}>
                 {item.answer}
               </div>
             )}

@@ -1,0 +1,140 @@
+// AboutMe.scss
+
+// Define variables (match your existing palette)
+$primary-color: #2C3E50;
+$secondary-color: #BDC3C7;
+$background-color: #ECF0F1;
+$accent-color: #E74C3C;
+$white: #FFFFFF;
+$text-color: #2C3E50;
+$spacing-unit: 1rem;
+$border-radius: 8px;
+$box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+$transition-speed: 0.3s;
+$mobile-breakpoint: 768px;
+
+.about-section {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  padding: $spacing-unit * 8 $spacing-unit * 2;
+  background-color: $background-color;
+  color: $text-color;
+  min-height: 80vh;
+
+  // ---- Text Animation ----
+  .about-text {
+    flex: 1;
+    max-width: 50%;
+    opacity: 0;
+    transform: translateY(30px) scale(0.98);
+    transition: all 1.6s cubic-bezier(0.16, 0.7, 0.3, 1); // Slower and smoother
+
+    &.active {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+
+    h2 {
+      font-size: 2.5rem;
+      margin-bottom: $spacing-unit * 1.5;
+      color: $primary-color;
+      position: relative;
+
+      &::after {
+        content: '';
+        position: absolute;
+        bottom: -8px;
+        left: 0;
+        width: 0;
+        height: 2px;
+        background: $accent-color;
+        transition: width 1.2s cubic-bezier(0.4, 0, 0.2, 1); // Slower underline
+      }
+
+      &:hover::after {
+        width: 100%;
+      }
+    }
+
+    p {
+      font-size: 1.25rem;
+      line-height: 1.6;
+      opacity: 0;
+      transform: translateX(-20px);
+      transition: all 0.8s ease;
+
+      // Staggered paragraph animation with longer delays
+      &:nth-child(1) { transition-delay: 0.4s; }
+      &:nth-child(2) { transition-delay: 0.8s; }
+    }
+
+    &.active p {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+
+  // ---- Image Animation ----
+  .about-image {
+    flex: 1;
+    max-width: 40%;
+    opacity: 0;
+    transform: translateY(30px) scale(0.98);
+    transition: all 1.6s cubic-bezier(0.16, 0.7, 0.3, 1) 0.4s; // Added delay
+
+    &::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(45deg, rgba($accent-color, 0.1), transparent);
+      opacity: 0;
+      transition: opacity 1.2s ease; // Slower overlay
+    }
+
+    &.active {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+
+    img {
+      width: 100%;
+      border-radius: $border-radius;
+      box-shadow: $box-shadow;
+      transform: scale(1.05);
+      transition: transform 1.2s cubic-bezier(0.16, 0.7, 0.3, 1); // Slower scale
+    }
+
+    &:hover {
+      &::after {
+        opacity: 1;
+      }
+
+      img {
+        transform: scale(1.02);
+      }
+    }
+  }
+}
+
+// Mobile Responsive
+@media (max-width: $mobile-breakpoint) {
+  .about-section {
+    flex-direction: column;
+    padding: $spacing-unit * 4 $spacing-unit * 2;
+
+    .about-text,
+    .about-image {
+      max-width: 100%;
+      text-align: center;
+    }
+
+    .about-image {
+      margin-top: $spacing-unit * 2;
+    }
+  }
+}

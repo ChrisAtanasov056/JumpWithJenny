@@ -1,6 +1,5 @@
-// src/components/Schedule/Schedule.js
 import React from 'react';
-import './Schedule.css';
+import './Schedule.scss';
 
 const Schedule = () => {
   // Time slots from 14:00 to 21:00
@@ -20,30 +19,32 @@ const Schedule = () => {
 
   return (
     <section id="schedule" className="schedule-section">
-      <h2>Weekly Schedule</h2>
-      <table className="schedule-table">
-        <thead>
-          <tr>
-            <th>Time</th>
-            {days.map((day) => (
-              <th key={day}>{day}</th>
-            ))}
-          </tr>
-        </thead>
-        <tbody>
-          {times.map((time) => (
-            <tr key={time}>
-              <td>{time}</td>
+      <div className="schedule-container">
+        <h2>Weekly Schedule</h2>
+        <table className="schedule-table">
+          <thead>
+            <tr>
+              <th>Time</th>
               {days.map((day) => (
-                <td key={`${time}-${day}`} className="schedule-cell">
-                  {/* Placeholder for schedule cell content */}
-                  {/* You can add className for booked/available as needed */}
-                </td>
+                <th key={day}>{day}</th>
               ))}
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {times.map((time) => (
+              <tr key={time}>
+                <td>{time}</td>
+                {days.map((day) => (
+                  <td key={`${time}-${day}`} className="schedule-cell">
+                    {/* Placeholder for schedule cell content */}
+                    {/* You can add className for booked/available as needed */}
+                  </td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </section>
   );
 };

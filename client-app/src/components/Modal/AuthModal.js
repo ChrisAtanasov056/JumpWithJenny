@@ -1,22 +1,32 @@
 import React, { useState } from 'react';
-import './AuthModal.css';
+import './AuthModal.scss';
 import Login from '../Login/Login';
 import Register from '../Register/Register';
-
+import SuccessModal from '../Register/SuccessModal';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faFacebook, faGoogle, faInstagram } from '@fortawesome/free-brands-svg-icons';
 import { signInWithFacebook, signInWithGoogle } from '../../services/firebase.js';
+import { useAuth } from '../../services/AuthContext';
 
 const AuthModal = ({ onClose, onLoginSuccess, setModalOpen }) => {
+  const { user } = useAuth(); // Assuming user is stored in auth context
   const [isLogin, setIsLogin] = useState(true);
-  const [animationClass, setAnimationClass] = useState('slide-in');
+  const [animationClass, setAnimationClass] = useState('zoom-in');
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [successMessage, setSuccessMessage] = useState('');
+  const socialPlatforms = [
+    { platform: 'Facebook', icon: faFacebook, className: 'fb-btn' },
+    { platform: 'Google', icon: faGoogle, className: 'google-btn' },
+    { platform: 'Instagram', icon: faInstagram, className: 'instagram-btn' },
+  ];
+
 
   const toggleForm = () => {
-    setAnimationClass('slide-out');
+    setAnimationClass('zoom-out');
     setTimeout(() => {
       setIsLogin(!isLogin);
-      setAnimationClass('slide-in');
-    }, 500);
+      setAnimationClass('zoom-in');
+    }, 400); // Match the duration of the animation
   };
 
   const handleSocialLogin = async (platform) => {
@@ -26,13 +36,22 @@ const AuthModal = ({ onClose, onLoginSuccess, setModalOpen }) => {
       } else if (platform === 'Google') {
         await signInWithGoogle();
       } else if (platform === 'Instagram') {
-        // await signInWithInstagram();
+        console.log('Instagram login is not implemented');
       }
-      onLoginSuccess(); // Call the onLoginSuccess callback when login is successful
-      setModalOpen(false); // Close the modal after successful login
+      onLoginSuccess();
+      setModalOpen(false);
     } catch (error) {
       console.error(`Error logging in with ${platform}:`, error);
     }
+  };
+
+  const handleRegisterSuccess = (message) => {
+    setSuccessMessage(message);
+    setShowSuccessModal(true);
+  };
+
+  const handleCloseSuccessModal = () => {
+    setShowSuccessModal(false);
   };
 
   return (
@@ -43,28 +62,39 @@ const AuthModal = ({ onClose, onLoginSuccess, setModalOpen }) => {
           {isLogin ? (
             <Login onClose={onClose} onLoginSuccess={onLoginSuccess} />
           ) : (
-            <Register onClose={onClose} onLoginSuccess={onLoginSuccess} setModalOpen={setModalOpen} />
+            <Register 
+              onClose={onClose} 
+              onLoginSuccess={onLoginSuccess} 
+              setModalOpen={setModalOpen} 
+              onRegisterSuccess={handleRegisterSuccess} 
+            />
           )}
         </div>
 
-        <div className="social-login">
-          <button className="fb-btn" onClick={() => handleSocialLogin('Facebook')}>
-            <FontAwesomeIcon icon={faFacebook} />
-          </button>
-          <button className="google-btn" onClick={() => handleSocialLogin('Google')}>
-            <FontAwesomeIcon icon={faGoogle} />
-          </button>
-          <button className="instagram-btn" onClick={() => handleSocialLogin('Instagram')}>
-            <FontAwesomeIcon icon={faInstagram} />
-          </button>
-        </div>
+        {!user && !showSuccessModal && (
+          <div>
+            <p>
+              {isLogin ? "Don't have an account?" : "Already have an account?"}
+              <button onClick={toggleForm} className="toggle-button">
+                {isLogin ? 'Register' : 'Login'}
+              </button>
+            </p>
 
-        <p>
-          {isLogin ? "Don't have an account?" : "Already have an account?"}
-          <button onClick={toggleForm} className="toggle-button">
-            {isLogin ? 'Register' : 'Login'}
-          </button>
-        </p>
+            <div className="social-login">
+              {socialPlatforms.map(({ platform, icon, className }) => (
+                <button
+                  key={platform}
+                  onClick={() => handleSocialLogin(platform)}
+                  className={`social-btn ${className}`}
+                >
+                  <FontAwesomeIcon icon={icon} />
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {showSuccessModal && <SuccessModal message={successMessage} onClose={handleCloseSuccessModal} />}
       </div>
     </div>
   );

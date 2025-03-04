@@ -1,18 +1,22 @@
 import React, { useState } from 'react';
 import { useAuth } from '../../services/AuthContext';
 import { create } from '../../services/authService';
-import { login } from '../../services/authService'; // Assuming login function exists
-import './Register.css';
+import SuccessModal from './SuccessModal';
+import './Register.scss';
 
 const Register = ({ onClose, onLoginSuccess }) => {
   const { login: authLogin } = useAuth();
-  const [credentials, setCredentials] = useState({ 
+  const [credentials, setCredentials] = useState({
     userName: '',
     firstName: '',
-    lastName: '', 
-    email: '', 
-    password: '' });
+    lastName: '',
+    email: '',
+    password: '',
+  });
   const [errorMessage, setErrorMessage] = useState('');
+  const [isRegistering, setIsRegistering] = useState(false);
+  const [successMessage, setSuccessMessage] = useState('');
+  const [showModal, setShowModal] = useState(false); // State to control modal visibility
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -22,26 +26,19 @@ const Register = ({ onClose, onLoginSuccess }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await create(credentials); // Register the user
+      setIsRegistering(true);
+      const response = await create(credentials);
+
       if (response) {
-        const { token, user } = response; // Extract user and token from the response
+        const { token, user } = response;
         if (user?.id && user?.username && user?.firstname && user?.lastname && user?.email && token) {
-          localStorage.setItem('jwtToken', token); // Store the token
-          localStorage.setItem('user', JSON.stringify(user)); // Store the user info
-          authLogin({ ...user, token }); // Update auth context with user data and token
-          console.log("User :" , user)
-          // Automatically log in after successful registration
-          const loginResponse = await login({ email: credentials.email, password: credentials.password });
-          if (loginResponse) {
-            const { token, user } = loginResponse;
-            localStorage.setItem('jwtToken', token); // Store token
-            localStorage.setItem('user', JSON.stringify(user)); // Store user info
-            authLogin({ ...user, token }); // Update auth context with user and token
-            onLoginSuccess({ ...user, token }); // Notify parent component of successful login
-            onClose(); // Close the registration modal
-          } else {
-            setErrorMessage('Login failed after registration.');
-          }
+          localStorage.setItem('jwtToken', token);
+          localStorage.setItem('user', JSON.stringify(user));
+          authLogin({ ...user, token });
+
+          // Set success message and show modal
+          setSuccessMessage('Registration successful. A verification email has been sent.');
+          setShowModal(true); // Show the modal
         } else {
           setErrorMessage('Registration failed. Incomplete user data received.');
         }
@@ -51,65 +48,77 @@ const Register = ({ onClose, onLoginSuccess }) => {
     } catch (error) {
       console.error('Registration error:', error);
       setErrorMessage('Registration failed. Please check your details and try again.');
+      setIsRegistering(false);
     }
   };
 
+  const handleModalClose = () => {
+    setShowModal(false); // Close the modal
+  };
+
   return (
-    <form onSubmit={handleSubmit} className="form-container">
-      <h2>Create Account</h2>
-      <div className="form-group">
-        <label>Username</label>
-        <input
-          type="text"
-          name="userName"
-          value={credentials.userName}
-          onChange={handleChange}
-          required
-        />
-      </div>
-      <div className="form-group">
-        <label>First Name</label>
-        <input
-          type="text"
-          name="firstName"
-          value={credentials.firstName}
-          onChange={handleChange}
-          required
-        />
-      </div>
-      <div className="form-group">
-        <label>Last Name</label>
-        <input
-          type="text"
-          name="lastName"
-          value={credentials.lastName}
-          onChange={handleChange}
-          required
-        />
-      </div>
-      <div className="form-group">
-        <label>Email</label>
-        <input
-          type="email"
-          name="email"
-          value={credentials.email}
-          onChange={handleChange}
-          required
-        />
-      </div>
-      <div className="form-group">
-        <label>Password</label>
-        <input
-          type="password"
-          name="password"
-          value={credentials.password}
-          onChange={handleChange}
-          required
-        />
-      </div>
-      {errorMessage && <p className="error-message">{errorMessage}</p>}
-      <button type="submit" className="button register-btn">Sign Up</button>
-    </form>
+    <div className="register-container">
+      {!isRegistering && !showModal && (
+        <form onSubmit={handleSubmit} className="register-form">
+          <h2>Create Account</h2>
+          <div className="form-group">
+            <label>Username</label>
+            <input
+              type="text"
+              name="userName"
+              value={credentials.userName}
+              onChange={handleChange}
+              required
+            />
+          </div>
+          <div className="form-group">
+            <label>First Name</label>
+            <input
+              type="text"
+              name="firstName"
+              value={credentials.firstName}
+              onChange={handleChange}
+              required
+            />
+          </div>
+          <div className="form-group">
+            <label>Last Name</label>
+            <input
+              type="text"
+              name="lastName"
+              value={credentials.lastName}
+              onChange={handleChange}
+              required
+            />
+          </div>
+          <div className="form-group">
+            <label>Email</label>
+            <input
+              type="email"
+              name="email"
+              value={credentials.email}
+              onChange={handleChange}
+              required
+            />
+          </div>
+          <div className="form-group">
+            <label>Password</label>
+            <input
+              type="password"
+              name="password"
+              value={credentials.password}
+              onChange={handleChange}
+              required
+            />
+          </div>
+          {errorMessage && <p className="error-message">{errorMessage}</p>}
+          <button type="submit" className="sign-up-button">Sign Up</button>
+        </form>
+      )}
+
+      {/* Display the success modal when showModal is true */}
+      {showModal && <SuccessModal message={successMessage} onClose={handleModalClose} />}
+    </div>
   );
 };
 

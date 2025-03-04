@@ -13,6 +13,7 @@ import FAQ from './components/FAQ/FAQ';
 import Contacts from './components/Contacts/Contacts';
 import AOS from 'aos'; // Import AOS
 import Profile from './components/Profile/Profile';
+import VerifyEmail from './services/VerifyEmail'; // Import the component
 
 function App() {
     useEffect(() => {
@@ -46,6 +47,7 @@ const AppContent = () => {
                 <Route path="/login" element={user ? <Profile user={user} /> : <Login />} />
                 <Route path="/register" element={<Register />} />
                 <Route path="/profile" element={user ? <Profile user={user} /> : <Login />} />
+                <Route path="/verify-email" element={<VerifyEmail />} />
             </Routes>
         </>
     );

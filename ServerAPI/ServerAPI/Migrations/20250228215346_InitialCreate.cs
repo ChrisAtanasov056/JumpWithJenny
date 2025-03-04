@@ -6,7 +6,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 namespace ServerAPI.Migrations
 {
-    public partial class InitialMigration : Migration
+    public partial class InitialCreate : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -15,9 +15,9 @@ namespace ServerAPI.Migrations
                 columns: table => new
                 {
                     Id = table.Column<string>(type: "text", nullable: false),
-                    CreatedOn = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    ModifiedOn = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
-                    DeletedOn = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    CreatedOn = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
+                    ModifiedOn = table.Column<DateTime>(type: "timestamp without time zone", nullable: true),
+                    DeletedOn = table.Column<DateTime>(type: "timestamp without time zone", nullable: true),
                     IsDeleted = table.Column<bool>(type: "boolean", nullable: false),
                     Name = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
                     NormalizedName = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
@@ -33,13 +33,13 @@ namespace ServerAPI.Migrations
                 columns: table => new
                 {
                     Id = table.Column<string>(type: "text", nullable: false),
-                    WorkoutStart = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    WorkoutEnd = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    WorkoutStart = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
+                    WorkoutEnd = table.Column<DateTime>(type: "timestamp without time zone", nullable: true),
                     AvailableSpots = table.Column<int>(type: "integer", nullable: false),
-                    CreatedOn = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    ModifiedOn = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    CreatedOn = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
+                    ModifiedOn = table.Column<DateTime>(type: "timestamp without time zone", nullable: true),
                     IsDeleted = table.Column<bool>(type: "boolean", nullable: false),
-                    DeletedOn = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
+                    DeletedOn = table.Column<DateTime>(type: "timestamp without time zone", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -75,10 +75,10 @@ namespace ServerAPI.Migrations
                     Size = table.Column<int>(type: "integer", nullable: false),
                     IsTaken = table.Column<bool>(type: "boolean", nullable: false),
                     WorkoutId = table.Column<string>(type: "text", nullable: true),
-                    CreatedOn = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    ModifiedOn = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    CreatedOn = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
+                    ModifiedOn = table.Column<DateTime>(type: "timestamp without time zone", nullable: true),
                     IsDeleted = table.Column<bool>(type: "boolean", nullable: false),
-                    DeletedOn = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
+                    DeletedOn = table.Column<DateTime>(type: "timestamp without time zone", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -101,9 +101,9 @@ namespace ServerAPI.Migrations
                     City = table.Column<string>(type: "varchar(100)", nullable: true),
                     ProfilePictureUrl = table.Column<string>(type: "text", nullable: true),
                     Description = table.Column<string>(type: "text", nullable: true),
-                    CreatedOn = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    ModifiedOn = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
-                    DeletedOn = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    CreatedOn = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
+                    ModifiedOn = table.Column<DateTime>(type: "timestamp without time zone", nullable: true),
+                    DeletedOn = table.Column<DateTime>(type: "timestamp without time zone", nullable: true),
                     IsDeleted = table.Column<bool>(type: "boolean", nullable: false),
                     ShoesId = table.Column<string>(type: "text", nullable: true),
                     UserName = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
@@ -138,7 +138,7 @@ namespace ServerAPI.Migrations
                     UserId = table.Column<string>(type: "text", nullable: false),
                     WorkoutId = table.Column<string>(type: "text", nullable: false),
                     IsDeleted = table.Column<bool>(type: "boolean", nullable: false),
-                    DeletedOn = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
+                    DeletedOn = table.Column<DateTime>(type: "timestamp without time zone", nullable: true)
                 },
                 constraints: table =>
                 {

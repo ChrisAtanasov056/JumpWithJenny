@@ -1,7 +1,7 @@
 // src/components/Home/Home.js
 import React, { useState } from 'react';
 import Navbar from '../NavBar/NavBar';
-import './Home.css';
+import './Home.scss';
 import Schedule from '../Schedule/Schedule';
 import AboutMe from '../AboutMe/AboutMe';
 import FAQ from '../FAQ/FAQ';

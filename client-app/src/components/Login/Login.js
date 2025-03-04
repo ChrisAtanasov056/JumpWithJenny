@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
 import { useAuth } from '../../services/AuthContext';
 import { login } from '../../services/authService';
-import './Login.css';
+import './Login.scss';
 
 const Login = ({ onClose, onLoginSuccess }) => {
   const { login: authLogin } = useAuth();
   const [credentials, setCredentials] = useState({ email: '', password: '' });
   const [errorMessage, setErrorMessage] = useState('');
+  const [successMessage, setSuccessMessage] = useState('');
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -17,17 +18,15 @@ const Login = ({ onClose, onLoginSuccess }) => {
     e.preventDefault();
     try {
       const response = await login(credentials);
-      console.log('response: ',response)
       if (response) {
-        const { token, user } = response; // Correctly extract token & user
-        console.log("login resposne: ",user)
+        const { token, user } = response;
         if (user?.id && user?.username && user?.firstname && user?.lastname && user?.email && token) {
           localStorage.setItem('jwtToken', token);
           localStorage.setItem('user', JSON.stringify(user));
-          
           authLogin({ ...user, token });
           onLoginSuccess({ ...user, token });
           onClose();
+          setSuccessMessage('Login successful. Welcome back!');
         } else {
           setErrorMessage('Login failed. Incomplete user data received.');
         }
@@ -41,9 +40,9 @@ const Login = ({ onClose, onLoginSuccess }) => {
   };
 
   return (
-    <form onSubmit={handleSubmit}>
+    <form onSubmit={handleSubmit} className="login-form">
       <h2>Welcome Back</h2>
-      <div>
+      <div className="form-group">
         <label>Email</label>
         <input
           type="email"
@@ -53,7 +52,7 @@ const Login = ({ onClose, onLoginSuccess }) => {
           required
         />
       </div>
-      <div>
+      <div className="form-group">
         <label>Password</label>
         <input
           type="password"
@@ -64,7 +63,8 @@ const Login = ({ onClose, onLoginSuccess }) => {
         />
       </div>
       {errorMessage && <p className="error-message">{errorMessage}</p>}
-      <button type="submit" className="sign-in-button">Sign In</button>
+      {successMessage && <p className="success-message">{successMessage}</p>}
+      <button type="submit" className="sign-in-button">Login</button>
     </form>
   );
 };
