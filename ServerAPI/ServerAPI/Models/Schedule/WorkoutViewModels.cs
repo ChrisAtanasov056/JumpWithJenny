@@ -4,7 +4,7 @@
 
     public class WorkoutViewModels: IMapFrom<Workout>
     {
-        public string Id { get; set; }
+        public string ?Id { get; set; }
 
         public DateTime WorkoutStart { get; set; }
 

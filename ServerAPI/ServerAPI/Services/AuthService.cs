@@ -1,16 +1,15 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using ServerAPI.Data;
 using ServerAPI.Models;
-using ServerAPI.Models.Authentication;
 
 namespace ServerAPI.Services
 {
     public class AuthService
     {
-        private readonly JumpWithJennyDbContext dbContext;
+        private readonly JumpWithJennyDbContext ?dbContext;
 
-        private readonly SignInManager<User> _signInManager;
-        private readonly UserManager<User> _userManager;
+        private readonly SignInManager<User> ?_signInManager;
+        private readonly UserManager<User> ?_userManager;
 
         //public AuthService(JumpWithJennyDbContext dbContext, UserManager<User> userManager, SignInManager<User> signInManager)
         //{

@@ -35,7 +35,7 @@ const AboutMe = () => {
         className={`about-text ${isVisible ? 'active' : ''}`}
       >
         <h2>About Me</h2>
-        <p>Hi, I’m Jenny, a certified Kangoo Jump trainer. I’m passionate about combining fitness with fun, and I’ve found Kangoo Jumps to be the perfect way to do that. These low-impact, high-energy workouts are great for improving cardio, strength, and flexibility while keeping things exciting!
+        <p>HHi, I’m Jenny, a certified Kangoo Jump trainer. I’m passionate about combining fitness with fun, and I’ve found Kangoo Jumps to be the perfect way to do that. These low-impact, high-energy workouts are great for improving cardio, strength, and flexibility while keeping things exciting!
 
 I love helping people of all fitness levels feel confident and motivated. Whether you’re new to fitness or an experienced athlete, my classes are designed to energize and challenge you in a fun way.
 
@@ -45,7 +45,7 @@ Join me for a Kangoo Jump session and experience a workout that’s as enjoyable
         ref={imageRef}
         className={`about-image ${isVisible ? 'active' : ''}`}
       >
-        <img src="../../../images/person_1.jpg" alt="About Me" />
+        <img src="../../../images/jenny.jpg" alt="About Me" />
       </div>
     </section>
   );

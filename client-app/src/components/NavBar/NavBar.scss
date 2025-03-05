@@ -12,13 +12,14 @@ $border-radius: 8px; // Rounded corners
 
 // Navbar Base Styles
 .navbar {
-  background-color: $primary-color; // Deep Navy
+  background-color: #E74C3C; // Deep Navy
   padding: 0.5rem 0; // Reduced padding
   position: fixed;
   width: 100%;
   top: 0;
   z-index: 200; // Lower z-index to avoid overlapping modals
-  backdrop-filter: blur(5px); // Adds a subtle blur effect for a modern look
+  backdrop-filter: drop-shadow(4px 4px 10px blue);// Adds a subtle blur effect for a modern look
+
 
   .container {
     display: flex;
@@ -30,15 +31,15 @@ $border-radius: 8px; // Rounded corners
   }
 
   // Brand/Logo
-  .navbar-brand {
-    color: $white; // White text for contrast
-    font-size: 1.5rem; // Smaller font size
-    font-weight: 500; // Reduced font weight
-    text-decoration: none;
-    transition: color $transition-speed ease;
+  .navbar-logo {
+    height: 50px;
+    transform: scale(2.00 );
+    border-radius: 10%; // Adjust based on your logo proportions
+    width: 100;
+    transition: transform 0.3s ease;
 
     &:hover {
-      color: $accent-color; // Coral Accent on hover
+      transform: scale(3.05);
     }
   }
 

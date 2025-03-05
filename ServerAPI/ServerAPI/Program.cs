@@ -33,7 +33,7 @@ public class Program
 
     private static void ConfigureServices(IServiceCollection services, IConfiguration configuration)
     {
-        // CORS configuration
+        
         services.AddCors(c =>
             c.AddPolicy("AllowOrigin",
                 option => option

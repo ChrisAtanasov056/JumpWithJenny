@@ -7,6 +7,7 @@ import { useAuth } from '../../services/AuthContext';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faUser } from '@fortawesome/free-solid-svg-icons';
 
+
 const Navbar = () => {
   const [isModalOpen, setModalOpen] = useState(false);
   const [isProfileOpen, setProfileOpen] = useState(false);
@@ -42,7 +43,13 @@ const Navbar = () => {
       {/* Navbar */}
       <nav className="navbar navbar-expand-lg fixed-top">
         <div className="container">
-          <Link className="navbar-brand" to="/">Jump With Jenny</Link>
+          <Link className="navbar-brand" to="/">
+          <img 
+              src={"../../images/Logo.png"} 
+              alt="Jump With Jenny Logo" 
+              className="navbar-logo"
+            />
+          </Link>
           <button 
             className={`navbar-toggler ${menuActive ? 'active' : ''}`} 
             onClick={toggleMenu}
@@ -60,6 +67,9 @@ const Navbar = () => {
             </li>
             <li className="nav-item">
               <Link to="about" className="nav-link" smooth={true} duration={500} onClick={toggleMenu}>About Me</Link>
+            </li>
+            <li className="nav-item">
+              <Link to="gallery" className="nav-link" smooth={true} duration={500} onClick={toggleMenu}>Gallery</Link>
             </li>
             <li className="nav-item">
               <Link to="faq" className="nav-link" smooth={true} duration={500} onClick={toggleMenu}>FAQ</Link>
