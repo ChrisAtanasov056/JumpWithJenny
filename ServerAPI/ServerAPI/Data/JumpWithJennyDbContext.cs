@@ -22,10 +22,10 @@
             : base(options)
         {
         }
-
-        public DbSet<Appointment> Appointments { get; set; }
-        public DbSet<Shoes> Shoes { get; set; }
-        public DbSet<Workout> Workouts { get; set; }
+        public DbSet<ImageModel> ?Images { get; set; }
+        public DbSet<Appointment> ?Appointments { get; set; }
+        public DbSet<Shoes> ?Shoes { get; set; }
+        public DbSet<Workout> ?Workouts { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {

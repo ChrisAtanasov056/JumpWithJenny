@@ -14,6 +14,7 @@ import Contacts from './components/Contacts/Contacts';
 import AOS from 'aos'; // Import AOS
 import Profile from './components/Profile/Profile';
 import VerifyEmail from './services/VerifyEmail'; // Import the component
+import Gallery from './components/Gallery/Gallery';
 
 function App() {
     useEffect(() => {
@@ -41,6 +42,7 @@ const AppContent = () => {
             <Routes>
                 <Route path="/" element={<Home />} />
                 <Route path="/about" element={<AboutMe />} />
+                <Route path="/gallery" element={<Gallery />} />
                 <Route path="/faq" element={<FAQ />} />
                 <Route path="/contacts" element={<Contacts />} />
                 <Route path="/schedule" element={<Schedule />} />

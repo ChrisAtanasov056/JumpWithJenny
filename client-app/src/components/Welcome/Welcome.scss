@@ -4,88 +4,126 @@ $secondary-color: #BDC3C7; // Soft Gray
 $background-color: #ECF0F1; // Warm Beige
 $accent-color: #E74C3C; // Coral Accent
 $white: #FFFFFF; // White
-$text-color: #2C3E50; // Deep Navy for text
+$text-color: #9da08c; // Deep Navy for text
 $spacing-unit: 1rem; // Base spacing
 $border-radius: 8px; // Rounded corners
 $box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); // Subtle shadow
 $transition-speed: 0.3s; // Transition speed
-
-// Keyframes for fade-in animation
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-// Keyframes for button hover animation
-@keyframes pulse {
-  0% {
-    transform: scale(1);
-  }
-  50% {
-    transform: scale(1.05);
-  }
-  100% {
-    transform: scale(1);
-  }
-}
-
-// Welcome section
+// Welcome.scss
 #welcome {
-  background-color: $background-color; // Warm Beige background
-  padding: $spacing-unit * 8 0; // Increased padding for a bigger section
-  text-align: center;
-  color: $text-color;
+  position: relative;
+  width: 100%;
+  height: 100vh;
   overflow: hidden;
   display: flex;
   align-items: center;
   justify-content: center;
-  min-height: 100vh; // Full viewport height
+
+  .background-video {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    z-index: 0;
+    filter: grayscale(20%) contrast(110%);
+  }
+
+  // Overlay with blur effect
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba($background-color, 0.4);
+    backdrop-filter: blur(8px);
+    z-index: 1;
+  }
 
   .welcome-container {
-    max-width: 1000px; // Wider container
-    margin: 0 auto;
-    padding: 0 $spacing-unit * 2;
-    animation: fadeIn 1s ease-in-out;
+    position: relative;
+    z-index: 2; // Higher than overlay
+    text-align: center;
+    padding: $spacing-unit * 3;
+    max-width: 700px;
+    background: transparent;
+    border-radius: $border-radius;
+    margin: $spacing-unit;
 
     h1 {
-      font-size: 4rem; // Larger heading
-      margin-bottom: $spacing-unit * 1.5; // Increased spacing
-      color: $primary-color; // Deep Navy
-      animation: fadeIn 1s ease-in-out 0.2s backwards;
+      font-size: 2.5rem;
+      margin-bottom: $spacing-unit;
+      color: $text-color;
+      text-shadow: 1px 1px 2px rgba($secondary-color, 0.2);
     }
 
     p {
-      font-size: 1.5rem; // Larger paragraph text
-      margin-bottom: $spacing-unit * 2; // Increased spacing
-      color: $text-color;
-      animation: fadeIn 1s ease-in-out 0.4s backwards;
-
-      &:last-of-type {
-        margin-bottom: $spacing-unit * 3; // Increased spacing
-      }
+      font-size: 1.2rem;
+      margin-bottom: $spacing-unit * 1.5;
+      line-height: 1.6;
+      color: darken($text-color, 10%);
     }
 
     .get-started-btn {
-      background-color: $accent-color; // Coral Accent
+      padding: $spacing-unit $spacing-unit * 2;
+      font-size: 1.1rem;
+      background-color: $accent-color;
       color: $white;
       border: none;
-      padding: $spacing-unit * 1.5 $spacing-unit * 3; // Larger button
-      border-radius: $border-radius;
-      font-size: 1.25rem; // Larger button text
+      border-radius: $border-radius * 2;
       cursor: pointer;
-      transition: background-color $transition-speed, transform $transition-speed;
-      animation: fadeIn 1s ease-in-out 0.6s backwards;
-    
+      transition: all $transition-speed ease;
+      box-shadow: $box-shadow;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+
       &:hover {
-        background-color: darken($accent-color, 10%); // Darker coral on hover
-        transform: scale(1.05); // Slightly scale up on hover
+        background-color: darken($accent-color, 10%);
+        transform: translateY(-2px);
       }
+
+      &:active {
+        transform: translateY(0);
+      }
+    }
+  }
+}
+
+// Mobile Optimization
+@media (max-width: 768px) {
+  #welcome {
+    height: 90vh;
+    
+    .welcome-container {
+      padding: $spacing-unit * 2;
+      margin: $spacing-unit;
+      
+      h1 {
+        font-size: 2rem;
+      }
+      
+      p {
+        font-size: 1rem;
+      }
+    }
+  }
+}
+
+// Accessibility Considerations
+@media (prefers-reduced-motion: reduce) {
+  .background-video {
+    display: none;
+  }
+  
+  #welcome {
+    background: $primary-color;
+    
+    .welcome-container {
+      background: $white;
+      color: $text-color;
     }
   }
 }

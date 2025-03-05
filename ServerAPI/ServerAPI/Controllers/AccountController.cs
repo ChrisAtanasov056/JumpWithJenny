@@ -1,15 +1,12 @@
-﻿using Microsoft.AspNetCore.Cors;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Mvc;
-using ServerAPI.Models.Authentication;
-using ServerAPI.Models;
-using ServerAPI.Services;
-using Microsoft.Extensions.Configuration;
-using System.Web;
-using System.Text;
-
-namespace ServerAPI.Controllers
+﻿namespace ServerAPI.Controllers
 {
+    using Microsoft.AspNetCore.Cors;
+    using Microsoft.AspNetCore.Identity;
+    using Microsoft.AspNetCore.Mvc;
+    using ServerAPI.Models.Authentication;
+    using ServerAPI.Models;
+    using ServerAPI.Services;
+
     [Route("/[controller]")]
     [EnableCors("AllowOrigin")]
     [ApiController]
@@ -112,7 +109,7 @@ namespace ServerAPI.Controllers
                     }
                 });
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 return Problem($"Something Went Wrong in {nameof(SignUp)}", statusCode: 500);
             }

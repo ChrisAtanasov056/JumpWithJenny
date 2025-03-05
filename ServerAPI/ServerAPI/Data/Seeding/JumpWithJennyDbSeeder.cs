@@ -21,22 +21,44 @@
                 throw new ArgumentNullException(nameof(serviceProvider));
             }
 
-            var logger = serviceProvider.GetService<ILoggerFactory>().CreateLogger(typeof(JumpWithJennyDbSeeder));
+            // Get the logger factory from the service provider
+            var loggerFactory = serviceProvider.GetService<ILoggerFactory>();
+            if (loggerFactory == null)
+            {
+                throw new InvalidOperationException("ILoggerFactory service is not registered.");
+            }
 
+            var logger = loggerFactory.CreateLogger(typeof(JumpWithJennyDbSeeder));
+
+            // List of seeders to execute
             var seeders = new List<ISeeder>
-                          {
-                              new RolesSeeder(),
-                              new ShoesSeeder(),
-                              new WorkoutSeeder(),
-                              new AccountSeeder()
-                          };
+            {
+                new RolesSeeder(),
+                new ShoesSeeder(),
+                new WorkoutSeeder(),
+                new AccountSeeder(),
+                new ImageSeeder()
+            }; 
 
+            // Execute each seeder
             foreach (var seeder in seeders)
             {
-                await seeder.SeedAsync(dbContext, serviceProvider);
-                await dbContext.SaveChangesAsync();
-                logger.LogInformation($"Seeder {seeder.GetType().Name} done.");
+                try
+                {
+                    logger.LogInformation($"Starting seeder: {seeder.GetType().Name}");
+                    await seeder.SeedAsync(dbContext, serviceProvider);
+                    logger.LogInformation($"Completed seeder: {seeder.GetType().Name}");
+                }
+                catch (Exception ex)
+                {
+                    logger.LogError(ex, $"Error in seeder {seeder.GetType().Name}: {ex.Message}");
+                    throw; // Re-throw the exception to stop the seeding process
+                }
             }
+
+            // Save changes to the database once after all seeders have run
+            await dbContext.SaveChangesAsync();
+            logger.LogInformation("All seeders completed successfully.");
         }
     }
 }

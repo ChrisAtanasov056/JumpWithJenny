@@ -8,6 +8,7 @@ import FAQ from '../FAQ/FAQ';
 import Contacts from '../Contacts/Contacts';
 import Footer from '../Footer/Footer';
 import Welcome from '../Welcome/Welcome';
+import Gallery from '../Gallery/Gallery';
 
 const Home = () => {
 
@@ -16,6 +17,7 @@ const Home = () => {
       <Navbar/>
       <Welcome/>
       <AboutMe />
+      <Gallery />
       <Schedule />
       <FAQ />
       <Contacts />
