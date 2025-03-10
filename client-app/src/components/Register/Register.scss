@@ -20,7 +20,6 @@ $border-radius: 8px; // Rounded corners
 .register-form {
   display: flex;
   flex-direction: column;
-  gap: 4px;
   width: 100%;
   max-width: 400px;
 
@@ -33,7 +32,6 @@ $border-radius: 8px; // Rounded corners
   .form-group {
     display: flex;
     flex-direction: column;
-    gap: 8px;
 
     label {
       color: $text-color;
