@@ -106,8 +106,7 @@ const Navbar = () => {
           </ul>
         </div>
       </nav>
-
-      {/* Move Modals Here - So They're Not Affected by Navbar's Fixed Position */}
+      
       {isModalOpen && (
         <AuthModal 
           onClose={toggleModal} 

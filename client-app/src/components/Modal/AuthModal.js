@@ -63,15 +63,13 @@ const AuthModal = ({ onClose, onLoginSuccess, setModalOpen }) => {
             <Login onClose={onClose} onLoginSuccess={onLoginSuccess} />
           ) : (
             <Register 
-              onClose={onClose} 
+              onClose={onClose} ь 
               onLoginSuccess={onLoginSuccess} 
               setModalOpen={setModalOpen} 
               onRegisterSuccess={handleRegisterSuccess} 
             />
           )}
-        </div>
-
-        {!user && !showSuccessModal && (
+          {!user && !showSuccessModal && (
           <div>
             <p>
               {isLogin ? "Don't have an account?" : "Already have an account?"}
@@ -93,8 +91,7 @@ const AuthModal = ({ onClose, onLoginSuccess, setModalOpen }) => {
             </div>
           </div>
         )}
-
-        {showSuccessModal && <SuccessModal message={successMessage} onClose={handleCloseSuccessModal} />}
+        </div>
       </div>
     </div>
   );

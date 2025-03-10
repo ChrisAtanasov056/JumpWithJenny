@@ -7,7 +7,7 @@ const SuccessModal = ({ message, onClose }) => {
       <div className="modal-content">
         <h2>Success!</h2>
         <p className="success-message">{message}</p>
-        <button className="close-button" onClick={onClose}>Close</button>
+        <button className="close-button" onClick={onClose}>X</button>
       </div>
     </div>
   );

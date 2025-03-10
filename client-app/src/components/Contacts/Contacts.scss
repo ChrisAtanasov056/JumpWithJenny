@@ -12,7 +12,7 @@ $border-radius: 8px; // Rounded corners
 // General Section Styles
 .contact-section {
   background-color: $background-color;
-  height: 80vh; 
+  height: 100vh; 
   padding: 3rem;
   border-radius: $border-radius;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
@@ -48,7 +48,7 @@ $border-radius: 8px; // Rounded corners
       transition: all $transition-speed ease;
 
       .form-group {
-        margin-bottom: 1.5rem;
+        
 
         label {
           display: block;
@@ -73,7 +73,7 @@ $border-radius: 8px; // Rounded corners
         }
 
         textarea {
-          min-height: 150px;
+          min-height: 90%;
           resize: vertical;
         }
       }

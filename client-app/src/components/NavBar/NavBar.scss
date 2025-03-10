@@ -1,40 +1,41 @@
-// Variables (Elegant Yet Approachable Palette)
-$primary-color: #BDC3C7; 
-$secondary-color: #FFFFFF; // Soft Gray
-$background-color: #ECF0F1; // Warm Beige
-$accent-color: #E74C3C; // Coral Accent
-$white: #FFFFFF; // White
-$text-color: #2C3E50; // Deep Navy for text
-$hover-color: #E74C3C; // Coral Accent for hover effects
-$mobile-breakpoint: 768px; // Breakpoint for mobile view
-$transition-speed: 0.3s; // Transition speed
-$border-radius: 8px; // Rounded corners
+// Variables
+$primary-color: #BDC3C7;
+$secondary-color: #FFFFFF;
+$background-color: #ECF0F1;
+$accent-color: #E74C3C;
+$white: #FFFFFF;
+$text-color: #2C3E50;
+$hover-color: #E74C3C;
+$mobile-breakpoint: 768px;
+$mid-breakpoint: 1000px; 
+$transition-speed: 0.3s;
+$border-radius: 8px;
 
 // Navbar Base Styles
 .navbar {
-  background-color: #E74C3C; // Deep Navy
-  padding: 0.5rem 0; // Reduced padding
+  background-color: $accent-color;
+  padding: 0.5rem 0;
   position: fixed;
   width: 100%;
   top: 0;
-  z-index: 200; // Lower z-index to avoid overlapping modals
-  backdrop-filter: drop-shadow(4px 4px 10px blue);// Adds a subtle blur effect for a modern look
-
+  z-index: 1000;
+  backdrop-filter: drop-shadow(4px 4px 10px blue);
 
   .container {
     display: flex;
-    justify-content: space-between;
+    justify-content: space-around;
     align-items: center;
     max-width: 1200px;
     margin: 0 auto;
-    padding: 0 1.5rem; // Reduced container padding
+    padding: 0 1.5rem;
   }
 
-  // Brand/Logo
+  
+  // Logo
   .navbar-logo {
     height: 50px;
-    transform: scale(2.00 );
-    border-radius: 10%; // Adjust based on your logo proportions
+    transform: scale(2);
+    border-radius: 10%;
     width: 100;
     transition: transform 0.3s ease;
 
@@ -43,13 +44,13 @@ $border-radius: 8px; // Rounded corners
     }
   }
 
-  // Hamburger Menu (Mobile Toggle)
+  // Hamburger Toggle
   .navbar-toggler {
-    display: none;
     background: none;
     border: none;
     cursor: pointer;
     padding: 0.5rem;
+    z-index: 1001;
 
     @media (max-width: $mobile-breakpoint) {
       display: block;
@@ -58,51 +59,62 @@ $border-radius: 8px; // Rounded corners
     .navbar-toggler-icon {
       display: flex;
       flex-direction: column;
-      gap: 5px; // Spacing between lines
+      gap: 5px;
+      width: 30px;
+      position: relative;
 
       .line {
-        width: 25px; // Width of the hamburger lines
-        height: 2px; // Height of the hamburger lines
-        background-color: $white; // White lines
+        width: 100%;
+        height: 3px;
+        background-color: $white;
         transition: all $transition-speed ease;
+        transform-origin: center;
 
         &.active:nth-child(1) {
-          transform: rotate(-45deg) translate(-5px, 6px);
+          transform: rotate(45deg) translate(4px, 4px);
         }
-
         &.active:nth-child(2) {
           opacity: 0;
         }
-
         &.active:nth-child(3) {
-          transform: rotate(45deg) translate(-5px, -6px);
+          transform: rotate(-45deg) translate(4px, -4px);
         }
       }
     }
   }
 
-  // Navbar Links
+  // Mobile Menu
   .navbar-nav {
     display: flex;
     align-items: center;
-    gap: 1rem; // Reduced gap between items
+    gap: 1rem;
 
     @media (max-width: $mobile-breakpoint) {
-      display: none;
       position: fixed;
-      top: 60px; // Adjusted top position
-      right: -100%;
+      top: 100%;
+      left: 0;
+      right: 0;
       flex-direction: column;
-      background-color: $primary-color; // Deep Navy
+      background-color: #E74C3C;
       width: 100%;
-      height: calc(100vh - 60px); // Full height minus navbar height
       text-align: center;
-      transition: right $transition-speed ease;
-      padding: 2rem 0; // Increased padding for better spacing
-      z-index: 99; // Lower than navbar to avoid overlapping
+      padding: 2rem 0;
+      z-index: 999;
+      overflow-y: auto;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+      display: none;
+      opacity: 0;
 
       &.active {
-        right: 0;
+        display: flex;
+        animation: popIn 0.3s ease forwards;
+        opacity: 1;
+      }
+
+      @keyframes popIn {
+        0% { transform: scale(0.95); opacity: 0; }
+        50% { transform: scale(1.02); }
+        100% { transform: scale(1); opacity: 1; }
       }
     }
 
@@ -110,74 +122,62 @@ $border-radius: 8px; // Rounded corners
       list-style: none;
 
       .nav-link {
-        color: $white; // White text
+        color: $white;
         text-decoration: none;
-        padding: 0.5rem 1rem; // Increased padding for better touch interaction
-        font-weight: 400; // Lighter font weight
+        padding: 0.5rem 1rem;
+        font-weight: 400;
         transition: color $transition-speed ease;
-        cursor: pointer;
 
         &:hover {
-          color: $accent-color; // Coral Accent on hover
+          text-decoration: underline;
+          text-underline-offset: 8px;
         }
       }
 
-      // Login/Register Button
       .login-btn {
         background-color: transparent;
-        color: $white; // White text
-        border: 1px solid $white; // White border
-        padding: 0.5rem 1rem; // Increased padding for better touch interaction
-        border-radius: $border-radius; // Rounded corners
-        cursor: pointer;
-        font-weight: 400; // Lighter font weight
+        color: $white;
+        border: 1px solid $white;
+        padding: 0.5rem 1rem;
+        border-radius: $border-radius;
         transition: all $transition-speed ease;
 
         &:hover {
-          background-color: $accent-color; // Coral Accent on hover
+          background-color: $accent-color;
           border-color: $accent-color;
-          color: $white;
         }
       }
 
-      // Profile Button
       .profile-area {
         background-color: transparent;
         border: none;
-        color: $white; // White text
-        cursor: pointer;
+        color: $white;
         transition: color $transition-speed ease;
+        margin-top: 0px;
 
         &:hover {
-          color: $accent-color; // Coral Accent on hover
-        }
-
-        .profile-icon {
-          font-size: 1.2rem; // Slightly larger for better visibility
+          text-decoration: underline;
+          text-underline-offset: 8px;
         }
       }
     }
   }
 
-  // Social Media Icons (No CSS styles, handled in JS)
+  // Social Icons
   .social-icon {
     display: flex;
-    align-items: center;
-    gap: 0.75rem; // Reduced gap between icons
+    gap: 0.75rem;
     margin-left: 1rem;
 
     @media (max-width: $mobile-breakpoint) {
-      display: none; // Hide social icons on mobile
+      display: none;
     }
 
     li {
       list-style: none;
-
       a {
-        color: $white; // White icons
-        text-decoration: none;
+        color: $white;
         transition: opacity $transition-speed ease;
-
         &:hover {
           opacity: 0.8;
         }
