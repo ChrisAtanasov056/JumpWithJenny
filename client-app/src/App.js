@@ -17,10 +17,11 @@ import VerifyEmail from './services/VerifyEmail';
 import Gallery from './components/Gallery/Gallery';
 import ResetPassword from './components/ForgotPassword/ResetPassword';
 
+
 function App() {
     useEffect(() => {
         AOS.init({
-            duration: 1200, 
+            duration: 12000, 
         });
     }, []); 
 
