@@ -1,23 +1,23 @@
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
-import axios from 'axios';
-import { useAuth } from '../services/AuthContext'; // Import your auth context
+import { useAuth } from '../services/AuthContext';
 import './VerifyEmail.css';
+import axios from 'axios';
 
 const VerifyEmail = () => {
     const { search } = useLocation();
     const queryParams = new URLSearchParams(search);
-    const userId = queryParams.get('userId'); // Get userId from the URL
-    const token = queryParams.get('token'); // Get token from the URL
+    const userId = queryParams.get('userId');
+    const token = queryParams.get('token');
     const navigate = useNavigate();
     
-    const { user } = useAuth(); // Get user from auth context
+    const { updateUser } = useAuth(); // Destructure updateUser
     const [isLoading, setIsLoading] = useState(true);
     const [message, setMessage] = useState('');
     const [isError, setIsError] = useState(false);
 
     useEffect(() => {
-        const confirmEmail = async () => {
+        const confirmAndUpdateUser = async () => {
             if (!userId || !token) {
                 setMessage('Invalid verification link.');
                 setIsError(true);
@@ -31,35 +31,39 @@ const VerifyEmail = () => {
                     token: token 
                 });
 
-                console.log("API Response:", response);
+                if (response.status === 200) {
+                    // Use the updated user data from the response
+                    updateUser({
+                        ...response.data.user,
+                        emailConfirmed: true
+                    });
+                }
+
                 setMessage('Your email has been successfully verified!');
                 setIsError(false);
             } catch (error) {
                 console.error("Verification error:", error);
-                setMessage('Error confirming email. Please try again.');
+                setMessage(error.response?.data?.title || 'Error confirming email. Please try again.');
                 setIsError(true);
             } finally {
                 setIsLoading(false);
             }
         };
 
-        confirmEmail();
-    }, [userId, token]);
+        confirmAndUpdateUser();
+    }, [userId, token, updateUser]);
 
     return (
         <div className="verify-container">
             <div className="verify-box">
                 <h2>Email Verification</h2>
                 {isLoading ? (
-                    <div className="loading-spinner">Loading...</div>  // Add a CSS spinner if needed
+                    <div className="loading-spinner">Loading...</div>
                 ) : (
                     <div className={`message-container ${isError ? 'message-error' : 'message-success'}`}>
                         {message}
                     </div>
                 )}
-                
-                {/* Show button only if user is not logged in */}
-                {user && <button onClick={() => navigate('/')}>Go to Home</button>}
             </div>
         </div>
     );

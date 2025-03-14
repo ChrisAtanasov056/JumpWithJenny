@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
-import { useAuth } from '../../services/AuthContext';
-import { login } from '../../services/authService';
+import { useAuth } from '../../services/AuthContext'; // Make sure the useAuth hook is properly imported
+import { login } from '../../services/authService'; // Ensure login function is correct
 import './Login.scss';
 
 const Login = ({ onClose, onLoginSuccess }) => {
-  const { login: authLogin } = useAuth();
+  const { login: authLogin } = useAuth(); // Destructure login from the context
   const [credentials, setCredentials] = useState({ email: '', password: '' });
   const [errorMessage, setErrorMessage] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
@@ -17,13 +17,18 @@ const Login = ({ onClose, onLoginSuccess }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await login(credentials);
+      const response = await login(credentials); // Assuming login is the correct service function
       if (response) {
         const { token, user } = response;
         if (user?.id && user?.username && user?.firstname && user?.lastname && user?.email && token) {
+          // Save token and user in localStorage
           localStorage.setItem('jwtToken', token);
           localStorage.setItem('user', JSON.stringify(user));
+
+          // Update context with user data and token
           authLogin({ ...user, token });
+
+          // Handle successful login and close modal
           onLoginSuccess({ ...user, token });
           onClose();
           setSuccessMessage('Login successful. Welcome back!');

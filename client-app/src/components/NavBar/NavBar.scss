@@ -135,16 +135,17 @@ $border-radius: 8px;
       }
 
       .login-btn {
-        background-color: transparent;
+        background-color: $primary-color;
         color: $white;
         border: 1px solid $white;
         padding: 0.5rem 1rem;
-        border-radius: $border-radius;
+        border-radius: $border-radius + 50;
         transition: all $transition-speed ease;
+        margin-top: 0px;
 
         &:hover {
-          background-color: $accent-color;
-          border-color: $accent-color;
+          background-color: $hover-color;
+          border-color: $background-color;
         }
       }
 
@@ -152,12 +153,13 @@ $border-radius: 8px;
         background-color: transparent;
         border: none;
         color: $white;
-        transition: color $transition-speed ease;
+        transition: all $transition-speed ease;
         margin-top: 0px;
 
         &:hover {
           text-decoration: underline;
           text-underline-offset: 8px;
+          color: $primary-color;
         }
       }
     }

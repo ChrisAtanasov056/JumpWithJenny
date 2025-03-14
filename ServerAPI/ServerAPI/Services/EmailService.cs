@@ -13,6 +13,23 @@ public class EmailService : IEmailService
         _configuration = configuration;
     }
 
+    public async Task SendPasswordResetEmailAsync(string email, string token)
+    {
+
+        var frontendUrl = _configuration["FrontendBaseUrl"];
+        var encodedToken = WebUtility.UrlEncode(token);
+        var resetLink = $"{frontendUrl}/reset-password?token={encodedToken}&email={email}";
+        
+        var subject = "Password Reset Request";
+        var body = $"""
+            <h1>Password Reset</h1>
+            <p>Click the link below to reset your password:</p>
+            <a href="{resetLink}">Reset Password</a>
+            <p>This link will expire in 24 hours.</p>
+        """;
+        
+        await SendEmailAsync(email, subject, body);
+    }
     public async Task<bool> SendEmailAsync(string toEmail, string subject, string body)
     {
         try

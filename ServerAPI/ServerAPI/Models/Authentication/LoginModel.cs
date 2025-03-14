@@ -1,7 +1,8 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿
 
 namespace ServerAPI.Models.Authentication
 {
+    using System.ComponentModel.DataAnnotations;
     public class LoginModel
     {
         [Required(ErrorMessage = "Email is required")]
