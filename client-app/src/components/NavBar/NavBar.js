@@ -26,6 +26,7 @@ const Navbar = () => {
   };
 
   const toggleProfileModal = () => {
+    console.log(user)
     setProfileOpen(!isProfileOpen);
   };
 
@@ -38,17 +39,30 @@ const Navbar = () => {
     setProfileOpen(false); // Close profile modal
   };
 
+
+const handleLogoClick = (e) => {
+  e.preventDefault();
+  // Force full page reload while maintaining proper navigation
+  window.location.href = '/';
+};
+
   return (
     <>
       {/* Navbar */}
       <nav className="navbar navbar-expand-lg fixed-top">
         <div className="container">
           <Link className="navbar-brand" to="/">
-          <img 
-              src={"../../images/Logo.png"} 
+          <a 
+            className="navbar-brand" 
+            href="/" 
+            onClick={handleLogoClick}
+          >
+            <img 
+              src="/images/Logo.png"  // Use absolute path from public folder
               alt="Jump With Jenny Logo" 
               className="navbar-logo"
             />
+          </a>      
           </Link>
           <button 
             className={`navbar-toggler ${menuActive ? 'active' : ''}`} 
@@ -106,7 +120,6 @@ const Navbar = () => {
           </ul>
         </div>
       </nav>
-      
       {isModalOpen && (
         <AuthModal 
           onClose={toggleModal} 

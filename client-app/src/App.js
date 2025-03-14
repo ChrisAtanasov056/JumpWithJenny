@@ -2,7 +2,7 @@
 
 import React, { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import { AuthProvider, useAuth } from './services/AuthContext'; // Import useAuth
+import { AuthProvider, useAuth } from './services/AuthContext'; 
 import Navbar from './components/NavBar/NavBar';
 import Home from './components/Home/Home';
 import Login from './components/Login/Login';
@@ -11,20 +11,21 @@ import Schedule from './components/Schedule/Schedule';
 import AboutMe from './components/AboutMe/AboutMe';
 import FAQ from './components/FAQ/FAQ';
 import Contacts from './components/Contacts/Contacts';
-import AOS from 'aos'; // Import AOS
+import AOS from 'aos'; 
 import Profile from './components/Profile/Profile';
-import VerifyEmail from './services/VerifyEmail'; // Import the component
+import VerifyEmail from './services/VerifyEmail'; 
 import Gallery from './components/Gallery/Gallery';
+import ResetPassword from './components/ForgotPassword/ResetPassword';
 
 function App() {
     useEffect(() => {
         AOS.init({
-            duration: 1200, // Animation duration
+            duration: 1200, 
         });
-    }, []); // Initialize AOS on component mount
+    }, []); 
 
     return (
-        <AuthProvider> {/* Wrap your app with AuthProvider */}
+        <AuthProvider> 
             <Router>
                 <AppContent />
             </Router>
@@ -32,9 +33,8 @@ function App() {
     );
 }
 
-// Separate component to access Auth context
 const AppContent = () => {
-    const { user } = useAuth(); // Use the user data from Auth context
+    const { user } = useAuth(); 
 
     return (
         <>
@@ -50,6 +50,7 @@ const AppContent = () => {
                 <Route path="/register" element={<Register />} />
                 <Route path="/profile" element={user ? <Profile user={user} /> : <Login />} />
                 <Route path="/verify-email" element={<VerifyEmail />} />
+                <Route path="/reset-password" element={<ResetPassword />} />
             </Routes>
         </>
     );
