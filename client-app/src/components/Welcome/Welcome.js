@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-scroll';
 import './Welcome.scss';
 
 // If your video is in the public folder
@@ -12,7 +13,10 @@ const Welcome = () => {
         <source src={videoSource} type="video/mp4" />
         Your browser does not support the video tag.
       </video>
-      
+
+      {/* Overlay for better text visibility */}
+      <div className="overlay"></div>
+
       <div className="welcome-container">
         <h1>Welcome to Jump With Jenny!</h1>
         <p>
@@ -22,7 +26,7 @@ const Welcome = () => {
           Click the button below to get started.
         </p>
         <button className="get-started-btn">
-          Get Started
+          <Link to="schedule" smooth={true} duration={500}>Get Started</Link>
         </button>
       </div>
     </section>

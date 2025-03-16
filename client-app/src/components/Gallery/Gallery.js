@@ -88,7 +88,7 @@ const GallerySection = () => {
   const settings = {
     dots: false,
     infinite: true,
-    speed: 500,
+    speed: 700,
     slidesToShow: 3,
     slidesToScroll: 1,
     centerMode: true,
@@ -96,8 +96,10 @@ const GallerySection = () => {
     focusOnSelect: true,
     draggable: true, // Enable mouse dragging
     swipeToSlide: true, // Enable swipe gestures
-    touchThreshold: 10, // Increase sensitivity for touch/drag
-    swipeThreshold: 10, // Increase sensitivity for swipe
+    touchThreshold: 50, // Increase sensitivity for touch/drag
+    swipeThreshold: 50,
+    arrows: true,
+    arrowaitForAnimate: false,
     responsive: [
       {
         breakpoint: 1024,
@@ -132,12 +134,11 @@ const GallerySection = () => {
             >
               <div className="image-container">
                 <img 
-                  src={img.url} // Full URL is already constructed
+                  src={img.url}
                   alt={`Gallery item ${index + 1}`} 
                   loading="lazy"
                   onError={(e) => {
-                    console.error('Error loading image:', img.url); // Debugging
-                    e.target.src = 'https://placehold.co/200'; // Valid fallback image URL
+                    e.target.src = 'https://placehold.co/200'; 
                   }}
                 />
               </div>
