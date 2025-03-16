@@ -3,16 +3,16 @@ $primary-color: #BDC3C7; // Deep Navy
 $secondary-color: #FFFFFF; // Soft Gray
 $background-color: #ECF0F1; // Warm Beige (new section background color)
 $accent-color: #E74C3C; // Coral Accent
-$white: #FFFFFF; // White
-$text-color: #2C3E50; // Deep Navy for text
-$hover-color: #E74C3C; // Coral Accent for hover effects
-$transition-speed: 1.0s; // Transition speed
-$border-radius: 8px; // Rounded corners
+$white: #FFFFFF;
+$text-color: #2C3E50;
+$hover-color: #E74C3C;
+$transition-speed: 0.5s; // Adjusted for smoother effect
+$border-radius: 8px;
 
 // General FAQ Section Styles
 .faq-section {
   background-color: $background-color;
-  height: 60vh; // Full height of the viewport
+  height: auto;
   padding: 3rem;
   display: flex;
   flex-direction: column;
@@ -20,8 +20,8 @@ $border-radius: 8px; // Rounded corners
   justify-content: center;
   text-align: center;
   border-radius: $border-radius;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0);
-  animation: fadeInUp 1.5s ease-in-out;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+  animation: fadeInUp 2.2s ease-in-out;
 
   h2 {
     color: $text-color;
@@ -43,9 +43,11 @@ $border-radius: 8px; // Rounded corners
       padding: 1.2rem;
       border-radius: $border-radius;
       box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-      transition: all $transition-speed ease;
+      transition: all 0.4s ease-in-out;
+      transform-origin: top;
 
       &:hover {
+        background-color: lighten($background-color, 5%);
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
       }
 
@@ -54,7 +56,11 @@ $border-radius: 8px; // Rounded corners
         font-weight: bold;
         color: $text-color;
         cursor: pointer;
-        transition: color $transition-speed ease;
+        transition: color $transition-speed ease-in-out;
+
+        &:hover {
+          color: darken($accent-color, 10%);
+        }
 
         &.active {
           color: $accent-color;
@@ -66,13 +72,17 @@ $border-radius: 8px; // Rounded corners
         font-size: 1rem;
         color: $text-color;
         opacity: 0;
-        max-height: 0;
+        height: 0;
         overflow: hidden;
-        transition: opacity 0.8s ease, max-height 0.5s ease;
+        clip-path: inset(0 0 100% 0);
+        transition: 
+          clip-path 0.6s cubic-bezier(0.25, 1, 0.5, 1),
+          opacity 0.3s ease-in-out 0.2s;
 
         &.active {
           opacity: 1;
-          max-height: 500px;
+          height: auto;
+          clip-path: inset(0 0 0 0);
         }
       }
     }
@@ -83,7 +93,7 @@ $border-radius: 8px; // Rounded corners
 @keyframes fadeInUp {
   0% {
     opacity: 0;
-    transform: translateY(30px);
+    transform: translateY(20px);
   }
   
   100% {
