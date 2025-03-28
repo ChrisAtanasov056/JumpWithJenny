@@ -1,0 +1,471 @@
+$primary-color: #BDC3C7; // Deep Navy
+$secondary-color: #FFFFFF; // Soft Gray
+$background-color: #ECF0F1; // Warm Beige
+$accent-color: #E74C3C; // Coral Accent
+$white: #FFFFFF; // White
+$text-color: #2C3E50; // Deep Navy for text
+$hover-color: #E74C3C; // Coral Accent for hover effects
+$transition-speed: 0.3s; // Transition speed
+$border-radius: 8px; // Rounded corners
+
+// Modal Styles
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  animation: fadeIn $transition-speed ease-in-out;
+
+  .modal-content {
+    background-color: $white;
+    padding: 25px;
+    border-radius: $border-radius;
+    width: 90%;
+    max-width: 400px;
+    text-align: center;
+    position: relative;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    animation: slideIn $transition-speed ease-in-out;
+
+    .close {
+      position: absolute;
+      top: 15px;
+      right: 15px;
+      cursor: pointer;
+      font-size: 22px;
+      color: $text-color;
+      transition: color $transition-speed;
+
+      &:hover {
+        color: $hover-color;
+      }
+    }
+
+    h2 {
+      color: $text-color;
+      margin-bottom: 20px;
+      font-size: 1.4rem;
+    }
+
+    form {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+
+      .form-group {
+        margin-bottom: 10px;
+        text-align: left;
+
+        .checkbox-label {
+          display: flex;
+          align-items: center;
+          cursor: pointer;
+          color: $text-color;
+          font-weight: 500;
+          transition: color $transition-speed;
+
+          &:hover {
+            color: darken($text-color, 10%);
+          }
+
+          input[type="checkbox"] {
+            position: absolute;
+            opacity: 0;
+            cursor: pointer;
+            height: 0;
+            width: 0;
+          }
+
+          .checkbox-custom {
+            position: relative;
+            height: 20px;
+            width: 20px;
+            background-color: $white;
+            border: 2px solid $primary-color;
+            border-radius: 4px;
+            margin-right: 10px;
+            transition: all $transition-speed;
+
+            &:after {
+              content: "";
+              position: absolute;
+              display: none;
+              left: 6px;
+              top: 2px;
+              width: 5px;
+              height: 10px;
+              border: solid $white;
+              border-width: 0 2px 2px 0;
+              transform: rotate(45deg);
+            }
+          }
+
+          input:checked ~ .checkbox-custom {
+            background-color: $accent-color;
+            border-color: $accent-color;
+
+            &:after {
+              display: block;
+            }
+          }
+        }
+      }
+
+      .size-selection {
+        label {
+          display: block;
+          margin-bottom: 10px;
+          color: $text-color;
+          font-weight: bold;
+          text-align: left;
+        }
+
+        .size-buttons {
+          display: flex;
+          gap: 10px;
+          justify-content: space-between;
+
+          .size-button {
+            flex: 1;
+            padding: 12px 0;
+            border: 2px solid $primary-color;
+            border-radius: $border-radius;
+            background-color: $white;
+            color: $text-color;
+            cursor: pointer;
+            transition: all $transition-speed;
+            position: relative;
+            font-weight: 500;
+
+            &:hover:not([disabled]) {
+              transform: translateY(-2px);
+              background-color: lighten($primary-color, 10%);
+              color: $white;
+            }
+
+            &.active {
+              background-color: $accent-color;
+              border-color: $accent-color;
+              color: $white;
+              transform: translateY(-2px);
+              box-shadow: 0 4px 8px rgba($accent-color, 0.2);
+
+              .checkmark {
+                display: inline-block;
+              }
+            }
+
+            &:disabled {
+              opacity: 0.5;
+              cursor: not-allowed;
+            }
+
+            .checkmark {
+              display: none;
+              margin-left: 5px;
+              font-size: 16px;
+            }
+          }
+        }
+      }
+
+      .card-selection {
+        label {
+          display: block;
+          margin-bottom: 10px;
+          color: $text-color;
+          font-weight: bold;
+          text-align: left;
+        }
+
+        select {
+          width: 100%;
+          padding: 12px;
+          border: 2px solid $primary-color;
+          border-radius: $border-radius;
+          font-size: 16px;
+          color: $text-color;
+          transition: all $transition-speed;
+          background-color: $white;
+          appearance: none;
+          background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+          background-repeat: no-repeat;
+          background-position: right 10px center;
+          background-size: 16px;
+
+          &:focus {
+            border-color: $accent-color;
+            outline: none;
+            box-shadow: 0 0 0 2px rgba($accent-color, 0.2);
+          }
+        }
+      }
+
+      .error-message {
+        color: $accent-color;
+        font-size: 14px;
+        margin: -10px 0 10px;
+        text-align: left;
+        font-weight: 500;
+      }
+
+      .submit-button {
+        background-color: $accent-color;
+        color: $white;
+        border: none;
+        padding: 12px;
+        cursor: pointer;
+        border-radius: $border-radius;
+        font-size: 16px;
+        font-weight: 600;
+        transition: all $transition-speed;
+        margin-top: 10px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+
+        &:hover {
+          background-color: darken($accent-color, 10%);
+          transform: translateY(-2px);
+          box-shadow: 0 4px 8px rgba($accent-color, 0.3);
+        }
+
+        &:active {
+          transform: translateY(0);
+        }
+      }
+    }
+
+    .success-animation {
+      padding: 20px 0;
+
+      .checkmark {
+        font-size: 48px;
+        color: $accent-color;
+        animation: bounce 0.5s ease-in-out;
+        margin-bottom: 15px;
+      }
+
+      p {
+        color: $text-color;
+        font-size: 1.1rem;
+        font-weight: 500;
+      }
+    }
+
+    .login-prompt {
+      padding: 20px 0;
+
+      h2 {
+        color: $text-color;
+        margin-bottom: 15px;
+      }
+
+      p {
+        color: $text-color;
+        margin-bottom: 25px;
+        font-size: 1rem;
+      }
+
+      button {
+        background-color: $accent-color;
+        color: $white;
+        border: none;
+        padding: 12px 25px;
+        cursor: pointer;
+        border-radius: $border-radius;
+        font-size: 16px;
+        font-weight: 600;
+        transition: all $transition-speed;
+
+        &:hover {
+          background-color: darken($accent-color, 10%);
+          transform: translateY(-2px);
+          box-shadow: 0 4px 8px rgba($accent-color, 0.3);
+        }
+      }
+    }
+  }
+}
+
+.spots-info {
+  margin-bottom: 20px;
+  font-size: 1.1rem;
+  font-weight: 500;
+
+  .full-message {
+    color: $accent-color;
+  }
+
+  .available-message {
+    color: darken($primary-color, 20%);
+  }
+}
+
+.full-notice {
+  text-align: center;
+  padding: 20px 0;
+
+  p {
+    color: $text-color;
+    margin-bottom: 20px;
+  }
+
+  .close-button {
+    background-color: $primary-color;
+    color: $white;
+    border: none;
+    padding: 12px 25px;
+    cursor: pointer;
+    border-radius: $border-radius;
+    font-size: 16px;
+    font-weight: 600;
+    transition: all $transition-speed;
+
+    &:hover {
+      background-color: darken($primary-color, 10%);
+    }
+  }
+}
+
+// Update existing styles to handle disabled state
+.spots-info {
+  margin-bottom: 20px;
+  font-size: 1.1rem;
+  font-weight: 500;
+  
+  .spots-text {
+    font-weight: 600;
+    
+    &.available {
+      color: darken($primary-color, 20%);
+    }
+    
+    &.full {
+      color: $accent-color;
+    }
+  }
+  
+  .full-message {
+    color: $accent-color;
+    font-weight: 500;
+  }
+}
+
+.full-notice {
+  text-align: center;
+  padding: 20px 0;
+
+  p {
+    color: $text-color;
+    margin-bottom: 20px;
+  }
+
+  .close-button {
+    background-color: $primary-color;
+    color: $white;
+    border: none;
+    padding: 12px 25px;
+    cursor: pointer;
+    border-radius: $border-radius;
+    font-size: 16px;
+    font-weight: 600;
+    transition: all $transition-speed;
+
+    &:hover {
+      background-color: darken($primary-color, 10%);
+    }
+  }
+}
+
+.loading-message {
+  padding: 20px;
+  text-align: center;
+  color: $text-color;
+  font-size: 1.1rem;
+}
+
+.already-registered {
+  text-align: center;
+  padding: 20px 0;
+
+  p {
+    color: $text-color;
+    margin-bottom: 20px;
+    font-size: 1.1rem;
+  }
+
+  .close-button {
+    background-color: $primary-color;
+    color: $white;
+    border: none;
+    padding: 12px 25px;
+    cursor: pointer;
+    border-radius: $border-radius;
+    font-size: 16px;
+    font-weight: 600;
+    transition: all $transition-speed;
+
+    &:hover {
+      background-color: darken($primary-color, 10%);
+    }
+  }
+}
+
+// Add to your WorkoutModal.scss
+.already-registered {
+  text-align: center;
+  padding: 20px 0;
+
+  p {
+    margin-bottom: 20px;
+  }
+
+  .cancel-button {
+    background-color: $accent-color;
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: $border-radius;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background-color $transition-speed;
+
+    &:hover {
+      background-color: darken($accent-color, 10%);
+    }
+  }
+}
+
+.success-animation {
+  p {
+    margin-top: 10px;
+  }
+}
+
+// Animations
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideIn {
+  from { 
+    transform: translateY(-20px); 
+    opacity: 0;
+  }
+  to { 
+    transform: translateY(0); 
+    opacity: 1;
+  }
+}
+
+@keyframes bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}

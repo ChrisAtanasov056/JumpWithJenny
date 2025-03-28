@@ -11,6 +11,7 @@ using ServerAPI.Data.Common.Repositories;
 using ServerAPI.Data.Repositories;
 using ServerAPI.Data.Seeding;
 using ServerAPI.Models;
+using ServerAPI.Models.Schedule;
 using ServerAPI.Services;
 using ServerAPI.Services.Mapper;
 using ServerAPI.Services.Schedule;
@@ -24,7 +25,7 @@ public class Program
     {
         var builder = WebApplication.CreateBuilder(args);
         builder.Logging.AddConsole(); // This enables console logging
-
+        
         ConfigureServices(builder.Services, builder.Configuration);
         var app = builder.Build();
         Configure(app);
@@ -33,7 +34,6 @@ public class Program
 
     private static void ConfigureServices(IServiceCollection services, IConfiguration configuration)
     {
-        
         services.AddCors(c =>
             c.AddPolicy("AllowOrigin",
                 option => option
@@ -84,6 +84,7 @@ public class Program
             .AddEntityFrameworkStores<JumpWithJennyDbContext>()
             .AddDefaultTokenProviders();
 
+        services.AddHttpContextAccessor();
         services.Configure<IdentityOptions>(options =>
         {
             options.Password.RequireNonAlphanumeric = false;
@@ -117,25 +118,11 @@ public class Program
 
         // AutoMapper configuration
         services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
+        AutoMapperConfig.RegisterMappings(AppDomain.CurrentDomain.GetAssemblies()); // Make sure this is invoked
     }
 
     private static void Configure(WebApplication app)
     {
-        // AutoMapper configuration
-        AutoMapperConfig.RegisterMappings(typeof(User).GetTypeInfo().Assembly);
-
-        // Seed data on application startup
-        using (var serviceScope = app.Services.CreateScope())
-        {
-            var dbContext = serviceScope.ServiceProvider.GetRequiredService<JumpWithJennyDbContext>();
-            if (app.Environment.IsDevelopment())
-            {
-                dbContext.Database.Migrate();
-            }
-
-            new JumpWithJennyDbSeeder().SeedAsync(dbContext, serviceScope.ServiceProvider).GetAwaiter().GetResult();
-        }
-
         // Middleware configuration
         app.UseHttpsRedirection();
         app.UseStaticFiles();
@@ -162,5 +149,17 @@ public class Program
         }
 
         app.MapControllers();
+
+        // Seed data on application startup
+        using (var serviceScope = app.Services.CreateScope())
+        {
+            var dbContext = serviceScope.ServiceProvider.GetRequiredService<JumpWithJennyDbContext>();
+            if (app.Environment.IsDevelopment())
+            {
+                dbContext.Database.Migrate();
+            }
+
+            new JumpWithJennyDbSeeder().SeedAsync(dbContext, serviceScope.ServiceProvider).GetAwaiter().GetResult();
+        }
     }
 }

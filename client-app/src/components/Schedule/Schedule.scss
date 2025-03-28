@@ -11,24 +11,24 @@ $border-radius: 8px; // Rounded corners
 
 // General Schedule Section Styles
 .schedule-section {
-  background-color: $background-color; /* Full-screen background color */
-  padding: 4rem 0; /* Padding to give some space at the top and bottom */
+  background-color: $background-color; 
+  padding: 4rem 0; 
   text-align: center;
   display: flex;
-  justify-content: center; /* Center the schedule horizontally */
-  align-items: center; /* Center the schedule vertically */
-  min-height: 100vh; /* Full screen height */
-  overflow-x: hidden; /* Prevent horizontal overflow */
+  justify-content: center; 
+  align-items: center; 
+  min-height: 100vh; 
+  overflow-x: hidden; 
 }
 
 .schedule-container {
   width: 100%;
-  max-width: 1200px; /* Limit the width of the schedule */
+  max-width: 1200px; 
   background-color: $white;
   border-radius: $border-radius;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   padding: 1.5rem;
-  animation: fadeInUp 1s ease-in-out; /* Animation for the schedule */
+  animation: fadeInUp 2s ease-in-out; /* Animation for the schedule */
 }
 
 h2 {
@@ -68,7 +68,7 @@ h2 {
       color: $white;
 
       &:hover {
-        transform: scale(1.05); /* Slightly scale on hover */
+        transform: scale(1.1); /* Slightly scale on hover */
       }
     }
 
@@ -77,7 +77,7 @@ h2 {
       color: $white;
 
       &:hover {
-        transform: scale(1.05); /* Slightly scale on hover */
+        transform: scale(1.1); /* Slightly scale on hover */
       }
     }
 
