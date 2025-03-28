@@ -2,19 +2,22 @@
 {
     using ServerAPI.Models.Common;
     using ServerAPI.Models.Enums;
+    using System.Collections.Generic;
     using System.ComponentModel.DataAnnotations;
 
-    public class Shoes  : BaseDeletableModel
+    public class Shoes : BaseDeletableModel
     {
         public Shoes()
         {
-            UsersHistory = new List<User>();
+            this.UsersHistory = new List<UserHistory>();  // To track the history of users who used this shoe
+            this.Workouts = new List<WorkoutShoes>();      // To store workouts associated with this shoe
         }
+
         [Required]
-        public ShoesSize Size { get; set; }
+        public ShoesSize Size { get; set; }  // Enum for shoe sizes (S, M, L, XL)
 
-        public bool IsTaken { get; set; }
+        public ICollection<UserHistory> UsersHistory { get; set; }  // Collection to track shoe usage history
 
-        public ICollection<User> UsersHistory { get; set; }
-    }  
+        public ICollection<WorkoutShoes> Workouts { get; set; }  // Many-to-many relationship with workouts (through WorkoutShoes)
+    }
 }

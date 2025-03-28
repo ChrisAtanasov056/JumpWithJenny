@@ -15,6 +15,10 @@
 
         void Update(TEntity entity);
 
+        /// <summary>
+        /// Deletes the specified entity from the repository.
+        /// </summary>
+        /// <param name="entity">The entity to be deleted.</param>
         void Delete(TEntity entity);
 
         Task<int> SaveChangesAsync();

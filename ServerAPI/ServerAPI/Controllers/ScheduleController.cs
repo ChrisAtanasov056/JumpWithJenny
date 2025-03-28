@@ -1,95 +1,184 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Http.Json;
-using ServerAPI.Models.Schedule;
-using ServerAPI.Services.Schedule;
-using System.Text.Json;
-
-namespace ServerAPI.Controllers
+﻿namespace ServerAPI.Controllers
 {
-    public class ScheduleController : Controller
+    using Microsoft.AspNetCore.Authorization;
+    using Microsoft.AspNetCore.Http;
+    using Microsoft.AspNetCore.Mvc;
+    using Microsoft.Extensions.Logging;
+    using ServerAPI.Models.Schedule;
+    using ServerAPI.Services.Schedule;
+    using System;
+    using System.Security.Claims;
+    using System.Threading.Tasks;
+
+    [Route("api/[controller]")]
+    [ApiController]
+    public class ScheduleController : ControllerBase
     {
-        private readonly IScheduleService scheduleService;
+        private readonly IScheduleService _scheduleService;
 
-        public ScheduleController(IScheduleService scheduleService)
+        private IHttpContextAccessor _httpContextAccessor;
+
+        private readonly ILogger<ScheduleController> _logger;
+
+        public ScheduleController(IScheduleService scheduleService, IHttpContextAccessor httpContextAccessor, ILogger<ScheduleController> logger)
         {
-            this.scheduleService = scheduleService;
+            _scheduleService = scheduleService;
+            _httpContextAccessor = httpContextAccessor;
+            _logger = logger;
         }
 
-        // GET: ScheduleController
-        [Route("Schedule/Index")]
         [HttpGet]
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> GetAllWorkouts()
         {
-            var viewModel = await this.scheduleService.GetAllWorkoutsAsync<WorkoutViewModels>();
-            string json = JsonSerializer.Serialize(viewModel);
-            return Json(json);
+            try
+            {
+                var workouts = await _scheduleService.GetAllWorkoutsAsync<WorkoutViewModels>();
+                return Ok(workouts);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Internal server error: {ex.Message}");
+            }
         }
-        public ActionResult Details(int id)
+
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetWorkoutById(string id)
         {
-            return View();
+            try
+            {
+                var workout = await _scheduleService.GetWorkoutByIdAsync<WorkoutViewModels>(id);
+                if (workout == null)
+                {
+                    return NotFound($"Workout with ID {id} not found.");
+                }
+                return Ok(new
+                {
+                    message = "Successfully applied for the workout.",
+                    workout = new
+                    {
+                        workout.Id,
+                        workout.Day,
+                        workout.Time,
+                        workout.Status,
+                        workout.AvailableSpots,
+                        Shoes = workout.WorkoutShoes.Select(s => new
+                        {
+                            s.Shoe.Id,
+                            s.Shoe.Size,
+                            s.IsTaken
+                        })
+                    }
+                    });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Internal server error: {ex.Message}");
+            }
         }
 
-        //// GET: ScheduleController/Create
-        //public ActionResult Create()
-        //{
-        //    return View();
-        //}
+        [HttpPost("apply")]
+        public async Task<IActionResult> ApplyForWorkout([FromBody] ApplyForWorkoutRequest request)
+        {
+            try
+            {
+                var updatedWorkout = await _scheduleService.ApplyForWorkoutAsync(
+                    request.WorkoutId,
+                    request.ShoeSize, 
+                    request.CardType,
+                    request.UserId,
+                    request.UsesOwnShoes
+                );
 
-        //// POST: ScheduleController/Create
-        //[HttpPost]
-        //[ValidateAntiForgeryToken]
-        //public ActionResult Create(IFormCollection collection)
-        //{
-        //    try
-        //    {
-        //        return RedirectToAction(nameof(Index));
-        //    }
-        //    catch
-        //    {
-        //        return View();
-        //    }
-        //}
+                if (updatedWorkout == null)
+                {
+                    return BadRequest("Unable to apply for the workout. No available shoes of the requested size or no spots left.");
+                }
 
-        //// GET: ScheduleController/Edit/5
-        //public ActionResult Edit(int id)
-        //{
-        //    return View();
-        //}
+                return Ok(new
+                {
+                    message = "Successfully applied for the workout.",
+                    workout = new
+                    {
+                        updatedWorkout.Id,
+                        updatedWorkout.Day,
+                        updatedWorkout.Time,
+                        updatedWorkout.Status,
+                        updatedWorkout.AvailableSpots,
+                        Shoes = updatedWorkout.WorkoutShoes.Select(s => new
+                        {
+                            s.Shoe.Id,
+                            s.Shoe.Size,
+                    
+                        })
+                    }
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Internal server error: {ex.Message}");
+            }
+        }
 
-        //// POST: ScheduleController/Edit/5
-        //[HttpPost]
-        //[ValidateAntiForgeryToken]
-        //public ActionResult Edit(int id, IFormCollection collection)
-        //{
-        //    try
-        //    {
-        //        return RedirectToAction(nameof(Index));
-        //    }
-        //    catch
-        //    {
-        //        return View();
-        //    }
-        //}
+        [HttpGet("is-registered/{workoutId}")]
+        [AllowAnonymous]
+        public async Task<ActionResult<bool>> IsUserRegistered(string workoutId)
+        {
+            try
+            {
+                // Get userId from cookie
+                var userId = _httpContextAccessor.HttpContext?.Request.Cookies["user-id"];
+                _logger.LogInformation($"Retrieved userId from cookie: {userId}");
+                if (string.IsNullOrEmpty(userId))
+                {
+                    return Ok(false); // Not registered if no cookie
+                }
 
-        //// GET: ScheduleController/Delete/5
-        //public ActionResult Delete(int id)
-        //{
-        //    return View();
-        //}
+                // Validate inputs
+                if (string.IsNullOrWhiteSpace(workoutId))
+                {
+                    return BadRequest("Workout ID is required");
+                }
 
-        //// POST: ScheduleController/Delete/5
-        //[HttpPost]
-        //[ValidateAntiForgeryToken]
-        //public ActionResult Delete(int id, IFormCollection collection)
-        //{
-        //    try
-        //    {
-        //        return RedirectToAction(nameof(Index));
-        //    }
-        //    catch
-        //    {
-        //        return View();
-        //    }
-        //}
+                var isRegistered = await _scheduleService.IsUserRegisteredAsync(workoutId, userId);
+                return Ok(isRegistered);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error checking registration status");
+                return StatusCode(500, "Error checking registration status");
+            }
+        }
+
+        [HttpDelete("cancel-registration/{workoutId}")]
+        [AllowAnonymous]
+        public async Task<IActionResult> CancelRegistration(string workoutId)
+        {
+            try
+            {
+                // Get userId from cookie
+                var userId = _httpContextAccessor.HttpContext?.Request.Cookies["user-id"];
+                _logger.LogInformation($"Retrieved userId from cookie: {userId}");
+
+                // Call the service to cancel the registration
+                var isCanceled = await _scheduleService.CancelRegistrationAsync(workoutId, userId);
+
+                if (!isCanceled)
+                {
+                    return NotFound("Registration not found.");
+                }
+
+                return Ok("Registration canceled successfully.");
+            }
+            catch (ArgumentException ex)
+            {
+                _logger.LogWarning(ex.Message);
+                return BadRequest(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error canceling registration");
+                return StatusCode(500, "Error canceling registration");
+            }
+        }
     }
 }

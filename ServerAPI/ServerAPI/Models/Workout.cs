@@ -1,26 +1,33 @@
 ﻿namespace ServerAPI.Models
 {
-    using ServerAPI.Models.Common;
     using System.ComponentModel.DataAnnotations;
+    using ServerAPI.Models.Common;
 
     public class Workout : BaseDeletableModel
     {
         public Workout()
         {
-            this.Appointments = new List<Appointment>();
-            this.Shoes = new List<Shoes>();
-           
+            this.WorkoutShoes = new List<WorkoutShoes>();
+            this.WorkoutCardTypes = new List<WorkoutCardType>();
+            this.Appointments = new List<Appointment>(); 
         }
 
         [Required]
-        public DateTime WorkoutStart { get; set; }
+        public string? Day { get; set; }
 
-        public DateTime? WorkoutEnd { get; set; }
+        [Required]
+        public string? Time { get; set; }
 
+        [Required]
+        public string? Status { get; set; }
+
+        [Required]
         public int AvailableSpots { get; set; }
 
+        public ICollection<WorkoutShoes> WorkoutShoes { get; set; }
+        public ICollection<WorkoutCardType> WorkoutCardTypes { get; set; }
         public ICollection<Appointment> Appointments { get; set; }
-
-        public ICollection<Shoes> Shoes { get; set; }
-    }
+        }
 }
+
+

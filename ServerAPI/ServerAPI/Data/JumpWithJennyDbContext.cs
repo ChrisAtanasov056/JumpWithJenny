@@ -10,6 +10,7 @@
     using System.Threading.Tasks;
     using ServerAPI.Models.Common;
     using Microsoft.AspNetCore.Identity;
+    using System.Security.Cryptography.X509Certificates;
 
     public class JumpWithJennyDbContext : IdentityDbContext<User, UserRole, string>
     {
@@ -26,6 +27,12 @@
         public DbSet<Appointment> ?Appointments { get; set; }
         public DbSet<Shoes> ?Shoes { get; set; }
         public DbSet<Workout> ?Workouts { get; set; }
+
+        public DbSet<WorkoutCardType> ?WorkoutCardTypes { get; set; }
+
+        public DbSet<UserHistory> UserHistories{ get; set; }
+
+        public DbSet<WorkoutShoes> WorkoutShoes{ get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
@@ -50,6 +57,19 @@
             builder
                 .Entity<Appointment>()
                 .HasKey(k => new { k.UserId, k.WorkoutId });
+
+            builder.Entity<WorkoutShoes>()
+                .HasKey(ws => new { ws.WorkoutId, ws.ShoeId }); // Composite primary key
+
+            builder.Entity<WorkoutShoes>()
+                .HasOne(ws => ws.Workout)
+                .WithMany(w => w.WorkoutShoes)
+                .HasForeignKey(ws => ws.WorkoutId);
+
+            builder.Entity<WorkoutShoes>()
+                .HasOne(ws => ws.Shoe)
+                .WithMany(s => s.Workouts)
+                .HasForeignKey(ws => ws.ShoeId);
 
             builder.Entity<IdentityUserRole<string>>(entity =>
             {

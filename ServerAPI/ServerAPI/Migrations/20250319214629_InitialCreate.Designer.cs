@@ -12,7 +12,7 @@ using ServerAPI.Data;
 namespace ServerAPI.Migrations
 {
     [DbContext(typeof(JumpWithJennyDbContext))]
-    [Migration("20250228215346_InitialCreate")]
+    [Migration("20250319214629_InitialCreate")]
     partial class InitialCreate
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -138,17 +138,63 @@ namespace ServerAPI.Migrations
                     b.Property<string>("WorkoutId")
                         .HasColumnType("text");
 
+                    b.Property<int?>("CardType")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("CreatedOn")
+                        .HasColumnType("timestamp without time zone");
+
                     b.Property<DateTime?>("DeletedOn")
                         .HasColumnType("timestamp without time zone");
+
+                    b.Property<string>("Id")
+                        .HasColumnType("text");
+
+                    b.Property<bool>("IsConfirmed")
+                        .HasColumnType("boolean");
 
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("boolean");
 
+                    b.Property<DateTime?>("ModifiedOn")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<string>("ShoeId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<bool>("UsesOwnShoes")
+                        .HasColumnType("boolean");
+
                     b.HasKey("UserId", "WorkoutId");
+
+                    b.HasIndex("ShoeId");
 
                     b.HasIndex("WorkoutId");
 
                     b.ToTable("Appointments");
+                });
+
+            modelBuilder.Entity("ServerAPI.Models.ImageModel", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<string>("Name")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Url")
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Images");
                 });
 
             modelBuilder.Entity("ServerAPI.Models.Shoes", b =>
@@ -165,21 +211,13 @@ namespace ServerAPI.Migrations
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("boolean");
 
-                    b.Property<bool>("IsTaken")
-                        .HasColumnType("boolean");
-
                     b.Property<DateTime?>("ModifiedOn")
                         .HasColumnType("timestamp without time zone");
 
                     b.Property<int>("Size")
                         .HasColumnType("integer");
 
-                    b.Property<string>("WorkoutId")
-                        .HasColumnType("text");
-
                     b.HasKey("Id");
-
-                    b.HasIndex("WorkoutId");
 
                     b.ToTable("Shoes");
                 });
@@ -259,9 +297,6 @@ namespace ServerAPI.Migrations
                     b.Property<string>("SecurityStamp")
                         .HasColumnType("text");
 
-                    b.Property<string>("ShoesId")
-                        .HasColumnType("text");
-
                     b.Property<bool>("TwoFactorEnabled")
                         .HasColumnType("boolean");
 
@@ -278,9 +313,38 @@ namespace ServerAPI.Migrations
                         .IsUnique()
                         .HasDatabaseName("UserNameIndex");
 
-                    b.HasIndex("ShoesId");
-
                     b.ToTable("AspNetUsers", (string)null);
+                });
+
+            modelBuilder.Entity("ServerAPI.Models.UserHistory", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("text");
+
+                    b.Property<string>("ShoeId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("UsedAt")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("WorkoutId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ShoeId");
+
+                    b.HasIndex("UserId");
+
+                    b.HasIndex("WorkoutId");
+
+                    b.ToTable("UserHistories");
                 });
 
             modelBuilder.Entity("ServerAPI.Models.UserRole", b =>
@@ -332,6 +396,10 @@ namespace ServerAPI.Migrations
                     b.Property<DateTime>("CreatedOn")
                         .HasColumnType("timestamp without time zone");
 
+                    b.Property<string>("Day")
+                        .IsRequired()
+                        .HasColumnType("text");
+
                     b.Property<DateTime?>("DeletedOn")
                         .HasColumnType("timestamp without time zone");
 
@@ -341,15 +409,69 @@ namespace ServerAPI.Migrations
                     b.Property<DateTime?>("ModifiedOn")
                         .HasColumnType("timestamp without time zone");
 
-                    b.Property<DateTime?>("WorkoutEnd")
-                        .HasColumnType("timestamp without time zone");
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("text");
 
-                    b.Property<DateTime>("WorkoutStart")
-                        .HasColumnType("timestamp without time zone");
+                    b.Property<string>("Time")
+                        .IsRequired()
+                        .HasColumnType("text");
 
                     b.HasKey("Id");
 
                     b.ToTable("Workouts");
+                });
+
+            modelBuilder.Entity("ServerAPI.Models.WorkoutCardType", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("text");
+
+                    b.Property<string>("CardType")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("CreatedOn")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<DateTime?>("DeletedOn")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean");
+
+                    b.Property<DateTime?>("ModifiedOn")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<string>("WorkoutId")
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("WorkoutId");
+
+                    b.ToTable("WorkoutCardTypes");
+                });
+
+            modelBuilder.Entity("ServerAPI.Models.WorkoutShoes", b =>
+                {
+                    b.Property<string>("WorkoutId")
+                        .HasColumnType("text");
+
+                    b.Property<string>("ShoeId")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Id")
+                        .HasColumnType("text");
+
+                    b.Property<bool>("IsTaken")
+                        .HasColumnType("boolean");
+
+                    b.HasKey("WorkoutId", "ShoeId");
+
+                    b.HasIndex("ShoeId");
+
+                    b.ToTable("WorkoutShoes");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -405,6 +527,12 @@ namespace ServerAPI.Migrations
 
             modelBuilder.Entity("ServerAPI.Models.Appointment", b =>
                 {
+                    b.HasOne("ServerAPI.Models.Shoes", "Shoe")
+                        .WithMany()
+                        .HasForeignKey("ShoeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("ServerAPI.Models.User", "User")
                         .WithMany("Appointments")
                         .HasForeignKey("UserId")
@@ -417,28 +545,71 @@ namespace ServerAPI.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.Navigation("Shoe");
+
                     b.Navigation("User");
+
+                    b.Navigation("Workout");
+                });
+
+            modelBuilder.Entity("ServerAPI.Models.UserHistory", b =>
+                {
+                    b.HasOne("ServerAPI.Models.Shoes", "Shoe")
+                        .WithMany("UsersHistory")
+                        .HasForeignKey("ShoeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("ServerAPI.Models.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("ServerAPI.Models.Workout", "Workout")
+                        .WithMany()
+                        .HasForeignKey("WorkoutId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Shoe");
+
+                    b.Navigation("User");
+
+                    b.Navigation("Workout");
+                });
+
+            modelBuilder.Entity("ServerAPI.Models.WorkoutCardType", b =>
+                {
+                    b.HasOne("ServerAPI.Models.Workout", null)
+                        .WithMany("WorkoutCardTypes")
+                        .HasForeignKey("WorkoutId");
+                });
+
+            modelBuilder.Entity("ServerAPI.Models.WorkoutShoes", b =>
+                {
+                    b.HasOne("ServerAPI.Models.Shoes", "Shoe")
+                        .WithMany("Workouts")
+                        .HasForeignKey("ShoeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("ServerAPI.Models.Workout", "Workout")
+                        .WithMany("WorkoutShoes")
+                        .HasForeignKey("WorkoutId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Shoe");
 
                     b.Navigation("Workout");
                 });
 
             modelBuilder.Entity("ServerAPI.Models.Shoes", b =>
                 {
-                    b.HasOne("ServerAPI.Models.Workout", null)
-                        .WithMany("Shoes")
-                        .HasForeignKey("WorkoutId");
-                });
-
-            modelBuilder.Entity("ServerAPI.Models.User", b =>
-                {
-                    b.HasOne("ServerAPI.Models.Shoes", null)
-                        .WithMany("UsersHistory")
-                        .HasForeignKey("ShoesId");
-                });
-
-            modelBuilder.Entity("ServerAPI.Models.Shoes", b =>
-                {
                     b.Navigation("UsersHistory");
+
+                    b.Navigation("Workouts");
                 });
 
             modelBuilder.Entity("ServerAPI.Models.User", b =>
@@ -450,7 +621,9 @@ namespace ServerAPI.Migrations
                 {
                     b.Navigation("Appointments");
 
-                    b.Navigation("Shoes");
+                    b.Navigation("WorkoutCardTypes");
+
+                    b.Navigation("WorkoutShoes");
                 });
 #pragma warning restore 612, 618
         }

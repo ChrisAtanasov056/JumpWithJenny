@@ -35,9 +35,10 @@
             {
                 new RolesSeeder(),
                 new ShoesSeeder(),
+                new WorkoutCardTypesSeeder(),
                 new WorkoutSeeder(),
                 new AccountSeeder(),
-                new ImageSeeder()
+                new ImageSeeder(),
             }; 
 
             // Execute each seeder

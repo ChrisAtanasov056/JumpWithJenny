@@ -30,7 +30,15 @@ namespace ServerAPI.Data.Seeding.CustomSeeders
                 } ,
                 new Shoes
                 {
-                    Size = Models.Enums.ShoesSize.m,
+                    Size = Models.Enums.ShoesSize.s,
+                },
+                new Shoes
+                {
+                    Size = Models.Enums.ShoesSize.s,
+                },
+                new Shoes
+                {
+                    Size = Models.Enums.ShoesSize.s,
                 },
                 new Shoes
                 {
@@ -43,11 +51,23 @@ namespace ServerAPI.Data.Seeding.CustomSeeders
                 new Shoes
                 {
                     Size = Models.Enums.ShoesSize.m,
+                },
+                new Shoes
+                {
+                    Size = Models.Enums.ShoesSize.m,
+                },
+                new Shoes
+                {
+                    Size = Models.Enums.ShoesSize.m,
+                },
+                new Shoes
+                {
+                    Size = Models.Enums.ShoesSize.l,
                 },
                 new Shoes
                 {
                     Size = Models.Enums.ShoesSize.xl,
-                }
+                },
 
             };
             foreach (var shoe in shoes)
@@ -58,3 +78,4 @@ namespace ServerAPI.Data.Seeding.CustomSeeders
         }
     }
 }
+ 

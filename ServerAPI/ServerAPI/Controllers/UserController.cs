@@ -1,13 +1,9 @@
-﻿using Microsoft.AspNetCore.Cors;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.ActionConstraints;
-using ServerAPI.Data.Common.Repositories;
-using ServerAPI.Models;
-using ServerAPI.Services.Users;
-using ServerAPI.ViewModels.Users;
-
-namespace ServerAPI.Controllers
+﻿namespace ServerAPI.Controllers
 {
+    using Microsoft.AspNetCore.Cors;
+    using Microsoft.AspNetCore.Mvc;
+    using ServerAPI.Services.Users;
+    using ServerAPI.ViewModels.Users;
 
     [Route("/[controller]")]
     [EnableCors("AllowOrigin")]
