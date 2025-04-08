@@ -8,23 +8,23 @@ namespace ServerAPI.Models.Authentication
         [Required]
         [MinLength(3)]
         [MaxLength(50)]
-        public string ?UserName { get; set; }
+        public string UserName { get; set; }
 
         [Required]
         [MinLength(3)]
         [MaxLength(50)]
-        public string ?FirstName { get; set; }
+        public string FirstName { get; set; }
 
         [Required]
         [MinLength(3)]
         [MaxLength(50)]
-        public string ?LastName { get; set; }
+        public string LastName { get; set; }
 
         [Required]
-        public string ?Password { get; set; }
+        public string Password { get; set; }
 
         [Required]
         [DataType(DataType.EmailAddress)]   
-        public string ?Email { get; set; }
+        public string Email { get; set; }
     }
 }

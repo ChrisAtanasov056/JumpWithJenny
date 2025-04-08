@@ -7,7 +7,6 @@
     using ServerAPI.Models.Schedule;
     using ServerAPI.Services.Schedule;
     using System;
-    using System.Security.Claims;
     using System.Threading.Tasks;
 
     [Route("api/[controller]")]

@@ -13,13 +13,13 @@
         }
 
         [Required]
-        public string? Day { get; set; }
+        public string Day { get; set; }
 
         [Required]
-        public string? Time { get; set; }
+        public string Time { get; set; }
 
         [Required]
-        public string? Status { get; set; }
+        public string Status { get; set; }
 
         [Required]
         public int AvailableSpots { get; set; }

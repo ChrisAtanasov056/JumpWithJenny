@@ -12,11 +12,11 @@ namespace ServerAPI.Models
         public string Id { get; set; } = Guid.NewGuid().ToString();
 
         [Required]
-        public string? WorkoutId { get; set; }
-        public Workout? Workout { get; set; }
+        public string WorkoutId { get; set; }
+        public Workout Workout { get; set; }
 
-        public string? ShoeId { get; set; }
-        public Shoes? Shoe { get; set; }
+        public string ShoeId { get; set; }
+        public Shoes Shoe { get; set; }
 
         public bool IsTaken { get; set; } // Track if a shoe is taken in this workout
     }

@@ -6,7 +6,6 @@ namespace ServerAPI.Models
 
     public class WorkoutCardType : BaseDeletableModel
     {
-        public int Id { get; set; }
         [Required]
         public CardType ?CardType { get; set; } 
     }

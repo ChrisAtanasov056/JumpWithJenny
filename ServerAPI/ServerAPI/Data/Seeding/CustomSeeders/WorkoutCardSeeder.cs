@@ -20,6 +20,7 @@ namespace ServerAPI.Data.Seeding.CustomSeeders
                 .Cast<CardType>()
                 .Select(ct => new WorkoutCardType 
                 { 
+                    Id = Guid.NewGuid().ToString(), // Generate a new GUID for the Id
                     CardType = ct // Directly assign the enum without converting to string
                 })
                 .ToList();

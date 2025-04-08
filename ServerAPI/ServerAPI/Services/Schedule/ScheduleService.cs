@@ -13,16 +13,20 @@ namespace ServerAPI.Services.Schedule
         private readonly IDeletableEntityRepository<Shoes> _shoesRepository;
         private readonly IDeletableEntityRepository<User> _usersRepository;
 
+        private readonly ILogger<ScheduleService> _logger;
+
         public ScheduleService(
             IDeletableEntityRepository<Workout> workoutRepository,
             IDeletableEntityRepository<Appointment> appointmentRepository,
             IDeletableEntityRepository<Shoes> shoesRepository,
-            IDeletableEntityRepository<User> usersRepository)
+            IDeletableEntityRepository<User> usersRepository,
+            ILogger<ScheduleService> logger)
         {
             _workoutRepository = workoutRepository;
             _appointmentRepository = appointmentRepository;
             _shoesRepository = shoesRepository;
             _usersRepository = usersRepository;
+            _logger = logger;
         }
 
         public async Task<Workout> ApplyForWorkoutAsync(string workoutId, ShoesSize shoeSize, CardType cardType, string userId, bool usesOwnShoes)
@@ -163,8 +167,29 @@ namespace ServerAPI.Services.Schedule
                 return false; // Registration not found
             }
 
+            // Find the workout
+            var workout = await _workoutRepository.All().Include(w=>w.WorkoutShoes).FirstOrDefaultAsync(w => w.Id == workoutId);
+            if (workout == null)
+            {
+                throw new InvalidOperationException("Workout not found.");
+            }
+
+            // Update available spots only if the workout is found
+            workout.AvailableSpots += 1;
+
+            // Find the matching workout shoe
+            var workoutShoe = workout.WorkoutShoes?.FirstOrDefault(ws => ws.ShoeId == appointment.ShoeId);
+            if (workoutShoe != null)
+            {
+                workoutShoe.IsTaken = false;
+            }
+            else
+            {
+                _logger.LogWarning($"No matching shoe found. ws.ShoeId = {workoutShoe}, appointment.ShoeId = {appointment.ShoeId}");
+                throw new InvalidOperationException("Shoe not found or already available.");
+            }
+
             // Remove the appointment
-            _workoutRepository.All().FirstOrDefault(w => w.Id == workoutId).AvailableSpots += 1;
             _appointmentRepository.HardDelete(appointment);
             await _appointmentRepository.SaveChangesAsync();
             await _workoutRepository.SaveChangesAsync();

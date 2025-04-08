@@ -15,7 +15,7 @@ namespace ServerAPI.ViewModels.Schedule
 
         public bool IsTaken { get; set; } // Indicates if the shoes are currently in use
 
-        public ICollection<User> ?UsersHistory { get; set; } 
+        public ICollection<User> UsersHistory { get; set; } 
         
     }
 }
