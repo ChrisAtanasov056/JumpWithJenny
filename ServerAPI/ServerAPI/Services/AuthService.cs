@@ -6,10 +6,10 @@ namespace ServerAPI.Services
 {
     public class AuthService
     {
-        private readonly JumpWithJennyDbContext ?dbContext;
+        private readonly JumpWithJennyDbContext dbContext;
 
-        private readonly SignInManager<User> ?_signInManager;
-        private readonly UserManager<User> ?_userManager;
+        private readonly SignInManager<User> _signInManager;
+        private readonly UserManager<User> _userManager;
 
         //public AuthService(JumpWithJennyDbContext dbContext, UserManager<User> userManager, SignInManager<User> signInManager)
         //{

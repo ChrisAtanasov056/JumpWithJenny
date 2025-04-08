@@ -23,12 +23,12 @@
             : base(options)
         {
         }
-        public DbSet<ImageModel> ?Images { get; set; }
-        public DbSet<Appointment> ?Appointments { get; set; }
-        public DbSet<Shoes> ?Shoes { get; set; }
-        public DbSet<Workout> ?Workouts { get; set; }
+        public DbSet<ImageModel> Images { get; set; }
+        public DbSet<Appointment> Appointments { get; set; }
+        public DbSet<Shoes> Shoes { get; set; }
+        public DbSet<Workout> Workouts { get; set; }
 
-        public DbSet<WorkoutCardType> ?WorkoutCardTypes { get; set; }
+        public DbSet<WorkoutCardType> WorkoutCardTypes { get; set; }
 
         public DbSet<UserHistory> UserHistories{ get; set; }
 

@@ -15,19 +15,19 @@ namespace ServerAPI.Models
         }
 
         [Column(TypeName = "varchar(50)")] // Adjusted for PostgreSQL
-        public string? FirstName { get; set; }
+        public string FirstName { get; set; }
         [Column(TypeName = "varchar(50)")] // Adjusted for PostgreSQL
-        public string? LastName { get; set; }
+        public string LastName { get; set; }
 
         public int? Age { get; set; }
 
         [Column(TypeName = "varchar(100)")] // Adjusted for PostgreSQL
-        public string? City { get; set; }
+        public string City { get; set; }
 
-        public string? ProfilePictureUrl { get; set; }
+        public string ProfilePictureUrl { get; set; }
 
         [Column(TypeName = "text")] // Adjusted for PostgreSQL
-        public string? Description { get; set; }
+        public string Description { get; set; }
 
         public ICollection<Appointment> Appointments { get; set; }
 

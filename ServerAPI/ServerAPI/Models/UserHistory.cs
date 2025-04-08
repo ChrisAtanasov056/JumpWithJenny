@@ -8,16 +8,16 @@ namespace ServerAPI.Models
     public string Id { get; set; } = Guid.NewGuid().ToString();
 
     [Required]
-    public string ?UserId { get; set; }
-    public User ?User { get; set; }
+    public string UserId { get; set; }
+    public User User { get; set; }
 
     [Required]
-    public string ?ShoeId { get; set; }
-    public Shoes ?Shoe { get; set; }
+    public string ShoeId { get; set; }
+    public Shoes Shoe { get; set; }
 
     [Required]
-    public string ?WorkoutId { get; set; }
-    public Workout ?Workout { get; set; }
+    public string WorkoutId { get; set; }
+    public Workout Workout { get; set; }
 
     public DateTime UsedAt { get; set; } = DateTime.UtcNow;
 }
