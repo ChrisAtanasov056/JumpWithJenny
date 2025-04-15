@@ -102,7 +102,7 @@ const WorkoutModal = ({ isOpen, onClose, selectedWorkout, onRegister, isLoggedIn
       'CoolFit Card': 0,
       'Pulse Fitness Card': 1,
       'Individual Workout': 2
-    };
+    }
 
     setSubmittedWorkout(selectedWorkout);
     setTimeout(() => {
@@ -113,7 +113,7 @@ const WorkoutModal = ({ isOpen, onClose, selectedWorkout, onRegister, isLoggedIn
         usesOwnShoes
       );
       onClose();
-    }, 1000);
+    }, 5000);
   };
 
   // Calculate spots information
@@ -132,12 +132,7 @@ const WorkoutModal = ({ isOpen, onClose, selectedWorkout, onRegister, isLoggedIn
         {isLoggedIn ? (
           <>
             <h2>Register for {selectedWorkout.Day} at {selectedWorkout.Time}</h2>
-            <div className="spots-info">
-              <span className={`spots-text ${isFull ? 'full' : 'available'}`}>
-                {spotsText} spots taken
-              </span>
-              {isFull && <span className="full-message"> - Class full</span>}
-            </div>
+            
             
             {/* Status Flow */}
             {isCheckingRegistration ? (
@@ -166,6 +161,12 @@ const WorkoutModal = ({ isOpen, onClose, selectedWorkout, onRegister, isLoggedIn
               <form onSubmit={handleSubmit}>
                 {!isFull ? (
                   <>
+                    <div className="spots-info">
+                      <span className={`spots-text ${isFull ? 'full' : 'available'}`}>
+                        {spotsText} spots taken
+                      </span>
+                      {isFull && <span className="full-message"> - Class full</span>}
+                    </div>
                     <div className="form-group">
                       <label className="checkbox-label">
                         <input 

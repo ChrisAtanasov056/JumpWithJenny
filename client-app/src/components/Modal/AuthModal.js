@@ -72,7 +72,7 @@ const AuthModal = ({ onClose, onLoginSuccess, setModalOpen }) => {
     <>
       <div className="modal-overlay">
         <div className="modal-content">
-          <button className="close-button" onClick={onClose}>X</button>
+          <button className="close-button" onClick={() => { console.log('Modal close clicked'); onClose(); }}>X</button>
           
           <div className={`form-container ${animationClass}`}>
             {isLogin ? (
