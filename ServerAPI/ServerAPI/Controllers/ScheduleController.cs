@@ -80,6 +80,7 @@
         {
             try
             {
+                _logger.LogInformation($"Received request to apply for workout: {request.WorkoutId} with userId: {request.UserId}");
                 var updatedWorkout = await _scheduleService.ApplyForWorkoutAsync(
                     request.WorkoutId,
                     request.ShoeSize, 
@@ -139,6 +140,7 @@
                 }
 
                 var isRegistered = await _scheduleService.IsUserRegisteredAsync(workoutId, userId);
+                _logger.LogInformation($"User {userId} registration status for workout {workoutId}: {isRegistered}");
                 return Ok(isRegistered);
             }
             catch (Exception ex)

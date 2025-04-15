@@ -20,11 +20,11 @@ const Login = ({ onClose, onLoginSuccess }) => {
       const response = await login(credentials); // Assuming login is the correct service function
       if (response) {
         const { token, user } = response;
-        if (user?.id && user?.username && user?.firstname && user?.lastname && user?.email && token) {
+        console.log(user)
+        if (user?.id && user?.username && user?.firstname && user?.lastname && user?.email && user?.role && token) {
           // Save token and user in localStorage
           localStorage.setItem('jwtToken', token);
-          localStorage.setItem('user', JSON.stringify(user));
-
+          localStorage.setItem('user', JSON.stringify(user).toLocaleLowerCase); 
           // Update context with user data and token
           authLogin({ ...user, token });
 

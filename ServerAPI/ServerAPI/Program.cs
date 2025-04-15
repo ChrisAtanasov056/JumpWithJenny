@@ -13,6 +13,7 @@ using ServerAPI.Data.Seeding;
 using ServerAPI.Models;
 using ServerAPI.Models.Schedule;
 using ServerAPI.Services;
+using ServerAPI.Services.AuthService;
 using ServerAPI.Services.Mapper;
 using ServerAPI.Services.Schedule;
 using ServerAPI.Services.Users;
@@ -34,13 +35,17 @@ public class Program
 
     private static void ConfigureServices(IServiceCollection services, IConfiguration configuration)
     {
-        services.AddCors(c =>
-            c.AddPolicy("AllowOrigin",
-                option => option
-                    .AllowAnyMethod()
+        services.AddCors(options =>
+        {
+            options.AddPolicy("AllowOrigin", builder =>
+            {
+                builder
+                    .WithOrigins("http://localhost:3000", "https://localhost:3000", "https://localhost:5001") 
                     .AllowAnyHeader()
-                    .SetIsOriginAllowed(origin => true)
-                    .AllowCredentials()));
+                    .AllowAnyMethod()
+                    .AllowCredentials(); 
+            });
+        });
 
         services.AddControllers()
             .AddNewtonsoftJson(options =>
@@ -102,6 +107,7 @@ public class Program
         // App Services
         services.AddTransient<IScheduleService, ScheduleService>();
         services.AddTransient<IUserService, UserService>();
+        services.AddScoped<IAuthService, AuthService>();
 
         // Logging and Swagger
         services.AddLogging();

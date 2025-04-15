@@ -6,7 +6,7 @@ import ProfileModal from '../Profile/Profile';
 import { useAuth } from '../../services/AuthContext';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faUser } from '@fortawesome/free-solid-svg-icons';
-
+import { Link as RouterLink } from 'react-router-dom';
 
 const Navbar = () => {
   const [isModalOpen, setModalOpen] = useState(false);
@@ -94,17 +94,26 @@ const handleLogoClick = (e) => {
             <li className="nav-item">
               <Link to="contacts" className="nav-link" smooth={true} duration={500} onClick={toggleMenu}>Contact</Link>
             </li>
-            {!isAuthenticated ? ( 
-              <li className="nav-item">
-                <button onClick={toggleModal} className="login-btn">Login/Register</button>
-              </li>
-            ) : (
-              <li className="nav-item">
-                <button className="profile-area" onClick={toggleProfileModal}>
-                  <FontAwesomeIcon icon={faUser} className="profile-icon" />
-                </button>
-              </li>
-            )}
+                {isAuthenticated ? (
+                <>
+                  {user?.role === 'Administrator' && (
+                  <li className="nav-item">
+                    <RouterLink to="/admin" className="nav-link" onClick={toggleMenu}>
+                      Admin Panel
+                    </RouterLink>
+                  </li>
+                  )}
+                  <li className="nav-item">
+                    <button className="profile-area" onClick={toggleProfileModal}>
+                      <FontAwesomeIcon icon={faUser} className="profile-icon" />
+                    </button>
+                  </li>
+                </>
+              ) : (
+                <li className="nav-item">
+                  <button onClick={toggleModal} className="login-btn">Login/Register</button>
+                </li>
+              )}
           </div>
           
           <ul className="social-icon ml-3">

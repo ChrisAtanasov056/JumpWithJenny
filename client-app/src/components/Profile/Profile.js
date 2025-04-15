@@ -21,7 +21,7 @@ const ProfileModal = ({ onClose, user, onLogout }) => {
   const handleVerifyEmail = async () => {
     try {
       const response = await verifyEmail(localUser.id, localUser.token);
-      setLocalUser((prevUser) => ({ ...prevUser, emailConfirmed: true }));
+      setLocalUser((prevUser) => ({ ...prevUser, EmailConfirmed: true }));
       alert("Email verified successfully!");
     } catch (error) {
       alert("Error confirming email. Please try again.");
@@ -82,7 +82,7 @@ const ProfileModal = ({ onClose, user, onLogout }) => {
       {isPasswordModalOpen && (
         <ChangePasswordModal
           onClose={() => setPasswordModalOpen(false)}
-          userId={localUser.id}
+          userId={localUser.Id}
         />
       )}
     </div>
