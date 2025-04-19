@@ -1,13 +1,13 @@
-$primary-color: #BDC3C7; 
-$secondary-color: #FFFFFF; // Soft Gray
-$background-color: #ECF0F1; // Warm Beige
-$accent-color: #E74C3C; // Coral Accent
-$white: #FFFFFF; // White
-$text-color: #2C3E50; // Deep Navy for text
-$hover-color: #E74C3C; // Coral Accent for hover effects
-$mobile-breakpoint: 768px; // Breakpoint for mobile view
-$transition-speed: 0.3s; // Transition speed
-$border-radius: 8px; // Rounded corners
+$primary-color: #BDC3C7;
+$secondary-color: #FFFFFF;
+$background-color: #ECF0F1;
+$accent-color: #E74C3C;
+$white: #FFFFFF;
+$text-color: #2C3E50;
+$hover-color: #E74C3C;
+$mobile-breakpoint: 768px;
+$transition-speed: 0.3s;
+$border-radius: 8px;
 
 .modal-overlay {
   position: fixed;
@@ -18,27 +18,39 @@ $border-radius: 8px; // Rounded corners
   background-color: rgba(0, 0, 0, 0.6);
   display: flex;
   justify-content: center;
-  align-items: center;
+  align-items: flex-start;
+  padding-top: 40px;
   z-index: 1000;
+  overflow-y: auto;
 }
 
 .modal-content {
   background-color: $white;
   border-radius: $border-radius;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
-  width: 100%;
+  width: 90%;
   max-width: 400px;
-  padding: 24px;
+  padding: 0px;
   position: relative;
+  margin-bottom: 40px;
   animation: fadeIn $transition-speed ease-in-out;
+
+  &.register-mode {
+    max-width: 550px;
+    padding: 0px;
+
+    .register-container {
+      padding: 0;
+    }
+  }
 
   .close-button {
     position: absolute;
-    top: 16px;
-    right: 16px;
+    top: 12px;
+    right: 12px;
     background: none;
     border: none;
-    font-size: 18px;
+    font-size: 24px;
     cursor: pointer;
     color: $primary-color;
     transition: color $transition-speed;
@@ -49,7 +61,7 @@ $border-radius: 8px; // Rounded corners
   }
 
   .form-container {
-    margin-bottom: 20px;
+    margin-bottom: 0;
 
     &.zoom-in {
       animation: zoomIn $transition-speed ease-in-out;
@@ -60,13 +72,17 @@ $border-radius: 8px; // Rounded corners
     }
   }
 
+  .auth-options {
+    text-align: center;
+    margin: 15px 0;
+  }
+
   .toggle-button {
     background: none;
     border: none;
     color: $accent-color;
     cursor: pointer;
     font-size: 14px;
-    margin-left: 8px;
     padding: 0;
     text-decoration: underline;
     transition: color $transition-speed;
@@ -76,11 +92,22 @@ $border-radius: 8px; // Rounded corners
     }
   }
 
+  .auth-footer {
+    margin-top: 20px;
+    border-top: 1px solid lighten($primary-color, 20%);
+    padding-top: 20px;
+
+    .toggle-prompt {
+      text-align: center;
+      margin-bottom: 20px;
+      color: $text-color;
+    }
+  }
+
   .social-login {
     display: flex;
     justify-content: center;
     gap: 16px;
-    margin-top: 20px;
 
     .social-btn {
       display: flex;
@@ -91,11 +118,10 @@ $border-radius: 8px; // Rounded corners
       border-radius: 50%;
       border: none;
       cursor: pointer;
-      transition: transform $transition-speed, box-shadow $transition-speed;
+      transition: transform $transition-speed;
 
       &:hover {
         transform: scale(1.1);
-        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
       }
 
       &.fb-btn {
@@ -116,39 +142,30 @@ $border-radius: 8px; // Rounded corners
   }
 }
 
-.error-message {
-  color: $accent-color;
-  margin: 0.5rem 0;
-  font-size: 0.9rem;
-}
+@media (max-width: $mobile-breakpoint) {
+  .modal-overlay {
+    padding-top: 20px;
+    align-items: flex-start;
+  }
 
-.forgot-password-button {
-  background: transparent;
-  color: $white;
-  padding: 0.8rem 1.5rem;
-  border: none;
-  border-radius: $border-radius;
-  cursor: pointer;
-  transition: $transition-speed;
+  .modal-content {
+    width: 95%;
+    padding: 20px 15px;
 
-  &:hover {
-    background: transparent;
+    &.register-mode {
+      max-width: 95%;
+    }
   }
 }
 
-// Animations
 @keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
 @keyframes zoomIn {
   from {
-    transform: scale(0.9);
+    transform: scale(0.95);
     opacity: 0;
   }
   to {
@@ -163,7 +180,7 @@ $border-radius: 8px; // Rounded corners
     opacity: 1;
   }
   to {
-    transform: scale(0.9);
+    transform: scale(0.95);
     opacity: 0;
   }
 }

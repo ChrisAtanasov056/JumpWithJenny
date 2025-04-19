@@ -9,72 +9,99 @@ $hover-color: #E74C3C; // Coral Accent for hover effects
 $mobile-breakpoint: 768px; // Breakpoint for mobile view
 $transition-speed: 0.3s; // Transition speed
 $border-radius: 8px; // Rounded corners
-
 .register-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
   width: 100%;
-}
+  padding: 0;
 
-.register-form {
-  display: flex;
-  flex-direction: column;
-  width: 100%;
-  max-width: 400px;
-
-  h2 {
-    color: $text-color;
-    font-size: 34px;
-    text-align: center;
-  }
-
-  .form-group {
+  .register-form {
     display: flex;
     flex-direction: column;
+    gap: 16px;
 
-    label {
+    h2 {
+      text-align: center;
       color: $text-color;
-      font-size: 18px;
-      font-weight: 500;
+      margin-bottom: 5px;
+      font-size: 1.4rem;
     }
 
-    input {
-      padding: 10px;
-      border: 1px solid $primary-color;
-      border-radius: $border-radius;
-      font-size: 14px;
-      color: $text-color;
-      background-color: $white;
-      transition: border-color $transition-speed;
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
 
-      &:focus {
-        border-color: $accent-color;
-        outline: none;
+      .form-group {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+
+        label {
+          font-size: 0.85rem;
+          color: $text-color;
+        }
+
+        input {
+          padding: 8px;
+          border: 1px solid $primary-color;
+          border-radius: $border-radius;
+          font-size: 0.95rem;
+          transition: border-color $transition-speed;
+
+          &:focus {
+            outline: none;
+            border-color: $accent-color;
+          }
+        }
+
+        &.full-width {
+          grid-column: span 2;
+        }
+      }
+    }
+
+    .error-message {
+      color: $accent-color;
+      text-align: center;
+      font-size: 0.85rem;
+      margin-top: 5px;
+    }
+
+    .sign-up-button {
+      background-color: $accent-color;
+      color: white;
+      border: none;
+      padding: 12px;
+      border-radius: $border-radius;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: background-color $transition-speed;
+      margin-top: 10px;
+      grid-column: span 2;
+
+      &:hover {
+        background-color: darken($accent-color, 10%);
+      }
+
+      &:disabled {
+        background-color: lighten($accent-color, 20%);
+        cursor: not-allowed;
       }
     }
   }
+}
 
-  .error-message {
-    color: $accent-color;
-    font-size: 14px;
-    text-align: center;
-    margin: 8px 0;
-  }
+@media (max-width: $mobile-breakpoint) {
+  .register-container {
+    .register-form {
+      .form-grid {
+        grid-template-columns: 1fr;
 
-  .sign-up-button {
-    background-color: $accent-color;
-    color: $white;
-    border: none;
-    border-radius: $border-radius;
-    padding: 12px;
-    font-size: 16px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: background-color $transition-speed;
-
-    &:hover {
-      background-color: $hover-color;
+        .form-group {
+          &.full-width {
+            grid-column: span 1;
+          }
+        }
+      }
     }
   }
 }

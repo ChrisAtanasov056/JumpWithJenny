@@ -5,10 +5,10 @@ import Modal from 'react-modal';
 import 'slick-carousel/slick/slick.css';
 import 'slick-carousel/slick/slick-theme.css';
 import './Gallery.scss';
+import { useTranslation } from 'react-i18next'; // ✅ Import
 
-const baseUrl = 'https://localhost:7024'; // Replace with your backend URL
+const baseUrl = 'https://localhost:7024';
 
-// Modal styles
 const customStyles = {
   content: {
     top: '50%',
@@ -30,28 +30,25 @@ const customStyles = {
 };
 
 const GallerySection = () => {
+  const { t } = useTranslation(); // ✅ Use translation hook
+
   const [images, setImages] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const [selectedImage, setSelectedImage] = useState(null);
 
-  // Fetch images from your backend
   const fetchImages = async (pageNumber) => {
     setIsLoading(true);
     try {
       const response = await axios.get(`/Gallery?page=${pageNumber}&limit=8`);
-      console.log('API Response:', response.data); // Debugging
-
       const newImages = response.data.map((img) => ({
         ...img,
-        url: `${baseUrl}${img.Url}`, // Construct full URL
+        url: `${baseUrl}${img.Url}`,
       }));
 
-      console.log('Transformed Images:', newImages); // Debugging
-
       if (newImages.length === 0) {
-        setHasMore(false); // No more images to load
+        setHasMore(false);
       } else {
         setImages((prev) => [...prev, ...newImages]);
       }
@@ -62,29 +59,19 @@ const GallerySection = () => {
     }
   };
 
-  // Load initial images
   useEffect(() => {
     fetchImages(page);
   }, []);
 
-  // Fetch new images when page changes
   useEffect(() => {
     if (page > 1) {
       fetchImages(page);
     }
   }, [page]);
 
-  // Open modal with selected image
-  const openModal = (image) => {
-    setSelectedImage(image);
-  };
+  const openModal = (image) => setSelectedImage(image);
+  const closeModal = () => setSelectedImage(null);
 
-  // Close modal
-  const closeModal = () => {
-    setSelectedImage(null);
-  };
-
-  // Carousel settings
   const settings = {
     dots: false,
     infinite: true,
@@ -94,26 +81,20 @@ const GallerySection = () => {
     centerMode: true,
     centerPadding: '0',
     focusOnSelect: true,
-    draggable: true, // Enable mouse dragging
-    swipeToSlide: true, // Enable swipe gestures
-    touchThreshold: 50, // Increase sensitivity for touch/drag
+    draggable: true,
+    swipeToSlide: true,
+    touchThreshold: 50,
     swipeThreshold: 50,
     arrows: true,
-    arrowaitForAnimate: false,
+    arrowWaitForAnimate: false,
     responsive: [
       {
         breakpoint: 1024,
-        settings: {
-          slidesToShow: 3,
-          slidesToScroll: 1,
-        },
+        settings: { slidesToShow: 3, slidesToScroll: 1 },
       },
       {
         breakpoint: 768,
-        settings: {
-          slidesToShow: 1,
-          slidesToScroll: 1,
-        },
+        settings: { slidesToShow: 1, slidesToScroll: 1 },
       },
     ],
   };
@@ -121,7 +102,7 @@ const GallerySection = () => {
   return (
     <section className="gallery-section" id="gallery">
       <div className="section-header">
-        <h2>Photo Gallery</h2>
+        <h2>{t('galleryTitle')}</h2> {/* ✅ Translated title */}
       </div>
 
       <div className="gallery-carousel">
@@ -135,7 +116,7 @@ const GallerySection = () => {
               <div className="image-container">
                 <img 
                   src={img.url}
-                  alt={`Gallery item ${index + 1}`} 
+                  alt={`${t('galleryAlt')} ${index + 1}`} 
                   loading="lazy"
                   onError={(e) => {
                     e.target.src = 'https://placehold.co/200'; 
@@ -146,21 +127,6 @@ const GallerySection = () => {
           ))}
         </Slider>
       </div>
-      {/* Modal for full-size image */}
-      {/* <Modal
-        isOpen={!!selectedImage}
-        onRequestClose={closeModal}
-        style={customStyles}
-        contentLabel="Image Modal"
-      >
-        {selectedImage && (
-          <img
-            src={selectedImage.url}
-            alt="Full-size image"
-            className="modal-image"
-          />
-        )}
-      </Modal> */}
     </section>
   );
 };

@@ -16,6 +16,7 @@ import Profile from './components/Profile/Profile';
 import VerifyEmail from './services/VerifyEmail';
 import Gallery from './components/Gallery/Gallery';
 import ResetPassword from './components/ForgotPassword/ResetPassword';
+import './i18n';
 
 // Admin imports
 import AdminLayout from './components/Admin/AdminLayout';

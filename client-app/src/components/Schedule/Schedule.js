@@ -2,10 +2,12 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useAuth } from '../../services/AuthContext';
 import WorkoutModal from '../WorkoutModal/WorkoutModal';
+import { useTranslation } from 'react-i18next'; // <-- Add this
 import './Schedule.scss';
 
 const Schedule = () => {
   const { isAuthenticated, user } = useAuth();
+  const { t } = useTranslation(); // <-- Add this
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedWorkout, setSelectedWorkout] = useState(null);
   const [workouts, setWorkouts] = useState([]);
@@ -20,14 +22,14 @@ const Schedule = () => {
         setWorkouts(response.data);
       } catch (error) {
         console.error('Error fetching data:', error);
-        setError('Failed to fetch data. Please try again later.');
+        setError(t('schedule.error')); // <-- Translated error
       } finally {
         setLoading(false);
       }
     };
 
     fetchData();
-  }, []);
+  }, [t]);
 
   const openModal = (workout) => {
     setSelectedWorkout(workout);
@@ -41,7 +43,7 @@ const Schedule = () => {
 
   const handleRegistration = async (workout, shoeSize, cardType, usesOwnShoes) => {
     if (!isAuthenticated) {
-      alert('You need to be logged in to register for a workout.');
+      alert(t('schedule.loginRequired'));
       return;
     }
 
@@ -49,21 +51,17 @@ const Schedule = () => {
 
     try {
       const payload = {
-        workoutId: workout.Id,  // Changed to match your request structure
-        shoeSize: shoeSize,     // Changed to camelCase
-        cardType: cardType,     // Changed to camelCase
-        userId: user.id,        // Changed to camelCase
-        usesOwnShoes: usesOwnShoes // Changed to camelCase
+        workoutId: workout.Id,
+        shoeSize,
+        cardType,
+        userId: user.id,
+        usesOwnShoes,
       };
 
-      const response = await axios.post(
-        'https://localhost:7024/api/Schedule/apply',
-        payload
-      );
+      const response = await axios.post('https://localhost:7024/api/Schedule/apply', payload);
 
       if (response.status === 200) {
         const updatedWorkout = response.data;
-        
         setWorkouts((prevWorkouts) =>
           prevWorkouts.map((w) => (w.Id === updatedWorkout.Id ? updatedWorkout : w))
         );
@@ -71,13 +69,13 @@ const Schedule = () => {
       }
     } catch (error) {
       console.error('Error registering for workout:', error);
-      alert(error.response?.data?.message || 'Failed to register. Please try again.');
+      alert(error.response?.data?.message || t('schedule.registerFailed'));
     } finally {
       setIsRegistering((prev) => ({ ...prev, [workout.id]: false }));
     }
   };
 
-  if (loading) return <div className="loading">Loading...</div>;
+  if (loading) return <div className="loading">{t('schedule.loading')}</div>;
   if (error) return <div className="error">{error}</div>;
 
   const groupedWorkouts = workouts.reduce((acc, workout) => {
@@ -87,19 +85,27 @@ const Schedule = () => {
     return acc;
   }, {});
 
-  const daysOfWeek = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+  const daysOfWeek = [
+    t('days.monday'),
+    t('days.tuesday'),
+    t('days.wednesday'),
+    t('days.thursday'),
+    t('days.friday'),
+    t('days.saturday'),
+    t('days.sunday'),
+  ];
 
   return (
     <section id="schedule" className="schedule-section">
       <div className="schedule-container">
-        <h2>Weekly Schedule</h2>
+        <h2>{t('schedule.title')}</h2>
         <div className="desktop-schedule">
           <table className="schedule-table">
             <thead>
               <tr>
-                <th>Time</th>
-                {daysOfWeek.map((day) => (
-                  <th key={day}>{day}</th>
+                <th>{t('schedule.time')}</th>
+                {daysOfWeek.map((day, idx) => (
+                  <th key={idx}>{day}</th>
                 ))}
               </tr>
             </thead>
@@ -107,17 +113,29 @@ const Schedule = () => {
               {['14:00', '15:00', '16:00', '17:00', '18:00', '19:00', '20:00', '21:00'].map((time) => (
                 <tr key={time}>
                   <td>{time}</td>
-                  {daysOfWeek.map((day) => {
-                    const workout = groupedWorkouts[day]?.find((w) => w.Time === time);
+                  {daysOfWeek.map((_, i) => {
+                    const dayKey = [
+                      'Monday',
+                      'Tuesday',
+                      'Wednesday',
+                      'Thursday',
+                      'Friday',
+                      'Saturday',
+                      'Sunday',
+                    ][i];
+
+                    const workout = groupedWorkouts[dayKey]?.find((w) => w.Time === time);
                     const status = workout?.Status.toLowerCase();
+
                     return (
                       <td
-                        key={`${day}-${time}`}
+                        key={`${dayKey}-${time}`}
                         className={`schedule-cell ${status || 'empty'}`}
                         onClick={() => status === 'available' && openModal(workout)}
                       >
-                        {status === 'available' && (isRegistering[workout?.id] ? 'Registering...' : 'Available')}
-                        {status === 'booked' && 'Booked'}
+                        {status === 'available' &&
+                          (isRegistering[workout?.id] ? t('schedule.registering') : t('schedule.available'))}
+                        {status === 'booked' && t('schedule.booked')}
                       </td>
                     );
                   })}
