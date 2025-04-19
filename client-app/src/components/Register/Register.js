@@ -3,8 +3,10 @@ import { useAuth } from '../../services/AuthContext';
 import { create } from '../../services/authService';
 import SuccessModal from './SuccessModal';
 import './Register.scss';
+import { useTranslation } from 'react-i18next';
 
-const Register = ({ onClose, onLoginSuccess }) => {
+const Register = ({ onClose, onLoginSuccess, onRegisterSuccess }) => {
+  const { t } = useTranslation();
   const { login: authLogin } = useAuth();
   const [credentials, setCredentials] = useState({
     userName: '',
@@ -15,12 +17,10 @@ const Register = ({ onClose, onLoginSuccess }) => {
   });
   const [errorMessage, setErrorMessage] = useState('');
   const [isRegistering, setIsRegistering] = useState(false);
-  const [successMessage, setSuccessMessage] = useState('');
-  const [showModal, setShowModal] = useState(false); // State to control modal visibility
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setCredentials((prev) => ({ ...prev, [name]: value }));
+    setCredentials(prev => ({ ...prev, [name]: value }));
   };
 
   const handleSubmit = async (e) => {
@@ -29,50 +29,29 @@ const Register = ({ onClose, onLoginSuccess }) => {
       setIsRegistering(true);
       const response = await create(credentials);
 
-      if (response) {
-        const { token, user } = response;
-        if (user?.id && user?.username && user?.firstname && user?.lastname && user?.email && token) {
-          localStorage.setItem('jwtToken', token);
-          localStorage.setItem('user', JSON.stringify(user));
-          authLogin({ ...user, token });
-
-          // Set success message and show modal
-          setSuccessMessage('Registration successful. A verification email has been sent.');
-          setShowModal(true); // Show the modal
-        } else {
-          setErrorMessage('Registration failed. Incomplete user data received.');
-        }
+      if (response?.token && response?.user) {
+        localStorage.setItem('jwtToken', response.token);
+        localStorage.setItem('user', JSON.stringify(response.user));
+        authLogin({ ...response.user, token: response.token });
+        onRegisterSuccess(t('register.successMessage'));
       } else {
-        setErrorMessage('Registration failed. No user data received.');
+        setErrorMessage(t('register.incompleteDataError'));
       }
     } catch (error) {
-      console.error('Registration error:', error);
-      setErrorMessage('Registration failed. Please check your details and try again.');
+      setErrorMessage(t('register.credentialsError'));
+    } finally {
       setIsRegistering(false);
     }
   };
 
-  const handleModalClose = () => {
-    setShowModal(false); // Close the modal
-  };
-
   return (
     <div className="register-container">
-      {!isRegistering && !showModal && (
-        <form onSubmit={handleSubmit} className="register-form">
-          <h2>Create Account</h2>
+      <form onSubmit={handleSubmit} className="register-form">
+        <h2>{t('register.createAccount')}</h2>
+        
+        <div className="form-grid">
           <div className="form-group">
-            <label>Username</label>
-            <input
-              type="text"
-              name="userName"
-              value={credentials.userName}
-              onChange={handleChange}
-              required
-            />
-          </div>
-          <div className="form-group">
-            <label>First Name</label>
+            <label>{t('register.firstNameLabel')}</label>
             <input
               type="text"
               name="firstName"
@@ -81,8 +60,9 @@ const Register = ({ onClose, onLoginSuccess }) => {
               required
             />
           </div>
+
           <div className="form-group">
-            <label>Last Name</label>
+            <label>{t('register.lastNameLabel')}</label>
             <input
               type="text"
               name="lastName"
@@ -91,8 +71,20 @@ const Register = ({ onClose, onLoginSuccess }) => {
               required
             />
           </div>
-          <div className="form-group">
-            <label>Email</label>
+
+          <div className="form-group full-width">
+            <label>{t('register.userNameLabel')}</label>
+            <input
+              type="text"
+              name="userName"
+              value={credentials.userName}
+              onChange={handleChange}
+              required
+            />
+          </div>
+
+          <div className="form-group full-width">
+            <label>{t('register.emailLabel')}</label>
             <input
               type="email"
               name="email"
@@ -101,8 +93,9 @@ const Register = ({ onClose, onLoginSuccess }) => {
               required
             />
           </div>
-          <div className="form-group">
-            <label>Password</label>
+
+          <div className="form-group full-width">
+            <label>{t('register.passwordLabel')}</label>
             <input
               type="password"
               name="password"
@@ -111,13 +104,18 @@ const Register = ({ onClose, onLoginSuccess }) => {
               required
             />
           </div>
-          {errorMessage && <p className="error-message">{errorMessage}</p>}
-          <button type="submit" className="sign-up-button">Sign Up</button>
-        </form>
-      )}
+        </div>
 
-      {/* Display the success modal when showModal is true */}
-      {showModal && <SuccessModal message={successMessage} onClose={handleModalClose} />}
+        {errorMessage && <div className="error-message">{errorMessage}</div>}
+
+        <button 
+          type="submit" 
+          className="sign-up-button"
+          disabled={isRegistering}
+        >
+          {isRegistering ? t('register.creatingAccount') : t('register.signUpButton')}
+        </button>
+      </form>
     </div>
   );
 };

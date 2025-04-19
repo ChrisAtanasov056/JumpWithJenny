@@ -7,6 +7,8 @@ import { useAuth } from '../../services/AuthContext';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faUser } from '@fortawesome/free-solid-svg-icons';
 import { Link as RouterLink } from 'react-router-dom';
+import { useTranslation } from 'react-i18next'; // Import useTranslation
+import LanguageDropdown from '../lang/LanguageDropdown.tsx';
 
 const Navbar = () => {
   const [isModalOpen, setModalOpen] = useState(false);
@@ -15,6 +17,7 @@ const Navbar = () => {
   const [menuActive, setMenuActive] = useState(false);
 
   const { isAuthenticated, user, logout } = useAuth(); // Use authentication context
+  const { t, i18n } = useTranslation(); // Use useTranslation hook
 
   const toggleMenu = () => {
     setMenuActive(!menuActive);
@@ -26,7 +29,7 @@ const Navbar = () => {
   };
 
   const toggleProfileModal = () => {
-    console.log(user)
+    console.log(user);
     setProfileOpen(!isProfileOpen);
   };
 
@@ -39,12 +42,16 @@ const Navbar = () => {
     setProfileOpen(false); // Close profile modal
   };
 
+  const handleLogoClick = (e) => {
+    e.preventDefault();
+    // Force full page reload while maintaining proper navigation
+    window.location.href = '/';
+  };
 
-const handleLogoClick = (e) => {
-  e.preventDefault();
-  // Force full page reload while maintaining proper navigation
-  window.location.href = '/';
-};
+  // Function to handle language change
+  const changeLanguage = (language) => {
+    i18n.changeLanguage(language);
+  };
 
   return (
     <>
@@ -52,17 +59,17 @@ const handleLogoClick = (e) => {
       <nav className="navbar navbar-expand-lg fixed-top">
         <div className="container">
           <Link className="navbar-brand" to="/">
-          <a 
-            className="navbar-brand" 
-            href="/" 
-            onClick={handleLogoClick}
-          >
-            <img 
-              src="/images/Logo.png"  // Use absolute path from public folder
-              alt="Jump With Jenny Logo" 
-              className="navbar-logo"
-            />
-          </a>      
+            <a 
+              className="navbar-brand" 
+              href="/" 
+              onClick={handleLogoClick}
+            >
+              <img 
+                src="/images/Logo.png"  // Use absolute path from public folder
+                alt="Jump With Jenny Logo" 
+                className="navbar-logo"
+              />
+            </a>      
           </Link>
           <button 
             className={`navbar-toggler ${menuActive ? 'active' : ''}`} 
@@ -77,45 +84,45 @@ const handleLogoClick = (e) => {
           </button>
           <div className={`navbar-nav ${isNavActive ? 'active' : ''}`}>
             <li className="nav-item">
-              <Link to="welcome" className="nav-link" smooth={true} duration={500} onClick={toggleMenu}>Home</Link>
+              <Link to="welcome" className="nav-link" smooth={true} duration={500} onClick={toggleMenu}>{t('navbar.home')}</Link>
             </li>
             <li className="nav-item">
-              <Link to="about" className="nav-link" smooth={true} duration={500} onClick={toggleMenu}>About Me</Link>
+              <Link to="about" className="nav-link" smooth={true} duration={500} onClick={toggleMenu}>{t('navbar.about')}</Link>
             </li>
             <li className="nav-item">
-              <Link to="gallery" className="nav-link" smooth={true} duration={500} onClick={toggleMenu}>Gallery</Link>
+              <Link to="gallery" className="nav-link" smooth={true} duration={500} onClick={toggleMenu}>{t('navbar.gallery')}</Link>
             </li>
             <li className="nav-item">
-              <Link to="faq" className="nav-link" smooth={true} duration={500} onClick={toggleMenu}>FAQ</Link>
+              <Link to="faq" className="nav-link" smooth={true} duration={500} onClick={toggleMenu}>{t('navbar.faq')}</Link>
             </li>
             <li className="nav-item">
-              <Link to="schedule" className="nav-link" smooth={true} duration={500} onClick={toggleMenu}>Schedules</Link>
+              <Link to="schedule" className="nav-link" smooth={true} duration={500} onClick={toggleMenu}>{t('navbar.schedule')}</Link>
             </li>
             <li className="nav-item">
-              <Link to="contacts" className="nav-link" smooth={true} duration={500} onClick={toggleMenu}>Contact</Link>
+              <Link to="contacts" className="nav-link" smooth={true} duration={500} onClick={toggleMenu}>{t('navbar.contact')}</Link>
             </li>
-                {isAuthenticated ? (
-                <>
-                  {user?.role === 'Administrator' && (
+            {isAuthenticated ? (
+              <>
+                {user?.role === 'Administrator' && (
                   <li className="nav-item">
                     <RouterLink to="/admin" className="nav-link" onClick={toggleMenu}>
-                      Admin Panel
+                      {t('navbar.admin_panel')}
                     </RouterLink>
                   </li>
-                  )}
-                  <li className="nav-item">
-                    <button className="profile-area" onClick={toggleProfileModal}>
-                      <FontAwesomeIcon icon={faUser} className="profile-icon" />
-                    </button>
-                  </li>
-                </>
-              ) : (
+                )}
                 <li className="nav-item">
-                  <button onClick={toggleModal} className="login-btn">Login/Register</button>
+                  <button className="profile-area" onClick={toggleProfileModal}>
+                    <FontAwesomeIcon icon={faUser} className="profile-icon" />
+                  </button>
                 </li>
-              )}
+              </>
+            ) : (
+              <li className="nav-item">
+                <button onClick={toggleModal} className="login-btn">{t('navbar.login_register')}</button>
+              </li>
+            )}
           </div>
-          
+          <LanguageDropdown changeLanguage={changeLanguage} /> {/* Pass changeLanguage function */}
           <ul className="social-icon ml-3">
             <li>
               <a href="https://facebook.com/groups/950454285546258" target="_blank" rel="noopener noreferrer" className="facebook" aria-label="Facebook"></a>
@@ -129,6 +136,7 @@ const handleLogoClick = (e) => {
           </ul>
         </div>
       </nav>
+
       {isModalOpen && (
         <AuthModal 
           onClose={toggleModal} 

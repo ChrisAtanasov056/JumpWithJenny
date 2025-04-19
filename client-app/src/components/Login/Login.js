@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
-import { useAuth } from '../../services/AuthContext'; // Make sure the useAuth hook is properly imported
-import { login } from '../../services/authService'; // Ensure login function is correct
+import { useAuth } from '../../services/AuthContext'; 
+import { login } from '../../services/authService'; 
 import './Login.scss';
+import { useTranslation } from 'react-i18next'; // Add i18n hook
 
 const Login = ({ onClose, onLoginSuccess }) => {
-  const { login: authLogin } = useAuth(); // Destructure login from the context
+  const { t } = useTranslation(); // Use translation hook
+  const { login: authLogin } = useAuth();
   const [credentials, setCredentials] = useState({ email: '', password: '' });
   const [errorMessage, setErrorMessage] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
@@ -31,24 +33,24 @@ const Login = ({ onClose, onLoginSuccess }) => {
           // Handle successful login and close modal
           onLoginSuccess({ ...user, token });
           onClose();
-          setSuccessMessage('Login successful. Welcome back!');
+          setSuccessMessage(t('login.successMessage'));
         } else {
-          setErrorMessage('Login failed. Incomplete user data received.');
+          setErrorMessage(t('login.incompleteDataError'));
         }
       } else {
-        setErrorMessage('Login failed. No user data received.');
+        setErrorMessage(t('login.noDataError'));
       }
     } catch (error) {
       console.error('Login error:', error);
-      setErrorMessage('Login failed. Please check your credentials and try again.');
+      setErrorMessage(t('login.credentialsError'));
     }
   };
 
   return (
     <form onSubmit={handleSubmit} className="login-form">
-      <h2>Welcome Back</h2>
+      <h2>{t('login.welcomeBack')}</h2>
       <div className="form-group">
-        <label>Email</label>
+        <label>{t('login.emailLabel')}</label>
         <input
           type="email"
           name="email"
@@ -58,7 +60,7 @@ const Login = ({ onClose, onLoginSuccess }) => {
         />
       </div>
       <div className="form-group">
-        <label>Password</label>
+        <label>{t('login.passwordLabel')}</label>
         <input
           type="password"
           name="password"
@@ -69,7 +71,7 @@ const Login = ({ onClose, onLoginSuccess }) => {
       </div>
       {errorMessage && <p className="error-message">{errorMessage}</p>}
       {successMessage && <p className="success-message">{successMessage}</p>}
-      <button type="submit" className="sign-in-button">Login</button>
+      <button type="submit" className="sign-in-button">{t('login.loginButton')}</button>
     </form>
   );
 };

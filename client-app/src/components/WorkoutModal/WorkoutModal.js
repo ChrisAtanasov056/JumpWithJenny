@@ -1,22 +1,21 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../services/AuthContext';
+import { useTranslation } from 'react-i18next';
 import axios from 'axios';
 import './WorkoutModal.scss';
 
 const WorkoutModal = ({ isOpen, onClose, selectedWorkout, onRegister, isLoggedIn }) => {
-  // Form states
+  const { t } = useTranslation();
+  const { user } = useAuth();
+
   const [selectedSize, setSelectedSize] = useState('');
   const [selectedCard, setSelectedCard] = useState('');
   const [usesOwnShoes, setUsesOwnShoes] = useState(false);
-  
-  // Status states
   const [submittedWorkout, setSubmittedWorkout] = useState(null);
   const [error, setError] = useState('');
   const [isCheckingRegistration, setIsCheckingRegistration] = useState(false);
   const [isAlreadyRegistered, setIsAlreadyRegistered] = useState(false);
   const [cancelSuccess, setCancelSuccess] = useState(false);
-  
-  const { user } = useAuth();
 
   useEffect(() => {
     if (isOpen && isLoggedIn && selectedWorkout) {
@@ -46,7 +45,7 @@ const WorkoutModal = ({ isOpen, onClose, selectedWorkout, onRegister, isLoggedIn
       setIsAlreadyRegistered(response.data);
     } catch (error) {
       console.error('Error checking registration:', error);
-      setError('Failed to check registration status');
+      setError(t('errorCheckingRegistration'));
       setIsAlreadyRegistered(false);
     } finally {
       setIsCheckingRegistration(false);
@@ -67,7 +66,7 @@ const WorkoutModal = ({ isOpen, onClose, selectedWorkout, onRegister, isLoggedIn
       }, 3000);
     } catch (error) {
       console.error('Error canceling registration:', error);
-      setError('Failed to cancel registration');
+      setError(t('errorCancelRegistration'));
     }
   };
 
@@ -88,21 +87,21 @@ const WorkoutModal = ({ isOpen, onClose, selectedWorkout, onRegister, isLoggedIn
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    
+
     if (!usesOwnShoes && !selectedSize) {
-      setError('Please select a shoe size or choose to use your own shoes.');
+      setError(t('errorSelectShoes'));
       return;
     }
     if (!selectedCard) {
-      setError('Please select a workout card type.');
+      setError(t('errorSelectCard'));
       return;
     }
 
     const cardTypeMap = {
-      'CoolFit Card': 0,
-      'Pulse Fitness Card': 1,
-      'Individual Workout': 2
-    }
+      [t('coolfitCard')]: 0,
+      [t('pulseCard')]: 1,
+      [t('individualWorkout')]: 2
+    };
 
     setSubmittedWorkout(selectedWorkout);
     setTimeout(() => {
@@ -116,10 +115,8 @@ const WorkoutModal = ({ isOpen, onClose, selectedWorkout, onRegister, isLoggedIn
     }, 5000);
   };
 
-  // Calculate spots information
   const maxSpots = 20;
   const takenSpots = maxSpots - (selectedWorkout?.AvailableSpots ?? 0);
-  const spotsText = `${takenSpots}/${maxSpots}`;
   const isFull = takenSpots >= maxSpots;
 
   if (!isOpen) return null;
@@ -128,34 +125,29 @@ const WorkoutModal = ({ isOpen, onClose, selectedWorkout, onRegister, isLoggedIn
     <div className="modal-overlay">
       <div className="modal-content">
         <span className="close" onClick={onClose}>&times;</span>
-        
+
         {isLoggedIn ? (
           <>
-            <h2>Register for {selectedWorkout.Day} at {selectedWorkout.Time}</h2>
-            
-            
-            {/* Status Flow */}
+            <h2>{t('registerFor')} {t(`days.${selectedWorkout.Day.toLowerCase()}`)} {t('at')} {selectedWorkout.Time}</h2>
+
             {isCheckingRegistration ? (
-              <div className="loading-message">Checking registration status...</div>
+              <div className="loading-message">{t('checkingRegistration')}</div>
             ) : cancelSuccess ? (
               <div className="success-animation">
                 <div className="checkmark">✓</div>
-                <p>Registration cancelled successfully!</p>
+                <p>{t('registrationCancelled')}</p>
               </div>
             ) : isAlreadyRegistered ? (
               <div className="already-registered">
-                <p>You are already registered for this workout.</p>
-                <button 
-                  onClick={handleCancelRegistration}
-                  className="cancel-button"
-                >
-                  Cancel Registration
+                <p>{t('alreadyRegistered')}</p>
+                <button onClick={handleCancelRegistration} className="cancel-button">
+                  {t('cancelRegistration')}
                 </button>
               </div>
             ) : submittedWorkout && submittedWorkout.Id === selectedWorkout.Id ? (
               <div className="success-animation">
                 <div className="checkmark">✓</div>
-                <p>Registration successful!</p>
+                <p>{t('registrationSuccess')}</p>
               </div>
             ) : (
               <form onSubmit={handleSubmit}>
@@ -163,25 +155,26 @@ const WorkoutModal = ({ isOpen, onClose, selectedWorkout, onRegister, isLoggedIn
                   <>
                     <div className="spots-info">
                       <span className={`spots-text ${isFull ? 'full' : 'available'}`}>
-                        {spotsText} spots taken
+                        {t('spotsTaken', { taken: takenSpots, max: maxSpots })}
                       </span>
-                      {isFull && <span className="full-message"> - Class full</span>}
+                      {isFull && <span className="full-message"> - {t('classFull')}</span>}
                     </div>
+
                     <div className="form-group">
                       <label className="checkbox-label">
-                        <input 
-                          type="checkbox" 
+                        <input
+                          type="checkbox"
                           checked={usesOwnShoes}
                           onChange={handleOwnShoesChange}
                         />
                         <span className="checkbox-custom"></span>
-                        I will use my own shoes
+                        {t('useOwnShoes')}
                       </label>
                     </div>
 
                     {!usesOwnShoes && (
                       <div className="size-selection">
-                        <label>Select Kangoo Jump Shoe Size:</label>
+                        <label>{t('selectShoeSize')}</label>
                         <div className="size-buttons">
                           {['S', 'M', 'L', 'XL'].map((size) => (
                             <button
@@ -200,31 +193,31 @@ const WorkoutModal = ({ isOpen, onClose, selectedWorkout, onRegister, isLoggedIn
                     )}
 
                     <div className="card-selection">
-                      <label htmlFor="workout-card">Select Workout Card:</label>
+                      <label htmlFor="workout-card">{t('selectCard')}</label>
                       <select
                         id="workout-card"
                         value={selectedCard}
                         onChange={handleCardChange}
                         required
                       >
-                        <option value="" disabled>Select card type</option>
-                        <option value="CoolFit Card">CoolFit Card</option>
-                        <option value="Pulse Fitness Card">Pulse Fitness Card</option>
-                        <option value="Individual Workout">Individual Workout</option>
+                        <option value="" disabled>{t('selectCardPlaceholder')}</option>
+                        <option value={t('coolfitCard')}>{t('coolfitCard')}</option>
+                        <option value={t('pulseCard')}>{t('pulseCard')}</option>
+                        <option value={t('individualWorkout')}>{t('individualWorkout')}</option>
                       </select>
                     </div>
 
                     {error && <div className="error-message">{error}</div>}
 
                     <button type="submit" className="submit-button">
-                      Register
+                      {t('submit')}
                     </button>
                   </>
                 ) : (
                   <div className="full-notice">
-                    <p>This class has reached maximum capacity.</p>
+                    <p>{t('fullNotice')}</p>
                     <button onClick={onClose} className="close-button">
-                      Close
+                      {t('close')}
                     </button>
                   </div>
                 )}
@@ -233,9 +226,9 @@ const WorkoutModal = ({ isOpen, onClose, selectedWorkout, onRegister, isLoggedIn
           </>
         ) : (
           <div className="login-prompt">
-            <h2>Please Log In</h2>
-            <p>You need to be logged in to register for this workout.</p>
-            <button onClick={onClose}>Close</button>
+            <h2>{t('loginPromptTitle')}</h2>
+            <p>{t('loginPromptText')}</p>
+            <button onClick={onClose}>{t('close')}</button>
           </div>
         )}
       </div>

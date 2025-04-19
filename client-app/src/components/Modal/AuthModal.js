@@ -9,8 +9,10 @@ import { signInWithFacebook, signInWithGoogle } from '../../services/firebase.js
 import { useAuth } from '../../services/AuthContext'; 
 import ForgotPasswordModal from '../ForgotPassword/ForgotPasswordModal.js';
 import axios from 'axios';
+import { useTranslation } from 'react-i18next';
 
 const AuthModal = ({ onClose, onLoginSuccess, setModalOpen }) => {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const [isLogin, setIsLogin] = useState(true);
   const [animationClass, setAnimationClass] = useState('zoom-in');
@@ -27,11 +29,11 @@ const AuthModal = ({ onClose, onLoginSuccess, setModalOpen }) => {
   const handleForgotPassword = async (email) => {
     try {
       await axios.post('https://localhost:7024/Account/forgot-password', { email });
-      setSuccessMessage('If an account exists, a password reset email has been sent.');
+      setSuccessMessage(t('auth.forgotPasswordSuccess'));
       setShowSuccessModal(true);
       setShowForgotModal(false);
     } catch (error) {
-      setSuccessMessage('Error sending reset email. Please try again.');
+      setSuccessMessage(t('auth.forgotPasswordError'));
       setShowSuccessModal(true);
     }
   };
@@ -41,7 +43,7 @@ const AuthModal = ({ onClose, onLoginSuccess, setModalOpen }) => {
     setTimeout(() => {
       setIsLogin(!isLogin);
       setAnimationClass('zoom-in');
-    }, 400);
+    }, 300);
   };
 
   const handleSocialLogin = async (platform) => {
@@ -60,19 +62,17 @@ const AuthModal = ({ onClose, onLoginSuccess, setModalOpen }) => {
 
   const handleRegisterSuccess = (message) => {
     setSuccessMessage(message);
-    setShowSuccessModal(true); // Show success modal
-    setModalOpen(false); // Close the main modal immediately
-  };
-
-  const handleCloseSuccessModal = () => {
-    setShowSuccessModal(false); // Close the success modal
+    setShowSuccessModal(true);
+    setModalOpen(false);
   };
 
   return (
     <>
       <div className="modal-overlay">
-        <div className="modal-content">
-          <button className="close-button" onClick={() => { console.log('Modal close clicked'); onClose(); }}>X</button>
+        <div className={`modal-content ${!isLogin ? 'register-mode' : ''}`}>
+          <button className="close-button" onClick={onClose}>
+            &times;
+          </button>
           
           <div className={`form-container ${animationClass}`}>
             {isLogin ? (
@@ -80,7 +80,7 @@ const AuthModal = ({ onClose, onLoginSuccess, setModalOpen }) => {
                 <Login onClose={onClose} onLoginSuccess={onLoginSuccess} />
                 <div className="auth-options">
                   <button onClick={() => setShowForgotModal(true)} className="toggle-button">
-                    Forgot Password?
+                    {t('auth.forgotPassword')}
                   </button>
                 </div>
               </>
@@ -88,16 +88,15 @@ const AuthModal = ({ onClose, onLoginSuccess, setModalOpen }) => {
               <Register 
                 onClose={onClose} 
                 onLoginSuccess={onLoginSuccess} 
-                setModalOpen={setModalOpen} 
                 onRegisterSuccess={handleRegisterSuccess} 
               />
             )}
 
             <div className="auth-footer">
               <p className="toggle-prompt">
-                {isLogin ? "Don't have an account?" : "Already have an account?"}
+                {isLogin ? t('auth.dontHaveAccount') : t('auth.alreadyHaveAccount')}
                 <button onClick={toggleForm} className="toggle-button">
-                  {isLogin ? 'Register' : 'Login'}
+                  {isLogin ? t('auth.register') : t('auth.login')}
                 </button>
               </p>
 
@@ -107,7 +106,6 @@ const AuthModal = ({ onClose, onLoginSuccess, setModalOpen }) => {
                     key={platform}
                     onClick={() => handleSocialLogin(platform)}
                     className={`social-btn ${className}`}
-                    aria-label={`Login with ${platform}`}
                   >
                     <FontAwesomeIcon icon={icon} />
                   </button>
@@ -119,13 +117,16 @@ const AuthModal = ({ onClose, onLoginSuccess, setModalOpen }) => {
       </div>
 
       {showForgotModal && (
-        <ForgotPasswordModal onClose={() => setShowForgotModal(false)} onSubmit={handleForgotPassword} />
+        <ForgotPasswordModal 
+          onClose={() => setShowForgotModal(false)} 
+          onSubmit={handleForgotPassword} 
+        />
       )}
 
       {showSuccessModal && (
         <SuccessModal 
           message={successMessage} 
-          onClose={handleCloseSuccessModal}
+          onClose={() => setShowSuccessModal(false)}
         />
       )}
     </>

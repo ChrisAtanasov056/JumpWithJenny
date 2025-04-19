@@ -1,0 +1,58 @@
+.language-dropdown {
+    position: relative;
+    cursor: pointer;
+    font-size: 0.9rem;
+    margin-left: auto; // Pushes to the end of flex container
+    min-width: 60px;
+  
+    .selected-language {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      padding: 5px 10px;
+      border-radius: 4px;
+      transition: background-color 0.2s;
+  
+      &:hover {
+        background-color: rgba(0, 0, 0, 0.05);
+      }
+  
+      .language-code {
+        font-weight: 500;
+      }
+  
+      .chevron {
+        font-size: 0.8em;
+        margin-left: auto;
+      }
+    }
+  
+    .language-options {
+      position: absolute;
+      right: 0;
+      top: 100%;
+      background: white;
+      border-radius: 4px;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
+      margin-top: 5px;
+      z-index: 1000;
+      min-width: 120px;
+  
+      .language-option {
+        padding: 8px 12px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        transition: background-color 0.2s;
+  
+        &:hover {
+          background-color: rgba(0, 0, 0, 0.05);
+        }
+  
+        &.active {
+          background-color: rgba(0, 0, 0, 0.1);
+          font-weight: 500;
+        }
+      }
+    }
+  }

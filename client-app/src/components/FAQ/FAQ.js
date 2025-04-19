@@ -1,25 +1,27 @@
 import React, { useState } from 'react';
-import './FAQ.scss'; // Updated import for SCSS
+import { useTranslation } from 'react-i18next'; // ← Add this
+import './FAQ.scss';
 
 const FAQ = () => {
-  // Sample FAQs
+  const { t } = useTranslation(); // ← Add this
+
   const faqData = [
     {
-      question: "What is Kangoo Jump?",
-      answer: "Kangoo Jump is a fun and high-intensity workout that uses special rebound shoes designed to reduce impact and increase calorie burn."
+      question: t('faq.q1'),
+      answer: t('faq.a1'),
     },
     {
-      question: "How can I book a Kangoo Jump class?",
-      answer: "You can book a class by visiting our schedule page or contacting us directly through the contact form."
+      question: t('faq.q2'),
+      answer: t('faq.a2'),
     },
     {
-      question: "What are the benefits of Kangoo Jump?",
-      answer: "Kangoo Jump helps improve cardiovascular fitness, strengthens muscles, and enhances coordination while minimizing joint stress."
+      question: t('faq.q3'),
+      answer: t('faq.a3'),
     },
     {
-      question: "Do I need to bring my own shoes?",
-      answer: "We provide Kangoo Jump shoes for all participants, but feel free to bring your own if you prefer."
-    }
+      question: t('faq.q4'),
+      answer: t('faq.a4'),
+    },
   ];
 
   const [activeIndex, setActiveIndex] = useState(null);
@@ -30,12 +32,12 @@ const FAQ = () => {
 
   return (
     <section id="faq" className="faq-section">
-      <h2>Frequently Asked Questions</h2>
+      <h2>{t('faq.title')}</h2>
       <div className="faq-list">
         {faqData.map((item, index) => (
           <div key={index} className="faq-item">
-            <div 
-              onClick={() => toggleFAQ(index)} 
+            <div
+              onClick={() => toggleFAQ(index)}
               className={`faq-question ${activeIndex === index ? 'active' : ''}`}
             >
               {item.question}

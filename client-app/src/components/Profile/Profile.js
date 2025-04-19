@@ -1,9 +1,11 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
+import { useTranslation } from "react-i18next"; // Add this import
 import { resendVerificationEmail, verifyEmail } from "../../services/authService";
-import ChangePasswordModal from "../ChangePassword/ChangePasswordModal"; // Import the new component
+import ChangePasswordModal from "../ChangePassword/ChangePasswordModal";
 import "./ProfileModal.scss";
 
 const ProfileModal = ({ onClose, user, onLogout }) => {
+  const { t } = useTranslation(); // Use the hook
   const [isPasswordModalOpen, setPasswordModalOpen] = useState(false);
   const [verificationMessage, setVerificationMessage] = useState("");
   const [localUser, setLocalUser] = useState(user);
@@ -12,9 +14,9 @@ const ProfileModal = ({ onClose, user, onLogout }) => {
     try {
       setVerificationMessage("");
       await resendVerificationEmail(localUser.email);
-      setVerificationMessage("Verification email sent! Check your inbox.");
+      setVerificationMessage(t("profile.verificationEmailSent"));
     } catch (error) {
-      setVerificationMessage("Failed to send email. Please try again.");
+      setVerificationMessage(t("profile.verificationEmailFailed"));
     }
   };
 
@@ -22,9 +24,9 @@ const ProfileModal = ({ onClose, user, onLogout }) => {
     try {
       const response = await verifyEmail(localUser.id, localUser.token);
       setLocalUser((prevUser) => ({ ...prevUser, EmailConfirmed: true }));
-      alert("Email verified successfully!");
+      alert(t("profile.emailVerified"));
     } catch (error) {
-      alert("Error confirming email. Please try again.");
+      alert(t("profile.emailVerificationFailed"));
     }
   };
 
@@ -32,7 +34,7 @@ const ProfileModal = ({ onClose, user, onLogout }) => {
     <div className="profile-modal">
       <div className="modal-content">
         <div className="modal-header">
-          <h2>Your Profile</h2>
+          <h2>{t("profile.title")}</h2>
           <button className="close-icon" onClick={onClose}>
             &times;
           </button>
@@ -40,28 +42,28 @@ const ProfileModal = ({ onClose, user, onLogout }) => {
 
         <div className="profile-details">
           <div className="detail-item">
-            <span className="label">Username</span>
-            <span className="value">{localUser.username || "N/A"}</span>
+            <span className="label">{t("profile.username")}</span>
+            <span className="value">{localUser.username || t("profile.notAvailable")}</span>
           </div>
           <div className="detail-item">
-            <span className="label">Name</span>
-            <span className="value">{[localUser.firstname, localUser.lastname].join(" ") || "N/A"}</span>
+            <span className="label">{t("profile.name")}</span>
+            <span className="value">{[localUser.firstname, localUser.lastname].join(" ") || t("profile.notAvailable")}</span>
           </div>
           <div className="detail-item">
-            <span className="label">Email</span>
-            <span className="value">{localUser.email || "N/A"}</span>
+            <span className="label">{t("profile.email")}</span>
+            <span className="value">{localUser.email || t("profile.notAvailable")}</span>
           </div>
           <div className="detail-item">
-            <span className="label">Verified</span>
+            <span className="label">{t("profile.verified")}</span>
             <span className="value">
-              {localUser.emailConfirmed ? "Yes ✅" : "No ❌"}
+              {localUser.emailConfirmed ? t("profile.yes") : t("profile.no")}
             </span>
           </div>
 
           {!localUser.emailConfirmed && (
             <div className="verification-section">
               <button className="btn btn-warning" onClick={handleResendVerification}>
-                Resend Verification Email
+                {t("profile.resendVerificationEmail")}
               </button>
               {verificationMessage && <p className="message">{verificationMessage}</p>}
             </div>
@@ -70,15 +72,14 @@ const ProfileModal = ({ onClose, user, onLogout }) => {
 
         <div className="modal-actions">
           <button className="btn btn-primary" onClick={() => setPasswordModalOpen(true)}>
-            Change Password
+            {t("profile.changePassword")}
           </button>
           <button className="btn btn-logout" onClick={onLogout}>
-            Logout
+            {t("profile.logout")}
           </button>
         </div>
       </div>
 
-      {/* Use the new ChangePasswordModal */}
       {isPasswordModalOpen && (
         <ChangePasswordModal
           onClose={() => setPasswordModalOpen(false)}

@@ -1,0 +1,138 @@
+{
+    "about": {
+      "title": "About Me",
+      "content": "Hi, I'm Jenny, a certified Kangoo Jump trainer. I'm passionate about combining fitness with fun, and I've found Kangoo Jumps to be the perfect way to do that. These low-impact, high-energy workouts are great for improving cardio, strength, and flexibility while keeping things exciting!\n\nI love helping people of all fitness levels feel confident and motivated. Whether you're new to fitness or an experienced athlete, my classes are designed to energize and challenge you in a fun way.\n\nJoin me for a Kangoo Jump session and experience a workout that's as enjoyable as it is effective!"
+    },
+    "navbar": {
+      "home": "Home",
+      "about": "About Me",
+      "gallery": "Gallery",
+      "faq": "FAQ",
+      "schedule": "Schedules",
+      "contact": "Contact",
+      "login_register": "Login/Register",
+      "admin_panel": "Admin Panel"
+    },
+
+    "welcomeTitle": "Welcome to Jump With Jenny!",
+    "welcomeText": "Welcome to my Kangoo Jump classes, where fun, fitness, and results come together to help you feel stronger and more energized!",
+    "startPrompt": "Click the button below to get started.",
+    "startText": "Get Started",
+
+    "galleryTitle": "Photo Gallery",
+    "galleryAlt": "Gallery item",
+
+    "schedule": {
+        "title": "Weekly Schedule",
+        "time": "Time",
+        "available": "Available",
+        "booked": "Booked",
+        "registering": "Registering...",
+        "loading": "Loading...",
+        "error": "Failed to fetch data. Please try again later.",
+        "loginRequired": "You need to be logged in to register for a workout.",
+        "registerFailed": "Failed to register. Please try again."
+    },
+    "days": {
+        "monday": "Monday",
+        "tuesday": "Tuesday",
+        "wednesday": "Wednesday",
+        "thursday": "Thursday",
+        "friday": "Friday",
+        "saturday": "Saturday",
+        "sunday": "Sunday"
+    },
+    "faq": {
+        "title": "Frequently Asked Questions",
+        "q1": "What is Kangoo Jump?",
+        "a1": "Kangoo Jump is a fun and high-intensity workout that uses special rebound shoes designed to reduce impact and increase calorie burn.",
+        "q2": "How can I book a Kangoo Jump class?",
+        "a2": "You can book a class by visiting our schedule page or contacting us directly through the contact form.",
+        "q3": "What are the benefits of Kangoo Jump?",
+        "a3": "Kangoo Jump helps improve cardiovascular fitness, strengthens muscles, and enhances coordination while minimizing joint stress.",
+        "q4": "Do I need to bring my own shoes?",
+        "a4": "We provide Kangoo Jump shoes for all participants, but feel free to bring your own if you prefer."
+    },
+    "contacts": {
+        "title": "Contact Us",
+        "name": "Name",
+        "email": "Email",
+        "message": "Message",
+        "send": "Send Message",
+        "location": "Where You Can Find Us"
+    },
+    "profile": {
+        "title": "Your Profile",
+        "username": "Username",
+        "name": "Name",
+        "email": "Email",
+        "verified": "Verified",
+        "yes": "Yes ✅",
+        "no": "No ❌",
+        "resendVerificationEmail": "Resend Verification Email",
+        "verificationEmailSent": "Verification email sent! Check your inbox.",
+        "verificationEmailFailed": "Failed to send email. Please try again.",
+        "emailVerified": "Email verified successfully!",
+        "emailVerificationFailed": "Error confirming email. Please try again.",
+        "changePassword": "Change Password",
+        "logout": "Logout",
+        "notAvailable": "N/A"
+    },
+    "auth": {
+        "closeModal": "X",
+        "forgotPassword": "Forgot Password?",
+        "forgotPasswordSuccess": "If an account exists, a password reset email has been sent.",
+        "forgotPasswordError": "Error sending reset email. Please try again.",
+        "dontHaveAccount": "Don't have an account?",
+        "alreadyHaveAccount": "Already have an account?",
+        "register": "Register",
+        "login": "Login",
+        "socialLogin": "Login with Social Media"
+    },
+    "login": {
+        "welcomeBack": "Welcome Back",
+        "emailLabel": "Email",
+        "passwordLabel": "Password",
+        "successMessage": "Login successful. Welcome back!",
+        "incompleteDataError": "Login failed. Incomplete user data received.",
+        "noDataError": "Login failed. No user data received.",
+        "credentialsError": "Login failed. Please check your credentials and try again.",
+        "loginButton": "Login"
+    },
+    "register": {
+        "createAccount": "Create Account",
+        "userNameLabel": "Username",
+        "firstNameLabel": "First Name",
+        "lastNameLabel": "Last Name",
+        "emailLabel": "Email",
+        "passwordLabel": "Password",
+        "successMessage": "Registration successful. A verification email has been sent.",
+        "incompleteDataError": "Registration failed. Incomplete user data received.",
+        "noDataError": "Registration failed. No user data received.",
+        "credentialsError": "Registration failed. Please check your details and try again.",
+        "signUpButton": "Sign Up"
+    },
+        "registerFor": "Register for",
+        "at": "at",
+        "checkingRegistration": "Checking registration status...",
+        "registrationCancelled": "Registration cancelled successfully!",
+        "alreadyRegistered": "You are already registered for this workout.",
+        "cancelRegistration": "Cancel Registration",
+        "registrationSuccess": "Registration successful!",
+        "spotsTaken": "{{taken}}/{{max}} spots taken",
+        "classFull": "Class full",
+        "useOwnShoes": "I will use my own shoes",
+        "selectShoeSize": "Select Kangoo Jump Shoe Size:",
+        "selectCard": "Select Workout Card:",
+        "selectCardPlaceholder": "Select card type",
+        "coolfitCard": "CoolFit Card",
+        "pulseCard": "Pulse Fitness Card",
+        "individualWorkout": "Individual Workout",
+        "errorSelectShoes": "Please select a shoe size or choose to use your own shoes.",
+        "errorSelectCard": "Please select a workout card type.",
+        "submit": "Register",
+        "fullNotice": "This class has reached maximum capacity.",
+        "close": "Close",
+        "loginPromptTitle": "Please Log In",
+        "loginPromptText": "You need to be logged in to register for this workout."
+}
