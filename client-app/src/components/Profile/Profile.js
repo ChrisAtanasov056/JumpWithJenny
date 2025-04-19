@@ -60,6 +60,13 @@ const ProfileModal = ({ onClose, user, onLogout }) => {
             </span>
           </div>
 
+          
+        </div>
+
+        <div className="modal-actions">
+          <button className="btn btn-primary" onClick={() => setPasswordModalOpen(true)}>
+            {t("profile.changePassword")}
+          </button>
           {!localUser.emailConfirmed && (
             <div className="verification-section">
               <button className="btn btn-warning" onClick={handleResendVerification}>
@@ -68,12 +75,6 @@ const ProfileModal = ({ onClose, user, onLogout }) => {
               {verificationMessage && <p className="message">{verificationMessage}</p>}
             </div>
           )}
-        </div>
-
-        <div className="modal-actions">
-          <button className="btn btn-primary" onClick={() => setPasswordModalOpen(true)}>
-            {t("profile.changePassword")}
-          </button>
           <button className="btn btn-logout" onClick={onLogout}>
             {t("profile.logout")}
           </button>

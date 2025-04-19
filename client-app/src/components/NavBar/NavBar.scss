@@ -23,7 +23,8 @@ $border-radius: 8px;
 
   .container {
     display: flex;
-    justify-content: space-between;  // Adjusted for more flexible spacing
+    flex-direction: row; 
+    justify-content: space-between;
     align-items: center;
     max-width: 1200px;
     margin: 0 auto;
@@ -34,18 +35,17 @@ $border-radius: 8px;
   .navbar-logo {
     height: 40px;
     width: auto;
-    transform: scale(1); // Default scale to prevent overflow
+    transform: scale(1);
     border-radius: 10%;
     transition: transform 0.3s ease;
-  
-    // Adjust the scale on hover, not default
+    margin-right: 1rem; 
+
     &:hover {
-      transform: scale(1.2); // Slight zoom effect on hover
+      transform: scale(1.2);
     }
-  
-    // Ensure logo remains within bounds
+
     @media (max-width: $mobile-breakpoint) {
-      height: 40px; // Adjust logo height for mobile responsiveness
+      height: 40px;
     }
   }
 
@@ -93,7 +93,7 @@ $border-radius: 8px;
     display: flex;
     align-items: center;
     gap: 1rem;
-    white-space: nowrap; /* Prevent text wrapping on desktop */
+    white-space: nowrap;
 
     @media (max-width: $mobile-breakpoint) {
       position: fixed;
@@ -109,7 +109,7 @@ $border-radius: 8px;
       overflow-y: auto;
       display: none;
       opacity: 0;
-      
+
       &.active {
         display: flex;
         animation: popIn 0.3s ease forwards;
@@ -132,11 +132,12 @@ $border-radius: 8px;
         padding: 0.5rem 1rem;
         font-weight: 400;
         transition: color $transition-speed ease;
-        font-size: 16px; // Responsive font size
+        font-size: 16px;
 
         &:hover {
           text-decoration: underline;
           text-underline-offset: 8px;
+          background-color: transparent;
         }
       }
 
