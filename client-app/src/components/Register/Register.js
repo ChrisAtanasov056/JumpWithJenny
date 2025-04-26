@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { useAuth } from '../../services/AuthContext';
 import { create } from '../../services/authService';
-import SuccessModal from './SuccessModal';
 import './Register.scss';
 import { useTranslation } from 'react-i18next';
 
@@ -15,6 +14,7 @@ const Register = ({ onClose, onLoginSuccess, onRegisterSuccess }) => {
     email: '',
     password: '',
   });
+  const [retypedPassword, setRetypedPassword] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
   const [isRegistering, setIsRegistering] = useState(false);
 
@@ -23,8 +23,19 @@ const Register = ({ onClose, onLoginSuccess, onRegisterSuccess }) => {
     setCredentials(prev => ({ ...prev, [name]: value }));
   };
 
+  const handleRetypedPasswordChange = (e) => {
+    setRetypedPassword(e.target.value);
+  };
+
+  const passwordsMatch = credentials.password === retypedPassword;
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!passwordsMatch) {
+      setErrorMessage(t('register.passwordMismatchError'));
+      return;
+    }
+
     try {
       setIsRegistering(true);
       const response = await create(credentials);
@@ -50,6 +61,7 @@ const Register = ({ onClose, onLoginSuccess, onRegisterSuccess }) => {
         <h2>{t('register.createAccount')}</h2>
         
         <div className="form-grid">
+          {/* First Name */}
           <div className="form-group">
             <label>{t('register.firstNameLabel')}</label>
             <input
@@ -61,6 +73,7 @@ const Register = ({ onClose, onLoginSuccess, onRegisterSuccess }) => {
             />
           </div>
 
+          {/* Last Name */}
           <div className="form-group">
             <label>{t('register.lastNameLabel')}</label>
             <input
@@ -72,6 +85,7 @@ const Register = ({ onClose, onLoginSuccess, onRegisterSuccess }) => {
             />
           </div>
 
+          {/* Username */}
           <div className="form-group full-width">
             <label>{t('register.userNameLabel')}</label>
             <input
@@ -83,6 +97,7 @@ const Register = ({ onClose, onLoginSuccess, onRegisterSuccess }) => {
             />
           </div>
 
+          {/* Email */}
           <div className="form-group full-width">
             <label>{t('register.emailLabel')}</label>
             <input
@@ -94,7 +109,8 @@ const Register = ({ onClose, onLoginSuccess, onRegisterSuccess }) => {
             />
           </div>
 
-          <div className="form-group full-width">
+          {/* Password */}
+          <div className="form-group">
             <label>{t('register.passwordLabel')}</label>
             <input
               type="password"
@@ -104,6 +120,19 @@ const Register = ({ onClose, onLoginSuccess, onRegisterSuccess }) => {
               required
             />
           </div>
+
+          {/* Retyped Password */}
+          <div className="form-group">
+            <label>{t('register.retypePasswordLabel')}</label>
+            <input
+              type="password"
+              name="retypedPassword"
+              value={retypedPassword}
+              onChange={handleRetypedPasswordChange}
+              required
+            />
+            {!passwordsMatch && <div className="error-message">{t('register.passwordMismatchError')}</div>}
+          </div>
         </div>
 
         {errorMessage && <div className="error-message">{errorMessage}</div>}
@@ -111,7 +140,7 @@ const Register = ({ onClose, onLoginSuccess, onRegisterSuccess }) => {
         <button 
           type="submit" 
           className="sign-up-button"
-          disabled={isRegistering}
+          disabled={isRegistering || !passwordsMatch}
         >
           {isRegistering ? t('register.creatingAccount') : t('register.signUpButton')}
         </button>

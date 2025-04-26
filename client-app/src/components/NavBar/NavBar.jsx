@@ -57,15 +57,15 @@ const Navbar = () => {
     <>
       {/* Navbar */}
       <nav className="navbar navbar-expand-lg fixed-top">
+      
         <div className="container">
-          <Link className="navbar-brand" to="/">
+        <Link  to="/">
             <a 
-              className="navbar-brand" 
               href="/" 
               onClick={handleLogoClick}
             >
               <img 
-                src="/images/Logo.png"  // Use absolute path from public folder
+                src="/images/Brand_Logo_1.png"  // Use absolute path from public folder
                 alt="Jump With Jenny Logo" 
                 className="navbar-logo"
               />
@@ -123,17 +123,6 @@ const Navbar = () => {
             )}
           </div>
           <LanguageDropdown changeLanguage={changeLanguage} /> {/* Pass changeLanguage function */}
-          <ul className="social-icon ml-3">
-            <li>
-              <a href="https://facebook.com/groups/950454285546258" target="_blank" rel="noopener noreferrer" className="facebook" aria-label="Facebook"></a>
-            </li>
-            <li>
-              <a href="https://www.tiktok.com/@jump.with.jenny" target="_blank" rel="noopener noreferrer" className="tiktok" aria-label="TikTok"></a>
-            </li>
-            <li>
-              <a href="https://www.instagram.com/jump.with.jenny/" target="_blank" rel="noopener noreferrer" className="instagram" aria-label="Instagram"></a>
-            </li>
-          </ul>
         </div>
       </nav>
 

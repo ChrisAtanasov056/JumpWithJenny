@@ -3,7 +3,7 @@ import { Link } from 'react-scroll';
 import { useTranslation } from 'react-i18next';
 import './Welcome.scss';
 
-const videoSource = "../../images/c095f2709e554927ac41ac0f1598b722.mp4";
+const videoSource = "../../images/main_page.mp4"; 
 
 const Welcome = () => {
   const { t } = useTranslation();
@@ -22,7 +22,7 @@ const Welcome = () => {
         <p>{t('welcomeText')}</p>
         <p>{t('startPrompt')}</p>
         <button className="get-started-btn">
-          <Link to="schedule" smooth={true} duration={500}>{t('startText')}</Link>
+          <Link to="schedule" smooth={true} duration={1500}>{t('startText')}</Link>
         </button>
       </div>
     </section>

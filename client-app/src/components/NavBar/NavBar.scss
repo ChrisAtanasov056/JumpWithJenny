@@ -24,28 +24,40 @@ $border-radius: 8px;
   .container {
     display: flex;
     flex-direction: row; 
-    justify-content: space-between;
+    justify-content: center;
     align-items: center;
     max-width: 1200px;
     margin: 0 auto;
     padding: 0 1.5rem;
-  }
 
+    @media (max-width: $mid-breakpoint) {
+      justify-content: space-between;
+      padding: 0 1.5rem;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+
+    @media (max-width: $mobile-breakpoint) {
+      padding: 0 1rem;
+      justify-content: space-between;
+    }
+  }
+    
   // Logo
   .navbar-logo {
     height: 40px;
     width: auto;
-    transform: scale(1);
+    transform: scale(2);
     border-radius: 10%;
-    transition: transform 0.3s ease;
+    transition: transform 0.3s ;
     margin-right: 1rem; 
 
     &:hover {
-      transform: scale(1.2);
+      transform: scale(2.3);
     }
 
     @media (max-width: $mobile-breakpoint) {
-      height: 40px;
+      height: 35px;
     }
   }
 
@@ -59,6 +71,7 @@ $border-radius: 8px;
 
     @media (max-width: $mobile-breakpoint) {
       display: block;
+      
     }
 
     .navbar-toggler-icon {
@@ -73,16 +86,16 @@ $border-radius: 8px;
         height: 3px;
         background-color: $white;
         transition: all $transition-speed ease;
-        transform-origin: center;
+        transform-origin: center center;
 
         &.active:nth-child(1) {
-          transform: rotate(45deg) translate(4px, 4px);
+          transform: rotate(45deg) translate(5px, 7px) !important;
         }
         &.active:nth-child(2) {
           opacity: 0;
         }
         &.active:nth-child(3) {
-          transform: rotate(-45deg) translate(4px, -4px);
+          transform: rotate(-45deg) translate(4px, -5px);
         }
       }
     }
@@ -142,18 +155,54 @@ $border-radius: 8px;
       }
 
       .login-btn {
-        background-color: $primary-color;
+        background: transparent;
         color: $white;
-        border: 1px solid $white;
-        padding: 0.5rem 1rem;
-        border-radius: $border-radius + 50;
-        transition: all $transition-speed ease;
-        margin-top: 0px;
-
+        border: 2px solid $white;
+        border-radius: 50px; // Extra rounded
+        padding: 0.6rem 2rem;
+        font-weight: 600;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+        position: relative;
+        overflow: hidden;
+        transition: all 0.4s ease;
+        box-shadow: 0 0 10px rgba($white, 0);
+        
+        // Neon glow on hover
         &:hover {
-          background-color: $hover-color;
-          border-color: $background-color;
+          text-shadow: 0 0 5px $white;
+          box-shadow: 0 0 15px rgba($white, 0.8);
+          background: rgba($white, 0.05);
+          transform: translateY(-2px);
         }
+        
+        // Animated border
+        &::before {
+          content: '';
+          position: absolute;
+          top: -2px;
+          left: -2px;
+          right: -2px;
+          bottom: -2px;
+          border: 2px solid transparent;
+          border-radius: 50px;
+          background: linear-gradient(45deg, $white, $accent-color, $white);
+          background-size: 200% 200%;
+          z-index: -1;
+          animation: borderGradient 3s linear infinite;
+          opacity: 0;
+          transition: opacity 0.3s ease;
+        }
+        
+        &:hover::before {
+          opacity: 1;
+        }
+      }
+      
+      @keyframes borderGradient {
+        0% { background-position: 0% 50% }
+        50% { background-position: 100% 50% }
+        100% { background-position: 0% 50% }
       }
 
       .profile-area {

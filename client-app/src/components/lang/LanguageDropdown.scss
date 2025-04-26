@@ -1,9 +1,14 @@
 .language-dropdown {
-    position: relative;
+    position: absolute;
     cursor: pointer;
     font-size: 0.9rem;
     margin-left: auto; // Pushes to the end of flex container
     min-width: 60px;
+    right: 20px;
+
+    @media (max-width: 768px) {
+        right: 60px;
+      }
   
     .selected-language {
       display: flex;

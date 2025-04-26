@@ -176,18 +176,23 @@ const WorkoutModal = ({ isOpen, onClose, selectedWorkout, onRegister, isLoggedIn
                       <div className="size-selection">
                         <label>{t('selectShoeSize')}</label>
                         <div className="size-buttons">
-                          {['S', 'M', 'L', 'XL'].map((size) => (
-                            <button
-                              key={size}
-                              type="button"
-                              className={`size-button ${selectedSize === size ? 'active' : ''}`}
-                              onClick={() => handleSizeClick(size)}
-                              disabled={usesOwnShoes}
-                            >
-                              {size}
-                              {selectedSize === size && <span className="checkmark">✓</span>}
-                            </button>
-                          ))}
+                        {['S', 'M', 'L', 'XL'].map((size) => (
+                          <button
+                            key={size}
+                            type="button"
+                            className={`size-button ${selectedSize === size ? 'active' : ''}`}
+                            onClick={() => handleSizeClick(size)}
+                            disabled={usesOwnShoes}
+                          >
+                            {size} 
+                            {size === 'S' && ' (34-35)'}
+                            {size === 'M' && ' (36-38)'}
+                            {size === 'L' && ' (39-41)'}
+                            {size === 'XL' && ' (42-44)'}
+                            
+                            {selectedSize === size && <span className="checkmark">✓</span>}
+                          </button>
+                        ))}
                         </div>
                       </div>
                     )}

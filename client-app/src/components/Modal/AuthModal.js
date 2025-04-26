@@ -5,15 +5,13 @@ import Register from '../Register/Register';
 import SuccessModal from '../Register/SuccessModal';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faFacebook, faGoogle, faInstagram } from '@fortawesome/free-brands-svg-icons';
-import { signInWithFacebook, signInWithGoogle } from '../../services/firebase.js';
-import { useAuth } from '../../services/AuthContext'; 
+import { signInWithFacebook, signInWithGoogle } from '../../services/firebase.js'; 
 import ForgotPasswordModal from '../ForgotPassword/ForgotPasswordModal.js';
 import axios from 'axios';
 import { useTranslation } from 'react-i18next';
 
 const AuthModal = ({ onClose, onLoginSuccess, setModalOpen }) => {
   const { t } = useTranslation();
-  const { user } = useAuth();
   const [isLogin, setIsLogin] = useState(true);
   const [animationClass, setAnimationClass] = useState('zoom-in');
   const [showSuccessModal, setShowSuccessModal] = useState(false);
@@ -43,7 +41,7 @@ const AuthModal = ({ onClose, onLoginSuccess, setModalOpen }) => {
     setTimeout(() => {
       setIsLogin(!isLogin);
       setAnimationClass('zoom-in');
-    }, 300);
+    }, 400);
   };
 
   const handleSocialLogin = async (platform) => {
@@ -66,13 +64,15 @@ const AuthModal = ({ onClose, onLoginSuccess, setModalOpen }) => {
     setModalOpen(false);
   };
 
+  const handleCloseSuccessModal = () => {
+    setShowSuccessModal(false);
+  };
+
   return (
     <>
       <div className="modal-overlay">
         <div className={`modal-content ${!isLogin ? 'register-mode' : ''}`}>
-          <button className="close-button" onClick={onClose}>
-            &times;
-          </button>
+          <button className="close-button" onClick={() => onClose()}>{t('auth.closeModal')}</button>
           
           <div className={`form-container ${animationClass}`}>
             {isLogin ? (
@@ -88,6 +88,7 @@ const AuthModal = ({ onClose, onLoginSuccess, setModalOpen }) => {
               <Register 
                 onClose={onClose} 
                 onLoginSuccess={onLoginSuccess} 
+                setModalOpen={setModalOpen} 
                 onRegisterSuccess={handleRegisterSuccess} 
               />
             )}
@@ -106,6 +107,7 @@ const AuthModal = ({ onClose, onLoginSuccess, setModalOpen }) => {
                     key={platform}
                     onClick={() => handleSocialLogin(platform)}
                     className={`social-btn ${className}`}
+                    aria-label={`Login with ${platform}`}
                   >
                     <FontAwesomeIcon icon={icon} />
                   </button>
@@ -117,16 +119,13 @@ const AuthModal = ({ onClose, onLoginSuccess, setModalOpen }) => {
       </div>
 
       {showForgotModal && (
-        <ForgotPasswordModal 
-          onClose={() => setShowForgotModal(false)} 
-          onSubmit={handleForgotPassword} 
-        />
+        <ForgotPasswordModal onClose={() => setShowForgotModal(false)} onSubmit={handleForgotPassword} />
       )}
 
       {showSuccessModal && (
         <SuccessModal 
           message={successMessage} 
-          onClose={() => setShowSuccessModal(false)}
+          onClose={handleCloseSuccessModal}
         />
       )}
     </>

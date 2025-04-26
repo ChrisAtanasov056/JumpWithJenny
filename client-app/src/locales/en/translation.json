@@ -110,7 +110,9 @@
         "incompleteDataError": "Registration failed. Incomplete user data received.",
         "noDataError": "Registration failed. No user data received.",
         "credentialsError": "Registration failed. Please check your details and try again.",
-        "signUpButton": "Sign Up"
+        "signUpButton": "Sign Up",
+        "retypePasswordLabel": "Confirm Password",
+        "passwordMismatchError": "Passwords do not match"
     },
         "registerFor": "Register for",
         "at": "at",
