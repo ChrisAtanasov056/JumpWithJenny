@@ -30,7 +30,7 @@ const LanguageDropdown = () => {
       ref={dropdownRef}
       className={`language-dropdown ${isOpen ? 'active' : ''}`}
       onClick={() => setIsOpen(!isOpen)}
-      style={{ position: 'absolute', right: '20px' }}
+      
     >
       <div className="selected-language">
         {currentLanguage?.flag}

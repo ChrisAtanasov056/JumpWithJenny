@@ -41,21 +41,6 @@ $mobile-breakpoint: 768px;
       margin-bottom: $spacing-unit * 1.5;
       color: $primary-color;
       position: relative;
-
-      &::after {
-        content: '';
-        position: absolute;
-        bottom: -8px;
-        left: 0;
-        width: 0;
-        height: 2px;
-        background: $accent-color;
-        transition: width 1.2s cubic-bezier(0.4, 0, 0.2, 1); // Slower underline
-      }
-
-      &:hover::after {
-        width: 100%;
-      }
     }
 
     p {

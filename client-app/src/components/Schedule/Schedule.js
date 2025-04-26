@@ -2,18 +2,21 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useAuth } from '../../services/AuthContext';
 import WorkoutModal from '../WorkoutModal/WorkoutModal';
-import { useTranslation } from 'react-i18next'; // <-- Add this
+import { useTranslation } from 'react-i18next';
+import { useMediaQuery } from 'react-responsive';
 import './Schedule.scss';
 
 const Schedule = () => {
   const { isAuthenticated, user } = useAuth();
-  const { t } = useTranslation(); // <-- Add this
+  const { t } = useTranslation();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedWorkout, setSelectedWorkout] = useState(null);
   const [workouts, setWorkouts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [isRegistering, setIsRegistering] = useState({});
+
+  const isMobile = useMediaQuery({ maxWidth: 768 });
 
   useEffect(() => {
     const fetchData = async () => {
@@ -22,7 +25,7 @@ const Schedule = () => {
         setWorkouts(response.data);
       } catch (error) {
         console.error('Error fetching data:', error);
-        setError(t('schedule.error')); // <-- Translated error
+        setError(t('schedule.error'));
       } finally {
         setLoading(false);
       }
@@ -95,55 +98,97 @@ const Schedule = () => {
     t('days.sunday'),
   ];
 
+  const dayKeys = [
+    'Monday',
+    'Tuesday',
+    'Wednesday',
+    'Thursday',
+    'Friday',
+    'Saturday',
+    'Sunday',
+  ];
+
   return (
     <section id="schedule" className="schedule-section">
       <div className="schedule-container">
         <h2>{t('schedule.title')}</h2>
-        <div className="desktop-schedule">
-          <table className="schedule-table">
-            <thead>
-              <tr>
-                <th>{t('schedule.time')}</th>
-                {daysOfWeek.map((day, idx) => (
-                  <th key={idx}>{day}</th>
+
+        {/* Desktop View */}
+        {!isMobile && (
+          <div className="desktop-schedule">
+            <table className="schedule-table">
+              <thead>
+                <tr>
+                  <th>{t('schedule.time')}</th>
+                  {daysOfWeek.map((day, idx) => (
+                    <th key={idx}>{day}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {['14:00', '15:00', '16:00', '17:00', '18:00', '19:00', '20:00', '21:00'].map((time) => (
+                  <tr key={time}>
+                    <td>{time}</td>
+                    {dayKeys.map((dayKey, i) => {
+                      const workout = groupedWorkouts[dayKey]?.find((w) => w.Time === time);
+                      const status = workout?.Status?.toLowerCase();
+
+                      return (
+                        <td
+                          key={`${dayKey}-${time}`}
+                          className={`schedule-cell ${status || 'empty'}`}
+                          onClick={() => status === 'available' && openModal(workout)}
+                        >
+                          {status === 'available' &&
+                            (isRegistering[workout?.id] ? t('schedule.registering') : t('schedule.available'))}
+                          {status === 'booked' && t('schedule.booked')}
+                        </td>
+                      );
+                    })}
+                  </tr>
                 ))}
-              </tr>
-            </thead>
-            <tbody>
-              {['14:00', '15:00', '16:00', '17:00', '18:00', '19:00', '20:00', '21:00'].map((time) => (
-                <tr key={time}>
-                  <td>{time}</td>
-                  {daysOfWeek.map((_, i) => {
-                    const dayKey = [
-                      'Monday',
-                      'Tuesday',
-                      'Wednesday',
-                      'Thursday',
-                      'Friday',
-                      'Saturday',
-                      'Sunday',
-                    ][i];
+              </tbody>
+            </table>
+          </div>
+        )}
 
-                    const workout = groupedWorkouts[dayKey]?.find((w) => w.Time === time);
-                    const status = workout?.Status.toLowerCase();
+        {/* Mobile View */}
+        {isMobile && (
+          <div className="mobile-schedule">
+            {dayKeys.map((dayKey, index) => {
+              const dayWorkouts = groupedWorkouts[dayKey] || [];
+              const translatedDay = daysOfWeek[index];
 
+              // Skip rendering the day column if no workouts
+              if (dayWorkouts.length === 0) return null;
+
+              return (
+                <div key={dayKey} className="day-column">
+                  <h3 className="day-header">{translatedDay}</h3>
+                  {dayWorkouts.map((workout) => {
+                    const status = workout?.Status?.toLowerCase();
                     return (
-                      <td
-                        key={`${dayKey}-${time}`}
-                        className={`schedule-cell ${status || 'empty'}`}
+                      <div
+                        key={`${dayKey}-${workout.Time}`}
+                        className={`time-slot ${status || 'empty'}`}
                         onClick={() => status === 'available' && openModal(workout)}
                       >
-                        {status === 'available' &&
-                          (isRegistering[workout?.id] ? t('schedule.registering') : t('schedule.available'))}
-                        {status === 'booked' && t('schedule.booked')}
-                      </td>
+                        <span>{workout.Time}</span>
+                        <span>
+                          {status === 'available' &&
+                            (isRegistering[workout?.id]
+                              ? t('schedule.registering')
+                              : t('schedule.available'))}
+                          {status === 'booked' && t('schedule.booked')}
+                        </span>
+                      </div>
                     );
                   })}
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
       </div>
 
       <WorkoutModal
