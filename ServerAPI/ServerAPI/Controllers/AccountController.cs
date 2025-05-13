@@ -2,6 +2,7 @@
 
     using Microsoft.AspNetCore.Cors;
     using Microsoft.AspNetCore.Mvc;
+    using ServerAPI.Models;
     using ServerAPI.Models.Authentication;
 
     [Route("/[controller]")]
@@ -10,10 +11,12 @@
     public class AccountController : ControllerBase
     {
         private readonly IAuthService _authService;
+        private readonly ILogger<AccountController> _logger;
 
-        public AccountController(IAuthService authService)
+        public AccountController(IAuthService authService, ILogger<AccountController> logger)        
         {
             _authService = authService;
+             _logger = logger;
         }
 
         [HttpPost("signup")]
@@ -31,7 +34,7 @@
                 return BadRequest(new { errors = result.Errors });
             }
 
-            return Ok(new { token = result.Token, user = result.User });
+            return Ok(new { token = result.Token, user = result.User , refreshToken = result.RefreshToken });
         }
 
         [HttpPost("login")]
@@ -53,7 +56,7 @@
                 return NotFound(new { message = "User not found." });
             }
 
-            return Ok(new { token = result.Token, user = result.User });
+            return Ok(new { token = result.Token, user = result.User , refreshToken = result.RefreshToken });
         }
 
         [HttpPost("confirmemail")]
@@ -107,7 +110,25 @@
 
             return Ok();
         }
+        
+        [HttpPost("refresh-token")]
+        public async Task<IActionResult> Refresh([FromBody] RefreshTokenRequest request)
+        {
+            if (string.IsNullOrEmpty(request.RefreshToken))
+                return BadRequest(new { message = "Refresh token is required." });
 
+            var result = await _authService.RefreshTokenAsync(request.RefreshToken);
+
+            if (!result.Success)
+                return Unauthorized(result);
+
+            return Ok(new
+            {
+                accessToken = result.Token,
+                refreshToken = result.RefreshToken,
+                user = result.User
+            });
+        }
         [HttpPost("resend-verification")]
         public async Task<IActionResult> ResendVerificationEmail([FromBody] ResendEmailRequest request)
         {

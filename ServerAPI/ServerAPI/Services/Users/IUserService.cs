@@ -18,7 +18,7 @@
 
         public Task<User> ChangeEmailAsync(string userId, string newEmail);
 
-        public Task<UserViewModel> GetUserByIdAsync(string id);
+        public Task<UserAdminViewModel> GetUserByIdAsync(string id);
 
         public Task<T> GetUserByIdAsync<T>(string id);
 

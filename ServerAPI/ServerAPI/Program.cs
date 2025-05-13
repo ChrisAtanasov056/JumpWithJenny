@@ -17,7 +17,9 @@ using ServerAPI.Services.AuthService;
 using ServerAPI.Services.Mapper;
 using ServerAPI.Services.Schedule;
 using ServerAPI.Services.Users;
+using ServerAPI.Services.Workouts;
 using System.Reflection;
+using System.Security.Claims;
 using System.Text;
 
 public class Program
@@ -49,9 +51,10 @@ public class Program
 
         services.AddControllers()
             .AddNewtonsoftJson(options =>
-                options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore)
-            .AddNewtonsoftJson(option =>
-                option.SerializerSettings.ContractResolver = new DefaultContractResolver());
+            {
+                options.SerializerSettings.ContractResolver = new DefaultContractResolver();
+                options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore;
+            });
 
         // Database context
         services.AddDbContext<JumpWithJennyDbContext>(options =>
@@ -70,18 +73,23 @@ public class Program
             x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
             x.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
         })
-        .AddJwtBearer(x =>
+        .AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters
         {
-            x.RequireHttpsMetadata = false;
-            x.SaveToken = true;
-            x.TokenValidationParameters = new TokenValidationParameters
-            {
-                ValidateIssuerSigningKey = true,
-                IssuerSigningKey = new SymmetricSecurityKey(key),
-                ValidateIssuer = false,
-                ValidateAudience = false
-            };
-        });
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            ValidIssuer = configuration["Jwt:Issuer"],
+            ValidAudience = configuration["Jwt:Audience"],
+            IssuerSigningKey = new SymmetricSecurityKey(
+                Encoding.UTF8.GetBytes(configuration["Jwt:Secret"])),
+            // Add these two lines
+            RoleClaimType = ClaimTypes.Role,
+            NameClaimType = ClaimTypes.Name
+        };
+    });
 
         // Identity configuration
         services.AddIdentity<User, UserRole>(IdentityOptionsProvider.GetIdentityOptions)
@@ -108,6 +116,7 @@ public class Program
         services.AddTransient<IScheduleService, ScheduleService>();
         services.AddTransient<IUserService, UserService>();
         services.AddScoped<IAuthService, AuthService>();
+        services.AddScoped<IWorkoutServices, WorkoutServices>();
 
         // Logging and Swagger
         services.AddLogging();

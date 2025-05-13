@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using ServerAPI.Data;
@@ -11,9 +12,10 @@ using ServerAPI.Data;
 namespace ServerAPI.Migrations
 {
     [DbContext(typeof(JumpWithJennyDbContext))]
-    partial class JumpWithJennyDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250509144723_AddTokenTable")]
+    partial class AddTokenTable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -207,9 +209,6 @@ namespace ServerAPI.Migrations
 
                     b.Property<DateTime>("Expires")
                         .HasColumnType("timestamp without time zone");
-
-                    b.Property<bool>("Locked")
-                        .HasColumnType("boolean");
 
                     b.Property<DateTime?>("Revoked")
                         .HasColumnType("timestamp without time zone");

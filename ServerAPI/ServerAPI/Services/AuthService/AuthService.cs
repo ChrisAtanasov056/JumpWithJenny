@@ -2,32 +2,100 @@
 
 namespace ServerAPI.Services.AuthService
 {
+    using System.Security.Cryptography;
     using Microsoft.AspNetCore.Identity;
+    using Microsoft.EntityFrameworkCore;
     using ServerAPI.Common;
+    using ServerAPI.Data;
     using ServerAPI.Models;
     using ServerAPI.Models.Authentication;
     public class AuthService : IAuthService
     {
         private readonly UserManager<User> _userManager;
         private readonly SignInManager<User> _signInManager;
+
+        private readonly JumpWithJennyDbContext _dbContext;
         private readonly JwtTokenService _jwtTokenService;
         private readonly IEmailService _emailService;
         private readonly IConfiguration _configuration;
+
+        private readonly ILogger<AuthService> _logger;
 
         public AuthService(
             UserManager<User> userManager,
             SignInManager<User> signInManager,
             JwtTokenService jwtTokenService,
             IEmailService emailService,
-            IConfiguration configuration)
+            IConfiguration configuration,
+            JumpWithJennyDbContext dbContext,
+            ILogger<AuthService> logger)
         {
             _userManager = userManager;
             _signInManager = signInManager;
             _jwtTokenService = jwtTokenService;
             _emailService = emailService;
             _configuration = configuration;
+            _dbContext = dbContext;
+            _logger = logger;
         }
 
+        public async Task<AuthResult> LoginAsync(LoginModel model)
+        {
+            var user = await _userManager.FindByEmailAsync(model.Email);
+            if (user == null)
+            {
+                return new AuthResult
+                {
+                    Success = false,
+                    Errors = new[] { "Invalid email or password" }
+                };
+            }
+
+            var result = await _signInManager.PasswordSignInAsync(user.UserName, model.Password, false, false);
+            if (!result.Succeeded)
+            {
+                return new AuthResult
+                {
+                    Success = false,
+                    Errors = new[] { "Invalid email or password" }
+                };
+            }
+
+            var roles = await _userManager.GetRolesAsync(user);
+            var jwtToken = _jwtTokenService.GenerateJwtToken(user, roles);
+            
+            // Check if a refresh token already exists for the user
+            var existingRefreshToken = await _dbContext.RefreshTokens
+                .FirstOrDefaultAsync(rt => rt.UserId == user.Id);
+            
+            _logger.LogInformation($"Existing refresh token: {existingRefreshToken?.Token}");
+            RefreshToken refreshToken;
+            if (existingRefreshToken != null)
+            {
+                // Revoke the old refresh token if it exists
+                existingRefreshToken.Revoked = DateTime.UtcNow;
+                _dbContext.RefreshTokens.Update(existingRefreshToken);
+                refreshToken = GenerateRefreshToken();
+                refreshToken.UserId = user.Id;
+                _dbContext.RefreshTokens.Add(refreshToken);
+            }
+            else
+            {
+                // Generate a new refresh token if none exists
+                refreshToken = GenerateRefreshToken();
+                refreshToken.UserId = user.Id;
+                _dbContext.RefreshTokens.Add(refreshToken);
+            }
+            await _dbContext.SaveChangesAsync();
+
+            return new AuthResult
+            {
+                Success = true,
+                User = MapToUserDto(user, roles.FirstOrDefault()),
+                Token = jwtToken,
+                RefreshToken = refreshToken.Token,
+            };
+        }
         public async Task<AuthResult> SignUpAsync(SignUpModel model)
         {
             var user = new User
@@ -77,49 +145,41 @@ namespace ServerAPI.Services.AuthService
                 };
             }
 
-            var jwtToken = _jwtTokenService.GenerateJwtToken(user);
             var roles = await _userManager.GetRolesAsync(user);
+            var jwtToken = _jwtTokenService.GenerateJwtToken(user, roles);
+            
+            // Check if a refresh token already exists for the user
+            var existingRefreshToken = await _dbContext.RefreshTokens
+                .FirstOrDefaultAsync(rt => rt.UserId == user.Id);
+            
+            RefreshToken refreshToken;
+            if (existingRefreshToken != null)
+            {
+                // Revoke the old refresh token if it exists
+                existingRefreshToken.Revoked = DateTime.UtcNow;
+                _dbContext.RefreshTokens.Update(existingRefreshToken);
+                refreshToken = GenerateRefreshToken();
+                refreshToken.UserId = user.Id;
+                _dbContext.RefreshTokens.Add(refreshToken);
+            }
+            else
+            {
+                // Generate a new refresh token if none exists
+                refreshToken = GenerateRefreshToken();
+                refreshToken.UserId = user.Id;
+                _dbContext.RefreshTokens.Add(refreshToken);
+            }
+
+            await _dbContext.SaveChangesAsync();
 
             return new AuthResult
             {
                 Success = true,
                 Token = jwtToken,
+                RefreshToken = refreshToken.Token,
                 User = MapToUserDto(user, roles.FirstOrDefault())
             };
-        }
-
-        public async Task<AuthResult> LoginAsync(LoginModel model)
-        {
-            var user = await _userManager.FindByEmailAsync(model.Email);
-            if (user == null)
-            {
-                return new AuthResult
-                {
-                    Success = false,
-                    Errors = new[] { "Invalid email or password" }
-                };
-            }
-
-            var result = await _signInManager.PasswordSignInAsync(user.UserName, model.Password, false, false);
-            if (!result.Succeeded)
-            {
-                return new AuthResult
-                {
-                    Success = false,
-                    Errors = new[] { "Invalid email or password" }
-                };
-            }
-
-            var jwtToken = _jwtTokenService.GenerateJwtToken(user);
-            var roles = await _userManager.GetRolesAsync(user);
-
-            return new AuthResult
-            {
-                Success = true,
-                Token = jwtToken,
-                User = MapToUserDto(user, roles.FirstOrDefault())
-            };
-        }
+}
 
         public async Task<AuthResult> ConfirmEmailAsync(ConfirmEmailRequest request)
         {
@@ -293,6 +353,96 @@ namespace ServerAPI.Services.AuthService
                 role = role
             };
         }
+
+        private static RefreshToken GenerateRefreshToken()
+        {
+            return new RefreshToken
+            {
+                Token = Convert.ToBase64String(RandomNumberGenerator.GetBytes(64)),
+                Expires = DateTime.UtcNow.AddDays(7),
+                Revoked = null
+            };
+        }
+        
+      public async Task<AuthResult> RefreshTokenAsync(string token)
+        {
+            _logger.LogInformation($"Received token: {token}");
+
+            using (var transaction = await _dbContext.Database.BeginTransactionAsync())
+            {
+                try
+                {
+                    var storedToken = await _dbContext.RefreshTokens
+                        .Include(rt => rt.User)
+                        .FirstOrDefaultAsync(x => x.Token == token);
+
+                    if (storedToken == null || !storedToken.IsActive)
+                    {
+                        return new AuthResult { Success = false, Errors = new[] { "Invalid refresh token." } };
+                    }
+
+                    if (storedToken.Locked)
+                    {
+                        return new AuthResult { Success = false, Errors = new[] { "Refresh token is already being processed." } };
+                    }
+
+                    // Lock token during processing
+                    storedToken.Locked = true;
+                    await _dbContext.SaveChangesAsync();
+
+                    var user = storedToken.User;
+                    var roles = await _userManager.GetRolesAsync(user);
+
+                    // Generate new JWT
+                    var newJwt = _jwtTokenService.GenerateJwtToken(user, roles);
+
+                    string refreshTokenToReturn = storedToken.Token;
+
+                    // Decide whether to rotate refresh token
+                    bool shouldRotate = storedToken.Expires - DateTime.UtcNow < TimeSpan.FromDays(1);
+                    if (shouldRotate)
+                    {
+                        var newRefreshToken = GenerateRefreshToken();
+                        newRefreshToken.UserId = user.Id;
+
+                        // Revoke old token
+                        storedToken.Revoked = DateTime.UtcNow;
+
+                        // Add new one
+                        _dbContext.RefreshTokens.Add(newRefreshToken);
+                        refreshTokenToReturn = newRefreshToken.Token;
+                    }
+
+                    await _dbContext.SaveChangesAsync();
+                    await transaction.CommitAsync();
+
+                    return new AuthResult
+                    {
+                        Success = true,
+                        Token = newJwt,
+                        RefreshToken = refreshTokenToReturn,
+                        User = MapToUserDto(user, roles.FirstOrDefault())
+                    };
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError($"Error during refresh token process: {ex.Message}");
+                    await transaction.RollbackAsync();
+                    return new AuthResult { Success = false, Errors = new[] { "An error occurred while refreshing the token." } };
+                }
+                finally
+                {
+                    var storedToken = await _dbContext.RefreshTokens.FirstOrDefaultAsync(x => x.Token == token);
+                    if (storedToken != null)
+                    {
+                        storedToken.Locked = false;
+                        await _dbContext.SaveChangesAsync();
+                    }
+                }
+            }
+        }
+
+
 
         private string BuildVerificationEmail(string firstName, string verificationLink)
         {
