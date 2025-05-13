@@ -20,18 +20,20 @@ const Login = ({ onClose, onLoginSuccess }) => {
     e.preventDefault();
     try {
       const response = await login(credentials); // Assuming login is the correct service function
+      console.log('Response on submint: ',response)
       if (response) {
-        const { token, user } = response;
-        console.log(user)
-        if (user?.id && user?.username && user?.firstname && user?.lastname && user?.email && user?.role && token) {
+        const { token,refreshToken, user  } = response;
+        if (user?.id && user?.username && user?.firstname && user?.lastname && user?.email && user?.role && token && refreshToken) {
           // Save token and user in localStorage
+          localStorage.setItem('user', JSON.stringify(user)); 
           localStorage.setItem('jwtToken', token);
-          localStorage.setItem('user', JSON.stringify(user).toLocaleLowerCase); 
+          localStorage.setItem('refreshToken', refreshToken);
+          
+          console.log('USER DATA ON LOGIN: ', localStorage.getItem('user'));
           // Update context with user data and token
-          authLogin({ ...user, token });
-
+          authLogin({ ...user, token, refreshToken});
           // Handle successful login and close modal
-          onLoginSuccess({ ...user, token });
+          onLoginSuccess({ ...user, token, refreshToken });
           onClose();
           setSuccessMessage(t('login.successMessage'));
         } else {

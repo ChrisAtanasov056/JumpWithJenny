@@ -1,6 +1,10 @@
-﻿using Microsoft.Extensions.Options;
+﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
+using ServerAPI.Data;
 using ServerAPI.Models;
+using ServerAPI.Models.Authentication;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
@@ -11,22 +15,23 @@ namespace ServerAPI.Services
     {
         private readonly JwtSettings _jwtSettings;
 
-        public JwtTokenService(IOptions<JwtSettings> jwtSettings)
+        public JwtTokenService(IOptions<JwtSettings> jwtSettings)   
         {
             _jwtSettings = jwtSettings.Value;
         }
-        public string GenerateJwtToken(User user, IEnumerable<Claim> additionalClaims = null)
+        public string GenerateJwtToken(User user, IEnumerable<string> roles)
         {
             var claims = new List<Claim>
             {
                 new Claim(ClaimTypes.NameIdentifier, user.Id),
                 new Claim(ClaimTypes.Email, user.Email),
                 new Claim(ClaimTypes.Name, user.UserName),
+                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
             };
 
-            if (additionalClaims != null)
+            foreach (var role in roles)
             {
-                claims.AddRange(additionalClaims);
+                claims.Add(new Claim(ClaimTypes.Role, role));
             }
 
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtSettings.Secret));
@@ -41,5 +46,6 @@ namespace ServerAPI.Services
 
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
+
     }
 }

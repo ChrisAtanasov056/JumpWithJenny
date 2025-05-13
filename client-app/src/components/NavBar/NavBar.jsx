@@ -65,7 +65,7 @@ const Navbar = () => {
               onClick={handleLogoClick}
             >
               <img 
-                src="/images/Brand_Logo_1.png"  // Use absolute path from public folder
+                src="/images/brand_logo_2.png"  // Use absolute path from public folder
                 alt="Jump With Jenny Logo" 
                 className="navbar-logo"
               />
@@ -91,12 +91,12 @@ const Navbar = () => {
             </li>
             <li className="nav-item">
               <Link to="gallery" className="nav-link" smooth={true} duration={500} onClick={toggleMenu}>{t('navbar.gallery')}</Link>
+            </li>  
+            <li className="nav-item">
+              <Link to="schedule" className="nav-link" smooth={true} duration={500} onClick={toggleMenu}>{t('navbar.schedule')}</Link>
             </li>
             <li className="nav-item">
               <Link to="faq" className="nav-link" smooth={true} duration={500} onClick={toggleMenu}>{t('navbar.faq')}</Link>
-            </li>
-            <li className="nav-item">
-              <Link to="schedule" className="nav-link" smooth={true} duration={500} onClick={toggleMenu}>{t('navbar.schedule')}</Link>
             </li>
             <li className="nav-item">
               <Link to="contacts" className="nav-link" smooth={true} duration={500} onClick={toggleMenu}>{t('navbar.contact')}</Link>

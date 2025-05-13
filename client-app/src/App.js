@@ -1,5 +1,3 @@
-// src/App.js
-
 import React, { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { AuthProvider, useAuth } from './services/AuthContext';
@@ -16,11 +14,15 @@ import Profile from './components/Profile/Profile';
 import VerifyEmail from './services/VerifyEmail';
 import Gallery from './components/Gallery/Gallery';
 import ResetPassword from './components/ForgotPassword/ResetPassword';
+import WorkoutView from './components/Admin/Workouts/WorkoutView';
 import './i18n';
 
 // Admin imports
 import AdminLayout from './components/Admin/AdminLayout';
-import UserList from './components/Admin/UsersList';
+import AdminUsersList from './components/Admin/Users/AdminUsersList';
+import AdminUserProfile from './components/Admin/Users/AdminUserProfile';
+import AdminWorkoutsList from './components/Admin/Workouts/AdminWorkoutList';
+import WorkoutForm from './components/Admin/Workouts/WorkoutForm';
 
 function App() {
   useEffect(() => {
@@ -36,7 +38,6 @@ function App() {
   );
 }
 
-// Protected route for Admin
 const ProtectedAdminRoute = ({ children }) => {
   const { user } = useAuth();
 
@@ -48,7 +49,6 @@ const ProtectedAdminRoute = ({ children }) => {
 const AppContent = () => {
   const { user } = useAuth();
   const location = useLocation();
-
   const isAdminRoute = location.pathname.startsWith('/admin');
 
   return (
@@ -70,14 +70,20 @@ const AppContent = () => {
 
         {/* Admin routes */}
         <Route
-          path="/admin/*"
+          path="/admin"
           element={
             <ProtectedAdminRoute>
               <AdminLayout />
             </ProtectedAdminRoute>
           }
         >
-          <Route path="users" element={<UserList />} />
+          <Route index element={<Navigate to="users" replace />} />
+          <Route path="users" element={<AdminUsersList />} />
+          <Route path="users/:userId" element={<AdminUserProfile />} />
+          <Route path="workouts" element={<AdminWorkoutsList />} />
+          <Route path="workouts/new" element={<WorkoutForm />} />
+          <Route path="workouts/:id" element={<WorkoutForm />} />
+          <Route path="workouts/:id/view" element={<WorkoutView />} />
         </Route>
       </Routes>
     </>

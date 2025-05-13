@@ -1,11 +1,6 @@
-﻿using Microsoft.Extensions.Logging;
-using ServerAPI.Data;
+﻿using ServerAPI.Data;
 using ServerAPI.Data.Seeding;
 using ServerAPI.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 public class WorkoutSeeder : ISeeder
 {

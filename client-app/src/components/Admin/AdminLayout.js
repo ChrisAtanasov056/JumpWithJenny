@@ -27,7 +27,9 @@ const AdminLayout = () => {
         </nav>
       </aside>
       <main className="admin-main">
-        <Outlet />
+        <div className="admin-container">
+          <Outlet />
+        </div>
       </main>
     </div>
   );
