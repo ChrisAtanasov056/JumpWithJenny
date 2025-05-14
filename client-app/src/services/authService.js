@@ -41,7 +41,7 @@ export const verifyEmail = async (userId, token) => {
     const response = await axios.get(`/Account/confirmemail?userId=${userId}&token=${token}`);
     console.log(response);
     
-    if (response.status == 200){
+    if (response.status === 200){
       const statusResponse = await axios.get(`/verifyEmailStatus?userId=${userId}`);
       return statusResponse.data.user;
     }

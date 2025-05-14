@@ -44,5 +44,10 @@
             entity.DeletedOn = DateTime.UtcNow;
             this.Update(entity);
         }
+
+        public Task<string> GetByIdAsync(string id)
+        {
+            throw new NotImplementedException();
+        }
     }
 }
