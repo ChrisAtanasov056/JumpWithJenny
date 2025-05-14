@@ -14,19 +14,19 @@ namespace ServerAPI.Models
             Appointments = new List<Appointment>();
         }
 
-        [Column(TypeName = "varchar(50)")] // Adjusted for PostgreSQL
+        [Column(TypeName = "varchar(50)")] 
         public string FirstName { get; set; }
-        [Column(TypeName = "varchar(50)")] // Adjusted for PostgreSQL
+        [Column(TypeName = "varchar(50)")] 
         public string LastName { get; set; }
 
         public int? Age { get; set; }
 
-        [Column(TypeName = "varchar(100)")] // Adjusted for PostgreSQL
+        [Column(TypeName = "varchar(100)")] 
         public string City { get; set; }
 
         public string ProfilePictureUrl { get; set; }
 
-        [Column(TypeName = "text")] // Adjusted for PostgreSQL
+        [Column(TypeName = "text")] 
         public string Description { get; set; }
 
         public ICollection<Appointment> Appointments { get; set; }

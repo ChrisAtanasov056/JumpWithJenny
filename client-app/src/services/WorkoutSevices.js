@@ -13,7 +13,10 @@ const WorkoutService = {
 
   getWorkoutById: async (id) => {
     try {
-      const response = await api.get(`/workouts/${id}`);
+      const response = await api.get(`/api/Admin/workouts/${id}`);
+      if (response.status !== 200) {
+        throw new Error('Failed to fetch workout details');
+      } 
       return response.data;
     } catch (error) {
       console.error('Error fetching workout:', error);
@@ -23,7 +26,7 @@ const WorkoutService = {
 
   createWorkout: async (workoutData) => {
     try {
-      const response = await api.post('/workouts', workoutData);
+      const response = await api.post('api/Workout', workoutData);
       return response.data;
     } catch (error) {
       console.error('Error creating workout:', error);
@@ -33,7 +36,7 @@ const WorkoutService = {
 
   updateWorkout: async (id, workoutData) => {
     try {
-      const response = await api.put(`/workouts/${id}`, workoutData);
+      const response = await api.put(`/api/workouts/${id}`, workoutData);
       return response.data;
     } catch (error) {
       console.error('Error updating workout:', error);

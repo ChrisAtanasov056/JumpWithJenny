@@ -68,10 +68,10 @@ public class Program
         var jwtSettings = jwtSection.Get<JwtSettings>();
         var key = Encoding.ASCII.GetBytes(jwtSettings.Secret);
 
-        services.AddAuthentication(x =>
+        services.AddAuthentication(options =>
         {
-            x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-            x.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+            options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+            options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
         })
         .AddJwtBearer(options =>
     {
@@ -134,6 +134,15 @@ public class Program
         // AutoMapper configuration
         services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
         AutoMapperConfig.RegisterMappings(AppDomain.CurrentDomain.GetAssemblies()); // Make sure this is invoked
+
+        services.ConfigureApplicationCookie(options =>
+        {
+            options.Events.OnRedirectToLogin = context =>
+            {
+                context.Response.StatusCode = 401;
+                return Task.CompletedTask;
+            };
+        });
     }
 
     private static void Configure(WebApplication app)

@@ -57,17 +57,12 @@ export const AuthProvider = ({ children }) => {
         if (isRefreshing) {
             return; // Prevent multiple refresh requests from being sent
         }
-
-        setIsRefreshing(true); // Set refresh in progress flag
-
+        setIsRefreshing(true); 
+        
         try {
             const response = await axios.post('/Account/refresh-token', {
                 refreshToken: localStorage.getItem('refreshToken')
             });
-            console.log('Token refresh request:', {
-                refreshToken: localStorage.getItem('refreshToken')
-            });
-
             const newToken = response.data.accessToken;
             const newRefreshToken = response.data.refreshToken;
             axios.defaults.headers.common['Authorization'] = `Bearer ${newToken}`;

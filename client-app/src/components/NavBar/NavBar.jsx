@@ -29,7 +29,6 @@ const Navbar = () => {
   };
 
   const toggleProfileModal = () => {
-    console.log(user);
     setProfileOpen(!isProfileOpen);
   };
 
