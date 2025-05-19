@@ -1,17 +1,15 @@
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using ServerAPI.Data;
+using ServerAPI.Services.Users;
+using ServerAPI.ViewModels.Users;
+using ServerAPI.Services.Workouts;
+using ServerAPI.Services.Schedule;
+using ServerAPI.Models.Schedule;
+
 namespace ServerAPI.Controllers
 {
-    using Microsoft.AspNetCore.Authorization;
-    using Microsoft.AspNetCore.Mvc;
-    using ServerAPI.Data;
-    using ServerAPI.Services.Users;
-    using ServerAPI.ViewModels.Users;
-    using System.Threading.Tasks;
-    using System.Linq;
-    using Microsoft.EntityFrameworkCore;
-    using ServerAPI.Models;
-    using ServerAPI.Services.Workouts;
-    using ServerAPI.Models.Schedule;
-    using ServerAPI.Services.Schedule;
+    
 
     [Authorize(Roles = "Administrator")]            
     [Route("api/[controller]")]
@@ -89,6 +87,44 @@ namespace ServerAPI.Controllers
                 _logger.LogError(ex, "Error retrieving workout");
                 return StatusCode(500, "Internal server error");
             }
+        }
+
+        // POST: /api/workout/{id}/participants
+        [HttpPost("{id}/participants")]
+        public async Task<IActionResult> AddParticipantToWorkout(string id, [FromBody] ApplyForWorkoutRequest request)
+        {
+            try
+            {
+                var updatedWorkout = await _scheduleService.ApplyForWorkoutAsync(
+                    request.UserId,
+                    request.ShoeSize,
+                    request.CardType,
+                    request.WorkoutId,
+                    request.UsesOwnShoes
+                );
+
+                return Ok(updatedWorkout);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, "An error occurred: " + ex.Message);
+            }
+        }
+
+        [HttpGet("/api/users/search")]
+        [AllowAnonymous]
+        public async Task<IActionResult> SearchUsers([FromQuery] string query)
+        {
+            var results = await _userService.SearchUsersAsync(query);
+            return Ok(results);
         }
     }
 }

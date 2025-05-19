@@ -2,6 +2,7 @@ using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using ServerAPI.Data.Common.Repositories;
 using ServerAPI.Models;
+using ServerAPI.Models.Enums;
 using ServerAPI.Models.Schedule;
 using ServerAPI.Services.Mapper;
 using ServerAPI.ViewModels;
@@ -19,7 +20,6 @@ namespace ServerAPI.Services.Workouts
         private readonly IDeletableEntityRepository<Appointment> _appointmentRepository;
         private readonly IDeletableEntityRepository<Shoes> _shoesRepository;
         private readonly IDeletableEntityRepository<WorkoutShoes> _workoutShoesRepository;
-
         private readonly IMapper _mapper;
         private readonly ILogger<Workout> _logger;
 
@@ -194,5 +194,6 @@ namespace ServerAPI.Services.Workouts
                 AvailableSpots = workout.AvailableSpots
             };
         }
+
     }
 }

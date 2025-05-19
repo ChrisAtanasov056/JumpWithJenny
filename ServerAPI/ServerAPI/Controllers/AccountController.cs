@@ -4,6 +4,7 @@
     using Microsoft.AspNetCore.Mvc;
     using ServerAPI.Models;
     using ServerAPI.Models.Authentication;
+    using ServerAPI.Services.Users;
 
     [Route("/[controller]")]
     [EnableCors("AllowOrigin")]
@@ -13,7 +14,7 @@
         private readonly IAuthService _authService;
         private readonly ILogger<AccountController> _logger;
 
-        public AccountController(IAuthService authService, ILogger<AccountController> logger)        
+        public AccountController(IAuthService authService, ILogger<AccountController> logger)     
         {
             _authService = authService;
              _logger = logger;
@@ -141,5 +142,7 @@
 
             return Ok(new { message = "Verification email sent!" });
         }
+
+        
     }
 }

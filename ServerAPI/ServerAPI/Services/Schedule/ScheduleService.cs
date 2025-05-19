@@ -196,5 +196,5 @@ namespace ServerAPI.Services.Schedule
 
             return true; // Registration canceled successfully
         }
-    }
+    }   
 }

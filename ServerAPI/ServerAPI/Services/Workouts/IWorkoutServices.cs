@@ -16,5 +16,6 @@ namespace ServerAPI.Services.Workouts
         Task<IEnumerable<GetParticipantsModel>> GetParticipantsAsync(string workoutId);
 
         Task<AdminWorkoutViewModel> GetWorkoutByIdAsync(string id);
+      
     }
 }

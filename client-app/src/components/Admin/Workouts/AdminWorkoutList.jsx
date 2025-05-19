@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import WorkoutService from '../../../services/WorkoutSevices';
-import './AdminWorkouts.scss';
+import './AdminWorkoutList.scss';
 
 const AdminWorkoutsList = () => {
   const [workouts, setWorkouts] = useState([]);
