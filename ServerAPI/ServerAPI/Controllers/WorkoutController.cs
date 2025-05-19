@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 
 namespace ServerAPI.Controllers
 {
-    [Authorize(Roles = "Administrator")]   
+    //[Authorize(Roles = "Administrator")]   
     [Route("api/[controller]")]
     [ApiController]
     public class WorkoutController : ControllerBase
@@ -32,6 +32,7 @@ namespace ServerAPI.Controllers
         }
 
         [HttpPost]
+        [AllowAnonymous]
         public async Task<IActionResult> CreateWorkout([FromBody] WorkoutCreateModel workoutDto)
         {
             try
@@ -67,6 +68,7 @@ namespace ServerAPI.Controllers
         }
 
         [HttpDelete("delete-workout/{id}")]
+        [AllowAnonymous]
         public async Task<IActionResult> DeleteWorkout(string id)
         {
             if (string.IsNullOrEmpty(id))

@@ -1,61 +1,79 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import WorkoutService from '../../../services/WorkoutSevices';
-import './AdminWorkouts.scss';
+import AddUserSearchModal from './AddUserSearchModal';
+import './WorkoutForm.scss';
 
 const WorkoutForm = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+
   const [workout, setWorkout] = useState({
     Day: 'Monday',
     Time: '09:00',
     Status: 'Available',
     AvailableSpots: 20,
-    WorkoutShoes: []
+    Appointments: []
   });
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [successMessage, setSuccessMessage] = useState('');
 
-  useEffect(() => {
-    if (id) {
-      const fetchWorkout = async () => {
-        try {
-          const data = await WorkoutService.getWorkoutById(id);
-          setWorkout(data);
-        } catch (err) {
-          setError(err.message || 'Failed to load workout');
-        }
-      };
-      fetchWorkout();
+  const [showUserSearch, setShowUserSearch] = useState(false);
+
+  const searchUsers = async (query) => {
+    try {
+      return await WorkoutService.searchUsers(query);
+    } catch (err) {
+      console.error('User search failed', err);
+      return [];
     }
+  };
+
+  // 🧩 Add participant from modal
+  const addParticipant = async ({ userId, shoeSize, cardType, usesOwnShoes, workoutId }) => {
+    try {
+      const updated = await WorkoutService.addParticipantToWorkout(id, {
+        userId,
+        shoeSize,
+        cardType,
+        usesOwnShoes,
+        workoutId,
+      });
+      setWorkout(updated);
+    } catch (err) {
+      setError(err.message || 'Failed to add participant');
+    }
+  };
+
+  // ❌ Remove participant
+  const removeParticipant = async (participantId) => {
+    try {
+      const updated = await WorkoutService.removeParticipantFromWorkout(id, participantId);
+      setWorkout(updated);
+    } catch (err) {
+      setError(err.message || 'Failed to remove participant');
+    }
+  };
+
+  // 🔄 Load workout on mount
+  useEffect(() => {
+    const fetchWorkout = async () => {
+      try {
+        const data = await WorkoutService.getWorkoutById(id);
+        setWorkout(data);
+      } catch (err) {
+        setError(err.message || 'Failed to load workout');
+      }
+    };
+
+    if (id) fetchWorkout();
   }, [id]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setWorkout(prev => ({ ...prev, [name]: value }));
-  };
-
-  const handleShoeChange = (index, field, value) => {
-    const newShoes = [...workout.WorkoutShoes];
-    newShoes[index][field] = value;
-    setWorkout({ ...workout, WorkoutShoes: newShoes });
-  };
-
-  const addShoe = () => {
-    setWorkout({
-      ...workout,
-      WorkoutShoes: [...workout.WorkoutShoes, {
-        ShoeId: '',
-        Size: '',
-        IsTaken: false
-      }]
-    });
-  };
-
-  const removeShoe = (index) => {
-    const newShoes = workout.WorkoutShoes.filter((_, i) => i !== index);
-    setWorkout({ ...workout, WorkoutShoes: newShoes });
   };
 
   const handleSubmit = async (e) => {
@@ -80,7 +98,7 @@ const WorkoutForm = () => {
   return (
     <div className="workout-form">
       <h2>{id ? 'Edit Workout' : 'Add New Workout'}</h2>
-      
+
       {successMessage && <div className="success">{successMessage}</div>}
       {error && <div className="error">{error}</div>}
 
@@ -88,12 +106,7 @@ const WorkoutForm = () => {
         <div className="form-row">
           <div className="form-group">
             <label>Day</label>
-            <select
-              name="Day"
-              value={workout.Day}
-              onChange={handleChange}
-              required
-            >
+            <select name="Day" value={workout.Day} onChange={handleChange} required>
               {['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'].map(day => (
                 <option key={day} value={day}>{day}</option>
               ))}
@@ -102,24 +115,14 @@ const WorkoutForm = () => {
 
           <div className="form-group">
             <label>Time</label>
-            <input
-              type="time"
-              name="Time"
-              value={workout.Time}
-              onChange={handleChange}
-              required
-            />
+            <input type="time" name="Time" value={workout.Time} onChange={handleChange} required />
           </div>
         </div>
 
         <div className="form-row">
           <div className="form-group">
             <label>Status</label>
-            <select
-              name="Status"
-              value={workout.Status}
-              onChange={handleChange}
-            >
+            <select name="Status" value={workout.Status} onChange={handleChange}>
               {['Available', 'Booked', 'Completed', 'Cancelled'].map(status => (
                 <option key={status} value={status}>{status}</option>
               ))}
@@ -140,45 +143,36 @@ const WorkoutForm = () => {
           </div>
         </div>
 
-        <div className="shoes-section">
-          {workout.WorkoutShoes.map((shoe, index) => (
-            <div key={index} className="shoe-input">
-              <input
-                type="text"
-                placeholder="Shoe ID"
-                value={shoe.ShoeId}
-                onChange={(e) => handleShoeChange(index, 'ShoeId', e.target.value)}
-                required
-              />
-              <input
-                type="number"
-                placeholder="Size"
-                min="1"
-                max="50"
-                value={shoe.Size}
-                onChange={(e) => handleShoeChange(index, 'Size', e.target.value)}
-                required
-              />
+        <div className="participants-section">
+          <h3>Participants</h3>
+          {workout.Appointments?.length === 0 && <p>No participants yet.</p>}
+
+          {workout.Appointments?.map((appointment) => (
+            <div key={appointment.Id} className="participant-display">
+              <span>{appointment.UserFullName} ({appointment.UserEmail})</span>
               <button
                 type="button"
-                onClick={() => removeShoe(index)}
+                onClick={() => removeParticipant(appointment.UserId)}
                 className="btn-remove"
               >
                 ×
               </button>
             </div>
           ))}
-          <button type="button" onClick={addShoe} className="btn-add-shoe">
-            + Add Member
-          </button>
+
+          <div className="add-participant">
+            <button
+              type="button"
+              onClick={() => setShowUserSearch(true)}
+              className="btn-add-participant"
+            >
+              + Add Participant
+            </button>
+          </div>
         </div>
 
         <div className="form-actions">
-          <button
-            type="submit"
-            disabled={loading}
-            className="btn-save"
-          >
+          <button type="submit" disabled={loading} className="btn-save">
             {loading ? 'Saving...' : 'Save Workout'}
           </button>
           <button
@@ -190,6 +184,12 @@ const WorkoutForm = () => {
           </button>
         </div>
       </form>
+      <AddUserSearchModal
+        visible={showUserSearch}
+        onClose={() => setShowUserSearch(false)}
+        onConfirm={addParticipant}
+        searchUsers={searchUsers}
+      />
     </div>
   );
 };

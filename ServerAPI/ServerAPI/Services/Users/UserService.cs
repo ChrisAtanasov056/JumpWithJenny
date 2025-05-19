@@ -207,7 +207,21 @@
             var user = await this.usersRepository.AllWithDeleted().FirstOrDefaultAsync(u => u.Id == id);
             return user?.ProfilePictureUrl;
         }
-    }
 
-    
+        public async Task<IEnumerable<UserSearchResultModel>> SearchUsersAsync(string query)
+        {
+            return await userManager.Users
+                .Where(u => u.FirstName.Contains(query) ||
+                            u.LastName.Contains(query) ||
+                            u.Email.Contains(query))
+                .Select(u => new UserSearchResultModel
+                {
+                    Id = u.Id,
+                    FullName = u.FirstName + " " + u.LastName,
+                    Email = u.Email
+                })
+                .Take(10)
+                .ToListAsync();
+        }
+    } 
 }

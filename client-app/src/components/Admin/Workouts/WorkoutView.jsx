@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import WorkoutService from '../../../services/WorkoutSevices';
-import './AdminWorkouts.scss';
+import './WorkoutView.scss';
 
 const WorkoutView = () => {
   const { id } = useParams();

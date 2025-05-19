@@ -1,0 +1,210 @@
+// WorkoutView.scss
+
+.workout-view {
+    max-width: 1200px;
+    margin: 2rem auto;
+    padding: 0 1rem;
+  
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 2rem;
+      flex-wrap: wrap;
+      gap: 1rem;
+  
+      h2 {
+        color: #2c3e50;
+        margin: 0;
+        font-size: 1.8rem;
+      }
+  
+      .btn-back {
+        background-color: #e2e8f0;
+        color: #4a5568;
+        border: none;
+        padding: 0.5rem 1rem;
+        border-radius: 4px;
+        text-decoration: none;
+        font-size: 0.9rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: background-color 0.2s ease;
+  
+        &:hover {
+          background-color: #cbd5e0;
+        }
+      }
+    }
+  
+    .workout-details {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2rem;
+  
+      @media (max-width: 768px) {
+        grid-template-columns: 1fr;
+      }
+    }
+  
+    .details-section, .clients-section {
+      background: white;
+      border-radius: 8px;
+      padding: 1.5rem;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  
+      h3 {
+        color: #2c3e50;
+        margin-top: 0;
+        margin-bottom: 1.5rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 1px solid #edf2f7;
+      }
+    }
+  
+    .detail-item {
+      display: flex;
+      margin-bottom: 1rem;
+      align-items: center;
+  
+      .label {
+        font-weight: 600;
+        color: #4a5568;
+        width: 150px;
+        flex-shrink: 0;
+      }
+  
+      .status-badge {
+        display: inline-block;
+        padding: 0.25rem 0.75rem;
+        border-radius: 9999px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        text-transform: capitalize;
+  
+        &.available {
+          background-color: #c6f6d5;
+          color: #22543d;
+        }
+  
+        &.booked {
+          background-color: #bee3f8;
+          color: #2b6cb0;
+        }
+  
+        &.completed {
+          background-color: #e9d8fd;
+          color: #44337a;
+        }
+  
+        &.cancelled {
+          background-color: #fed7d7;
+          color: #742a2a;
+        }
+      }
+    }
+  
+    .shoes-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+  
+      .shoe-item {
+        background: #f7fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 4px;
+        padding: 0.5rem 0.75rem;
+        font-size: 0.8rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+  
+        .size {
+          font-weight: 500;
+        }
+  
+        .status {
+          padding: 0.15rem 0.5rem;
+          border-radius: 4px;
+          font-size: 0.7rem;
+          font-weight: 600;
+  
+          &.available {
+            background-color: #c6f6d5;
+            color: #22543d;
+          }
+  
+          &.taken {
+            background-color: #fed7d7;
+            color: #742a2a;
+          }
+        }
+      }
+    }
+  
+    .clients-list {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+  
+    .client-card {
+      background: #f7fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 6px;
+      padding: 1rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      transition: transform 0.2s ease;
+  
+      &:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+      }
+  
+      .client-info {
+        h4 {
+          margin: 0 0 0.25rem 0;
+          color: #2c3e50;
+        }
+  
+        p {
+          margin: 0;
+          color: #718096;
+          font-size: 0.85rem;
+        }
+      }
+  
+      .shoe-info {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+  
+        .label {
+          font-weight: 600;
+          color: #4a5568;
+        }
+      }
+    }
+  
+    .no-clients {
+      text-align: center;
+      padding: 2rem;
+      color: #718096;
+      font-style: italic;
+    }
+  
+    .loading {
+      text-align: center;
+      padding: 2rem;
+      color: #4a5568;
+    }
+  
+    .error {
+      text-align: center;
+      padding: 2rem;
+      color: #e53e3e;
+    }
+  }

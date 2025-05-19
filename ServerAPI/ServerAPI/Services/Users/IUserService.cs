@@ -25,5 +25,6 @@
         public Task<bool> ChangePasswordAsync(string Id, string currentPassword, string newPassword);
         public  Task<bool> DeleteUserAsync(string Id); 
 
+        Task<IEnumerable<UserSearchResultModel>> SearchUsersAsync(string query);
     }
 }
