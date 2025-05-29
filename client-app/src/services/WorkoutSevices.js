@@ -1,7 +1,7 @@
 import api from './api';
 
 const WorkoutService = {
-  getAllWorkouts: async () => {
+   getAllWorkouts: async () => {
     try {
       const response = await api.get('/api/Schedule');
       return response.data;
@@ -43,13 +43,13 @@ const WorkoutService = {
       throw error;
     }
   },
-  addParticipantToWorkout: async (workoutId, participantId, shoeSize, cardType, usesOwnShoes) => {
-    const response = await api.post(`/api/Admin/${participantId}/participants`, {
+  addParticipantToWorkout: async (workoutId, userId, shoeSize, cardType, usesOwnShoes) => {
+    const response = await api.post(`/api/Admin/add/participant`, {
       workoutId,
+      userId,
       shoeSize,
       cardType,
       usesOwnShoes,
-      participantId,
     });
     return response.data;
   },
@@ -66,7 +66,18 @@ const WorkoutService = {
       console.error('Error deleting workout:', error);
       throw error;
     }
-  }
+  },
+  async searchUsers(query) {
+    try {
+      const response = await api.get(`/api/users/search`, {
+        params: { query },
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Error searching users:', error);
+      throw error;
+    }
+  },
 };
 
 export default WorkoutService;
