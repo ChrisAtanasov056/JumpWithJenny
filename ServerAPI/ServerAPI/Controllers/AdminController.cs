@@ -89,20 +89,27 @@ namespace ServerAPI.Controllers
             }
         }
 
-        // POST: /api/workout/{id}/participants
-        [HttpPost("{id}/participants")]
-        public async Task<IActionResult> AddParticipantToWorkout(string id, [FromBody] ApplyForWorkoutRequest request)
+        // POST: /api/workout/add/participant
+        [HttpPost("add/participant")]
+        [AllowAnonymous]
+       public async Task<IActionResult> AddParticipantToWorkout(string id, [FromBody] ApplyForWorkoutRequest request)
         {
             try
             {
                 var updatedWorkout = await _scheduleService.ApplyForWorkoutAsync(
-                    request.UserId,
-                    request.ShoeSize,
-                    request.CardType,
                     request.WorkoutId,
+                    request.ShoeSize, 
+                    request.CardType,
+                    request.UserId,
                     request.UsesOwnShoes
                 );
 
+                if (updatedWorkout == null)
+                {
+                    return BadRequest("Could not add participant (maybe no available spots or no available shoes).");
+                }
+
+                _logger.LogInformation("Participant added to workout {WorkoutId}", request.WorkoutId);
                 return Ok(updatedWorkout);
             }
             catch (ArgumentException ex)
@@ -118,6 +125,7 @@ namespace ServerAPI.Controllers
                 return StatusCode(500, "An error occurred: " + ex.Message);
             }
         }
+
 
         [HttpGet("/api/users/search")]
         [AllowAnonymous]

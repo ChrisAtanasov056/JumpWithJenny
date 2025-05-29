@@ -12,6 +12,7 @@ const AddUserSearchModal = ({
   const [selectedUser, setSelectedUser] = useState(null);
   const [shoeSize, setShoeSize] = useState('');
   const [cardType, setCardType] = useState('');
+  const [usesOwnShoes, setUsesOwnShoes] = useState(false);
 
   useEffect(() => {
     const delayDebounce = setTimeout(async () => {
@@ -27,11 +28,12 @@ const AddUserSearchModal = ({
   }, [searchTerm, searchUsers]);
 
   const handleConfirm = () => {
-    if (selectedUser && shoeSize && cardType) {
+    if (selectedUser && cardType && (usesOwnShoes || shoeSize)) {
       onConfirm({
         userId: selectedUser.Id,
-        shoeSize: parseInt(shoeSize),
+        shoeSize: usesOwnShoes ? null : parseInt(shoeSize),
         cardType: parseInt(cardType),
+        usesOwnShoes,
       });
       handleClose();
     }
@@ -43,14 +45,15 @@ const AddUserSearchModal = ({
     setSelectedUser(null);
     setShoeSize('');
     setCardType('');
+    setUsesOwnShoes(false);
     onClose();
   };
 
   if (!visible) return null;
 
   return (
-    <div className="modal-overlay">
-      <div className="modal">
+    <div className="add-user-modal-overlay">
+      <div className="add-user-modal">
         <h3>Add Participant</h3>
 
         {!selectedUser ? (
@@ -76,15 +79,28 @@ const AddUserSearchModal = ({
             <p><strong>{selectedUser.FullName}</strong> ({selectedUser.Email})</p>
 
             <div className="form-group">
-              <label>Shoe Size</label>
-              <select value={shoeSize} onChange={(e) => setShoeSize(e.target.value)}>
-                <option value="" disabled>Select size</option>
-                <option value="1">S</option>
-                <option value="2">M</option>
-                <option value="3">L</option>
-                <option value="4">XL</option>
-              </select>
+              <label>
+                <input
+                  type="checkbox"
+                  checked={usesOwnShoes}
+                  onChange={(e) => setUsesOwnShoes(e.target.checked)}
+                />
+                {' '}Participant uses own shoes
+              </label>
             </div>
+
+            {!usesOwnShoes && (
+              <div className="form-group">
+                <label>Shoe Size</label>
+                <select value={shoeSize} onChange={(e) => setShoeSize(e.target.value)}>
+                  <option value="" disabled>Select size</option>
+                  <option value="1">S</option>
+                  <option value="2">M</option>
+                  <option value="3">L</option>
+                  <option value="4">XL</option>
+                </select>
+              </div>
+            )}
 
             <div className="form-group">
               <label>Card Type</label>

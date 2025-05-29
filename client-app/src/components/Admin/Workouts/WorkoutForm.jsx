@@ -31,20 +31,17 @@ const WorkoutForm = () => {
     }
   };
 
-  // 🧩 Add participant from modal
-  const addParticipant = async ({ userId, shoeSize, cardType, usesOwnShoes, workoutId }) => {
-    try {
-      const updated = await WorkoutService.addParticipantToWorkout(id, {
-        userId,
-        shoeSize,
-        cardType,
-        usesOwnShoes,
-        workoutId,
-      });
-      setWorkout(updated);
-    } catch (err) {
-      setError(err.message || 'Failed to add participant');
-    }
+  
+  const addParticipant = async (participant) => {
+    const { userId, shoeSize, cardType, usesOwnShoes } = participant;
+    const updatedWorkout = await WorkoutService.addParticipantToWorkout(
+      id,
+      userId,       
+      shoeSize,     
+      cardType,     
+      usesOwnShoes  
+    );
+    setWorkout(updatedWorkout); 
   };
 
   // ❌ Remove participant

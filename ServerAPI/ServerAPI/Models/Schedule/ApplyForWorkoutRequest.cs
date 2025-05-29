@@ -5,9 +5,9 @@ namespace ServerAPI.Models.Schedule
    public class ApplyForWorkoutRequest
     {
         public string WorkoutId { get; set; }
-        public ShoesSize ShoeSize { get; set; } // Nullable since users can bring their own shoes
+        public ShoesSize ShoeSize { get; set; }
         public CardType CardType { get; set; }
         public string UserId { get; set; }
-        public bool UsesOwnShoes { get; set; } // New field to indicate if user brings their own shoes
+        public bool UsesOwnShoes { get; set; } 
     }
 }

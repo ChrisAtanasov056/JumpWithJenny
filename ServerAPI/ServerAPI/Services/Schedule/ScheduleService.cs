@@ -101,7 +101,6 @@ namespace ServerAPI.Services.Schedule
             }
             catch
             {
-                // If anything fails, the changes won't be persisted
                 return null;
             }
         }

@@ -1,117 +1,166 @@
-// AddUserSearchModal.scss
-.modal-overlay {
+/* AddUserSearchModal.scss */
+
+.add-user-modal-overlay {
   position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: rgba(0, 0, 0, 0.5);
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(4px);
   display: flex;
   justify-content: center;
   align-items: center;
   z-index: 1000;
+}
 
-  .modal-content {
-    background: white;
-    padding: 2rem;
-    border-radius: 8px;
-    width: 90%;
-    max-width: 500px;
-    max-height: 80vh;
-    overflow-y: auto;
-    position: relative;
+.add-user-modal {
+  background: #fefefe;
+  border-radius: 12px;
+  padding: 24px;
+  width: 90%;
+  max-width: 400px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  animation: fadeInScale 0.3s ease;
+}
 
-    .modal-close {
-      position: absolute;
-      top: 1rem;
-      right: 1rem;
-      background: none;
-      border: none;
-      font-size: 1.5rem;
-      cursor: pointer;
-      color: #666;
-    }
-
-    h3 {
-      margin-top: 0;
-      color: #2c3e50;
-    }
-
-    .search-section {
-      margin-bottom: 1.5rem;
-
-      input {
-        width: 100%;
-        padding: 0.75rem;
-        border: 1px solid #ddd;
-        border-radius: 4px;
-        font-size: 1rem;
-      }
-    }
-
-    .user-results {
-      margin: 1rem 0;
-      max-height: 200px;
-      overflow-y: auto;
-      border: 1px solid #eee;
-      border-radius: 4px;
-
-      .user-item {
-        padding: 0.75rem;
-        cursor: pointer;
-        border-bottom: 1px solid #eee;
-
-        &:hover {
-          background-color: #f5f5f5;
-        }
-
-        &.selected {
-          background-color: #e3f2fd;
-        }
-
-        &:last-child {
-          border-bottom: none;
-        }
-      }
-    }
-
-    .form-fields {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 1rem;
-      margin: 1.5rem 0;
-
-      .form-group {
-        label {
-          display: block;
-          margin-bottom: 0.5rem;
-          font-weight: 500;
-        }
-
-        select {
-          width: 100%;
-          padding: 0.5rem;
-          border: 1px solid #ddd;
-          border-radius: 4px;
-        }
-      }
-    }
-
-    .confirm-button {
-      background-color: #4CAF50;
-      color: white;
-      border: none;
-      padding: 0.75rem 1.5rem;
-      border-radius: 4px;
-      cursor: pointer;
-      font-size: 1rem;
-      width: 100%;
-      margin-top: 1rem;
-
-      &:disabled {
-        background-color: #cccccc;
-        cursor: not-allowed;
-      }
-    }
+@keyframes fadeInScale {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
   }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.add-user-modal h3 {
+  margin: 0 0 12px;
+  font-size: 1.4rem;
+  color: #333;
+}
+
+.add-user-modal input[type="text"] {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 12px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  background: #f9f9f9;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.add-user-modal input[type="text"]:focus {
+  border-color: #007bff;
+}
+
+.add-user-modal .user-results {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  max-height: 180px;
+  overflow-y: auto;
+}
+
+.add-user-modal .user-results li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px;
+  margin-bottom: 4px;
+  background: #f5f5f5;
+  border-radius: 6px;
+}
+
+.add-user-modal .user-results li span {
+  font-size: 0.95rem;
+  color: #444;
+}
+
+.add-user-modal .user-results li button {
+  background: #007bff;
+  color: #fff;
+  border: none;
+  padding: 4px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: background 0.2s;
+}
+
+.add-user-modal .user-results li button:hover {
+  background: #0056b3;
+}
+
+.add-user-modal .user-extra-form p {
+  margin: 0 0 12px;
+  color: #555;
+  font-size: 0.95rem;
+}
+
+.add-user-modal .form-group {
+  margin-bottom: 12px;
+}
+
+.add-user-modal .form-group label {
+  display: block;
+  font-size: 0.85rem;
+  margin-bottom: 4px;
+  color: #666;
+}
+
+.add-user-modal .form-group select {
+  width: 100%;
+  padding: 8px;
+  border-radius: 6px;
+  border: 1px solid #ddd;
+  background: #f9f9f9;
+}
+
+.add-user-modal .form-buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.add-user-modal .form-buttons button {
+  padding: 8px 14px;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.add-user-modal .form-buttons button:first-child {
+  background: #28a745;
+  color: #fff;
+}
+
+.add-user-modal .form-buttons button:first-child:hover {
+  background: #1e7e34;
+}
+
+.add-user-modal .form-buttons button:last-child {
+  background: #ccc;
+  color: #333;
+}
+
+.add-user-modal .form-buttons button:last-child:hover {
+  background: #bbb;
+}
+
+.add-user-modal .form-group label {
+  display: flex;
+  align-items: center;
+  font-size: 0.95rem;
+  color: #444;
+  cursor: pointer;
+  gap: 8px;
+}
+
+.add-user-modal .form-group input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  accent-color: #007bff; // модерен син цвят за отметката
+  cursor: pointer;
 }
