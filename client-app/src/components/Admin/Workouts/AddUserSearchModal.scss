@@ -1,4 +1,17 @@
 /* AddUserSearchModal.scss */
+$primary-color: #95A5A6;
+$secondary-color: #FFFFFF;
+$background-color: #F8F9FA;
+$accent-color: #E74C3C;
+$white: #FFFFFF;
+$text-color: #2C3E50;
+$hover-color: #C0392B;
+$mobile-breakpoint: 768px;
+$transition-speed: 0.3s;
+$border-radius: 12px;
+$box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+
+
 
 .add-user-modal-overlay {
   position: fixed;
@@ -12,6 +25,7 @@
 }
 
 .add-user-modal {
+  position: relative; // 🆕 добавено това!
   background: #fefefe;
   border-radius: 12px;
   padding: 24px;
@@ -164,3 +178,26 @@
   accent-color: #007bff; // модерен син цвят за отметката
   cursor: pointer;
 }
+
+.close-icon {
+  background: none;
+  border: none;
+  font-size: 1.8rem;
+  font-weight: bold;
+  cursor: pointer;
+  color: $text-color;
+  padding: 0.25rem 0.5rem;
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  transition: color $transition-speed;
+
+  &:hover {
+    color: $accent-color;
+  }
+
+  &:focus {
+    outline: none;
+  }
+}
+

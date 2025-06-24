@@ -126,6 +126,38 @@ namespace ServerAPI.Controllers
             }
         }
 
+        [HttpDelete("remove/participant")]
+        [AllowAnonymous]
+        public async Task<IActionResult> RemoveParticipantFromWorkout([FromQuery] string workoutId, [FromQuery] string userId)
+        {
+            if (string.IsNullOrEmpty(workoutId) || string.IsNullOrEmpty(userId))
+            {
+                return BadRequest("Workout ID and User ID must be provided.");
+            }
+
+            try
+            {
+                var success = await _scheduleService.CancelRegistrationAsync(workoutId, userId);
+
+                if (!success)
+                {
+                    return BadRequest("Failed to remove participant from the workout.");
+                }
+
+                _logger.LogInformation("Participant {UserId} removed from workout {WorkoutId}", userId, workoutId);
+                return Ok(new { Message = "Participant removed successfully." });
+            }
+            catch (KeyNotFoundException ex)
+            {
+                _logger.LogWarning(ex.Message);
+                return NotFound(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error removing participant from workout");
+                return StatusCode(500, "Internal server error");
+            }
+        }
 
         [HttpGet("/api/users/search")]
         [AllowAnonymous]

@@ -41,11 +41,11 @@ namespace ServerAPI.Services.Workouts
 
         public async Task<WorkoutCreateModel> CreateWorkoutAsync(WorkoutCreateModel dto)
         {
-            // Create new workout
             var workout = new Workout
             {
                 Day = dto.Day,
                 Time = dto.Time,
+                Date = dto.Date, 
                 Status = "Available",
                 AvailableSpots = dto.AvailableSpots
             };
@@ -53,10 +53,8 @@ namespace ServerAPI.Services.Workouts
             await _workoutRepository.AddAsync(workout);
             await _workoutRepository.SaveChangesAsync();
 
-            // Get all existing shoes
+            // Връзки с обувки
             var existingShoes = await _shoesRepository.All().ToListAsync();
-
-            // Create workout-shoe relationships
             var workoutShoes = existingShoes.Select(shoe => new WorkoutShoes
             {
                 WorkoutId = workout.Id,
@@ -68,6 +66,7 @@ namespace ServerAPI.Services.Workouts
             {
                 await _workoutShoesRepository.AddAsync(workoutShoe);
             }
+
             await _workoutShoesRepository.SaveChangesAsync();
 
             return new WorkoutCreateModel
@@ -75,10 +74,12 @@ namespace ServerAPI.Services.Workouts
                 Id = workout.Id,
                 Day = workout.Day,
                 Time = workout.Time,
+                Date = workout.Date, 
                 Status = workout.Status,
                 AvailableSpots = workout.AvailableSpots,
             };
         }
+
 
         public async Task<AdminWorkoutViewModel> GetWorkoutByIdAsync(string id)
         {
@@ -96,6 +97,7 @@ namespace ServerAPI.Services.Workouts
                     Id = w.Id,
                     Day = w.Day,
                     Time = w.Time,
+                    Date = w.Date, 
                     Status = w.Status,
                     AvailableSpots = w.AvailableSpots,
                     WorkoutShoes = w.WorkoutShoes.ToList(),
@@ -109,7 +111,7 @@ namespace ServerAPI.Services.Workouts
                         ShoeSize = a.Shoe != null ? a.Shoe.Size : 0,
                         UsesOwnShoes = a.UsesOwnShoes,
                     }).ToList()
-                })
+                }).Where(w => w.Date >= DateTime.UtcNow.Date)
                 .FirstOrDefaultAsync();
 
             return workout ?? throw new KeyNotFoundException($"Workout with ID {id} not found.");

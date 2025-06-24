@@ -7,5 +7,7 @@ namespace ServerAPI.ViewModels
         public string Time { get; set; } 
         public string Status { get; set; }
         public int AvailableSpots { get; set; }
+
+        public DateTime Date { get; set; } 
     }
 }

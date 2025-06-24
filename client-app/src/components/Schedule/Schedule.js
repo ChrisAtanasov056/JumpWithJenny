@@ -22,7 +22,13 @@ const Schedule = () => {
     const fetchData = async () => {
       try {
         const response = await axios.get('https://localhost:7024/api/Schedule');
-        setWorkouts(response.data);
+        const now = new Date();
+
+        const upcoming = response.data
+          .filter(w => w.Date && new Date(w.Date) > now)
+          .sort((a, b) => new Date(a.Date) - new Date(b.Date));
+
+        setWorkouts(upcoming);
       } catch (error) {
         console.error('Error fetching data:', error);
         setError(t('schedule.error'));
@@ -50,7 +56,7 @@ const Schedule = () => {
       return;
     }
 
-    setIsRegistering((prev) => ({ ...prev, [workout.id]: true }));
+    setIsRegistering((prev) => ({ ...prev, [workout.Id]: true }));
 
     try {
       const payload = {
@@ -74,7 +80,7 @@ const Schedule = () => {
       console.error('Error registering for workout:', error);
       alert(error.response?.data?.message || t('schedule.registerFailed'));
     } finally {
-      setIsRegistering((prev) => ({ ...prev, [workout.id]: false }));
+      setIsRegistering((prev) => ({ ...prev, [workout.Id]: false }));
     }
   };
 
@@ -140,7 +146,7 @@ const Schedule = () => {
                           onClick={() => status === 'available' && openModal(workout)}
                         >
                           {status === 'available' &&
-                            (isRegistering[workout?.id] ? t('schedule.registering') : t('schedule.available'))}
+                            (isRegistering[workout?.Id] ? t('schedule.registering') : t('schedule.available'))}
                           {status === 'booked' && t('schedule.booked')}
                         </td>
                       );
@@ -159,7 +165,6 @@ const Schedule = () => {
               const dayWorkouts = groupedWorkouts[dayKey] || [];
               const translatedDay = daysOfWeek[index];
 
-              // Skip rendering the day column if no workouts
               if (dayWorkouts.length === 0) return null;
 
               return (
@@ -176,7 +181,7 @@ const Schedule = () => {
                         <span>{workout.Time}</span>
                         <span>
                           {status === 'available' &&
-                            (isRegistering[workout?.id]
+                            (isRegistering[workout?.Id]
                               ? t('schedule.registering')
                               : t('schedule.available'))}
                           {status === 'booked' && t('schedule.booked')}

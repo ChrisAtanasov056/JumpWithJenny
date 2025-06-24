@@ -55,7 +55,9 @@ const AddUserSearchModal = ({
     <div className="add-user-modal-overlay">
       <div className="add-user-modal">
         <h3>Add Participant</h3>
-
+        <button className="close-icon" onClick={onClose}>
+            &times;
+        </button>
         {!selectedUser ? (
           <>
             <input
