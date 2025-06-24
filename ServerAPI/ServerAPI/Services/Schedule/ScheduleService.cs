@@ -107,8 +107,11 @@ namespace ServerAPI.Services.Schedule
 
         public async Task<List<T>> GetAllWorkoutsAsync<T>()
         {
+            var today = DateTime.UtcNow.Date;
+
             var workouts = await _workoutRepository
                 .All()
+                .Where(w => w.Date >= today)
                 .Include(w => w.WorkoutShoes)
                 .ThenInclude(ws => ws.Shoe)
                 .Include(w => w.Appointments)
@@ -117,6 +120,7 @@ namespace ServerAPI.Services.Schedule
 
             return workouts ?? new List<T>();
         }
+
 
         public async Task<T> GetWorkoutByIdAsync<T>(string id)
         {

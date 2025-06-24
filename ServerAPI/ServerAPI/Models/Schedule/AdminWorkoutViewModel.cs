@@ -12,6 +12,8 @@ namespace ServerAPI.Models.Schedule
     public string Status { get; set; }
     public int AvailableSpots { get; set; }
 
+    public DateTime Date { get; set; }
+
     public ICollection<WorkoutShoes> WorkoutShoes { get; set; } = new List<WorkoutShoes>();
     public ICollection<AppointmentViewModel> Appointments { get; set; } = new List<AppointmentViewModel>();
 

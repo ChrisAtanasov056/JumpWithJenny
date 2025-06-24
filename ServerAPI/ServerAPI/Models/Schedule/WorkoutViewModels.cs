@@ -11,6 +11,8 @@
         public string Status { get; set; } 
         public int AvailableSpots { get; set; }
 
+        public DateTime Date { get; set; }
+
         // Only relevant shoe details
         //public List<int> ShoesIds { get; set; } = new List<int>();
 

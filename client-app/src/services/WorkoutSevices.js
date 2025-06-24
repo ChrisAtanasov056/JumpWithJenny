@@ -55,7 +55,12 @@ const WorkoutService = {
   },
 
   removeParticipantFromWorkout: async (workoutId, participantId) => {
-    const response = await api.delete(`/api/workouts/${workoutId}/participants/${participantId}`);
+    const response = await api.delete('/api/admin/remove/participant', {
+      params: {
+        workoutId,
+        userId: participantId,
+      },
+    });
     return response.data;
   },
   deleteWorkout: async (id) => {

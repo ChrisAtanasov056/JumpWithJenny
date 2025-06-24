@@ -11,10 +11,12 @@ const WorkoutForm = () => {
   const [workout, setWorkout] = useState({
     Day: 'Monday',
     Time: '09:00',
+    Date: '', 
     Status: 'Available',
     AvailableSpots: 20,
     Appointments: []
   });
+  
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -47,14 +49,19 @@ const WorkoutForm = () => {
   // ❌ Remove participant
   const removeParticipant = async (participantId) => {
     try {
-      const updated = await WorkoutService.removeParticipantFromWorkout(id, participantId);
-      setWorkout(updated);
+      await WorkoutService.removeParticipantFromWorkout(id, participantId);
+      
+      // Update local state to remove participant
+      setWorkout((prev) => ({
+        ...prev,
+        Appointments: prev.Appointments.filter(a => a.UserId !== participantId),
+      }));
     } catch (err) {
       setError(err.message || 'Failed to remove participant');
     }
   };
-
-  // 🔄 Load workout on mount
+  
+  // ✅ Fetch workout by ID
   useEffect(() => {
     const fetchWorkout = async () => {
       try {
@@ -72,6 +79,7 @@ const WorkoutForm = () => {
     const { name, value } = e.target;
     setWorkout(prev => ({ ...prev, [name]: value }));
   };
+  
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -115,6 +123,20 @@ const WorkoutForm = () => {
             <input type="time" name="Time" value={workout.Time} onChange={handleChange} required />
           </div>
         </div>
+
+        <div className="form-row">
+        <div className="form-group">
+          <label>Date & Time</label>
+          <input
+            type="datetime-local"
+            name="Date"
+            value={workout.Date}
+            onChange={handleChange}
+            required
+          />
+        </div>
+      </div>
+
 
         <div className="form-row">
           <div className="form-group">

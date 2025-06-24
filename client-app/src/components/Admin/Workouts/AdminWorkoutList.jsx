@@ -9,13 +9,25 @@ const AdminWorkoutsList = () => {
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
+  const [showPast, setShowPast] = useState(false);
+
   const navigate = useNavigate();
 
   useEffect(() => {
     const fetchWorkouts = async () => {
       try {
         const data = await WorkoutService.getAllWorkouts();
-        setWorkouts(data);
+        const now = new Date();
+
+        const filtered = data
+          .filter(w => w.Date)
+          .filter(w => {
+            const workoutDate = new Date(w.Date);
+            return showPast ? workoutDate <= now : workoutDate > now;
+          })
+          .sort((a, b) => new Date(a.Date) - new Date(b.Date));
+
+        setWorkouts(filtered);
       } catch (err) {
         setError(err.message || 'Failed to load workouts');
       } finally {
@@ -24,11 +36,11 @@ const AdminWorkoutsList = () => {
     };
 
     fetchWorkouts();
-  }, []);
+  }, [showPast]);
 
   const handleDelete = async (id) => {
     if (!window.confirm('Are you sure you want to delete this workout?')) return;
-    
+
     try {
       await WorkoutService.deleteWorkout(id);
       setWorkouts(workouts.filter(workout => workout.Id !== id));
@@ -62,13 +74,21 @@ const AdminWorkoutsList = () => {
             />
             <i className="search-icon">🔍</i>
           </div>
-          <button 
+          <button
             className="btn-add"
             onClick={() => navigate('/admin/workouts/new')}
           >
             + Add New Workout
           </button>
         </div>
+      </div>
+
+      <div className="view-switch">
+        <label className="switch">
+          <input type="checkbox" checked={showPast} onChange={() => setShowPast(!showPast)} />
+          <span className="slider round"></span>
+        </label>
+        <span>{showPast ? 'Изминали тренировки' : 'Текущи тренировки'}</span>
       </div>
 
       {successMessage && <div className="success">{successMessage}</div>}
@@ -78,6 +98,7 @@ const AdminWorkoutsList = () => {
         <table>
           <thead>
             <tr>
+              <th>Date</th>
               <th>Day</th>
               <th>Time</th>
               <th>Status</th>
@@ -89,6 +110,7 @@ const AdminWorkoutsList = () => {
             {filteredWorkouts.length > 0 ? (
               filteredWorkouts.map(workout => (
                 <tr key={workout.Id}>
+                  <td>{new Date(workout.Date).toLocaleDateString('bg-BG')}</td>
                   <td>{workout.Day}</td>
                   <td>{workout.Time}</td>
                   <td>
@@ -98,22 +120,13 @@ const AdminWorkoutsList = () => {
                   </td>
                   <td>{workout.AvailableSpots}</td>
                   <td className="actions">
-                    <Link 
-                        to={`/admin/workouts/${workout.Id}/view`}
-                        className="btn-view"
-                        >
-                        View
+                    <Link to={`/admin/workouts/${workout.Id}/view`} className="btn-view">
+                      View
                     </Link>
-                    <Link 
-                      to={`/admin/workouts/${workout.Id}`}
-                      className="btn-edit"
-                    >
+                    <Link to={`/admin/workouts/${workout.Id}`} className="btn-edit">
                       Edit
                     </Link>
-                    <button
-                      className="btn-delete"
-                      onClick={() => handleDelete(workout.Id)}
-                    >
+                    <button className="btn-delete" onClick={() => handleDelete(workout.Id)}>
                       Delete
                     </button>
                   </td>
