@@ -9,6 +9,7 @@ import Contacts from '../Contacts/Contacts';
 import Footer from '../Footer/Footer';
 import Welcome from '../Welcome/Welcome';
 import Gallery from '../Gallery/Gallery';
+import HappyCustomers from '../HappyCustomers/HappyCustomers';
 
 const Home = () => {
 
@@ -19,6 +20,7 @@ const Home = () => {
       <AboutMe />
       <Gallery />
       <Schedule />
+      <HappyCustomers/>
       <FAQ />
       <Contacts />
       <Footer/>
