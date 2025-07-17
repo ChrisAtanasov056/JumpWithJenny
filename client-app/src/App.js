@@ -23,6 +23,7 @@ import AdminUsersList from './components/Admin/Users/AdminUsersList';
 import AdminUserProfile from './components/Admin/Users/AdminUserProfile';
 import AdminWorkoutsList from './components/Admin/Workouts/AdminWorkoutList';
 import WorkoutForm from './components/Admin/Workouts/WorkoutForm';
+import HappyCustomers from './components/HappyCustomers/HappyCustomers';
 
 function App() {
   useEffect(() => {
@@ -62,6 +63,7 @@ const AppContent = () => {
         <Route path="/faq" element={<FAQ />} />
         <Route path="/contacts" element={<Contacts />} />
         <Route path="/schedule" element={<Schedule />} />
+        <Route path="/customers" element={<HappyCustomers />} />
         <Route path="/login" element={user ? <Profile user={user} /> : <Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/profile" element={user ? <Profile user={user} /> : <Login />} />
