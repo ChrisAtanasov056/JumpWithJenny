@@ -1,0 +1,13 @@
+{
+    "PasswordReset": {
+      "en": {
+        "subject": "Password Reset Request",
+        "body": "<h1>Password Reset</h1><p>Click the link to reset your password:</p><a href=\"{link}\">Reset Password</a><p>This link expires in 24 hours.</p>"
+      },
+      "bg": {
+        "subject": "Заявка за нова парола",
+        "body": "<h1>Нулиране на парола</h1><p>Натиснете линка, за да нулирате паролата си:</p><a href=\"{link}\">Нулирай парола</a><p>Валидно 24 часа.</p>"
+      }
+    }
+  }
+  

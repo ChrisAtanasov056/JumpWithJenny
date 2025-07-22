@@ -1,0 +1,11 @@
+{
+    "ResetPassword": {
+      "Subject": "Password Reset Request",
+      "Body": "<h1>Password Reset</h1><p>Click the link below to reset your password:</p><a href=\"{0}\">Reset Password</a><p>This link will expire in 24 hours.</p>"
+    },
+    "ConfirmAccount": {
+      "Subject": "Confirm Your Registration",
+      "Body": "<h1>Welcome to Jump With Jenny!</h1><p>Click the link below to confirm your registration:</p><a href=\"{0}\">Confirm Account</a><p>After confirmation, you’ll be able to log in to your account.</p>"
+    }
+  }
+  

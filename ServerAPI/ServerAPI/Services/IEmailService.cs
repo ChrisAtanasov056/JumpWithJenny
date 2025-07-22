@@ -2,6 +2,8 @@ namespace ServerAPI.Services
 {
     public interface IEmailService
     {
-        Task<bool> SendEmailAsync(string emailAddress, string subject, string body);
+         Task SendPasswordResetEmailAsync(string email, string token, string language);
+        Task SendConfirmationEmailAsync(string email, string token, string language);
+        Task<bool> SendEmailAsync(string toEmail, string subject, string body);
     }
 }

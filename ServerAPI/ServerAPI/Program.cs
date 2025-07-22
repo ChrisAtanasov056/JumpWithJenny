@@ -85,7 +85,6 @@ public class Program
             ValidAudience = configuration["Jwt:Audience"],
             IssuerSigningKey = new SymmetricSecurityKey(
                 Encoding.UTF8.GetBytes(configuration["Jwt:Secret"])),
-            // Add these two lines
             RoleClaimType = ClaimTypes.Role,
             NameClaimType = ClaimTypes.Name
         };
@@ -129,7 +128,9 @@ public class Program
         AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
 
         // Email Service Configuration
-        services.AddSingleton<IEmailService, EmailService>(); // Register EmailService with DI
+        services.AddScoped<IEmailTemplateService, EmailTemplateService>();
+        services.AddScoped<IEmailService, EmailService>();
+
 
         // AutoMapper configuration
         services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());

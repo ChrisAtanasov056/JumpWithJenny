@@ -1,70 +1,73 @@
 using System.Net;
-using System.Net.Mail;
-using Microsoft.Extensions.Configuration;
+using System.Net.Http;
+using System.Text;
 using System.Threading.Tasks;
-using ServerAPI.Services;
+using Microsoft.Extensions.Configuration;
+using Newtonsoft.Json;
+
+namespace ServerAPI.Services;
 
 public class EmailService : IEmailService
 {
-    private readonly IConfiguration _configuration;
+    private readonly IConfiguration _config;
+    private readonly HttpClient _httpClient;
+    private readonly IEmailTemplateService _templateService;
 
-    public EmailService(IConfiguration configuration)
+    public EmailService(IConfiguration config, IEmailTemplateService templateService)
     {
-        _configuration = configuration;
+        _config = config;
+        _templateService = templateService;
+        _httpClient = new HttpClient();
     }
 
-    public async Task SendPasswordResetEmailAsync(string email, string token)
+    public async Task SendPasswordResetEmailAsync(string email, string token, string language)
     {
+        var template = _templateService.GetTemplate("ResetPassword", language);
+        var link = $"{_config["FrontendBaseUrl"]}/reset-password?token={WebUtility.UrlEncode(token)}&email={WebUtility.UrlEncode(email)}";
 
-        var frontendUrl = _configuration["FrontendBaseUrl"];
-        var encodedToken = WebUtility.UrlEncode(token);
-        var resetLink = $"{frontendUrl}/reset-password?token={encodedToken}&email={email}";
-        
-        var subject = "Password Reset Request";
-        var body = $"""
-            <h1>Password Reset</h1>
-            <p>Click the link below to reset your password:</p>
-            <a href="{resetLink}">Reset Password</a>
-            <p>This link will expire in 24 hours.</p>
-        """;
-        
+        var subject = template.Subject;
+        var body = string.Format(template.Body, link);
+
         await SendEmailAsync(email, subject, body);
     }
+
+    public async Task SendConfirmationEmailAsync(string email, string token, string language)
+    {
+        var template = _templateService.GetTemplate("ConfirmAccount", language);
+        var link = $"{_config["FrontendBaseUrl"]}/confirm-account?token={WebUtility.UrlEncode(token)}&email={WebUtility.UrlEncode(email)}";
+
+        var subject = template.Subject;
+        var body = string.Format(template.Body, link);
+
+        await SendEmailAsync(email, subject, body);
+    }
+
     public async Task<bool> SendEmailAsync(string toEmail, string subject, string body)
     {
-        try
+        var request = new
         {
-            var smtpClient = new SmtpClient(_configuration["EmailSettings:SmtpServer"])
+            sender = new
             {
-                Port = int.Parse(_configuration["EmailSettings:SmtpPort"]),
-                Credentials = new NetworkCredential(
-                    _configuration["EmailSettings:SmtpUsername"],
-                    _configuration["EmailSettings:SmtpPassword"]
-                ),
-                EnableSsl = true,
-            };
+                name = _config["EmailSettings:FromName"],
+                email = _config["EmailSettings:FromEmail"]
+            },
+            to = new[] { new { email = toEmail } },
+            subject = subject,
+            htmlContent = body
+        };
 
-            var fromEmail = _configuration["EmailSettings:FromEmail"];
-            var fromName = _configuration["EmailSettings:FromName"];
-            var fromAddress = new MailAddress(fromEmail, fromName);
-            var toAddress = new MailAddress(toEmail);
+        var json = JsonConvert.SerializeObject(request);
+        var content = new StringContent(json, Encoding.UTF8, "application/json");
 
-            var message = new MailMessage(fromAddress, toAddress)
-            {
-                Subject = subject,
-                Body = body,
-                IsBodyHtml = true
-            };
+        _httpClient.DefaultRequestHeaders.Clear();
+        _httpClient.DefaultRequestHeaders.Add("api-key", _config["EmailSettings:BrevoApiKey"]);
 
-            // Send email asynchronously
-            await smtpClient.SendMailAsync(message);
-
+        var response = await _httpClient.PostAsync("https://api.brevo.com/v3/smtp/email", content);
+        if (response.IsSuccessStatusCode)
             return true;
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Error sending email: {ex.Message}");
-            return false;
-        }
+
+        var error = await response.Content.ReadAsStringAsync();
+        Console.WriteLine($"Email failed: {error}");
+        return false;
     }
 }
