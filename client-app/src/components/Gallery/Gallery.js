@@ -1,13 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import axios from '../../api/axius';
 import Slider from 'react-slick';
-import Modal from 'react-modal';
 import 'slick-carousel/slick/slick.css';
 import 'slick-carousel/slick/slick-theme.css';
 import './Gallery.scss';
 import { useTranslation } from 'react-i18next'; // ✅ Import
 
-import { API_BASE_URL } from '../../api/axios';  
+import { API_BASE_URL } from '../../api/axius'; // ✅ Import API base URL
 
 const baseUrl = API_BASE_URL;
 
