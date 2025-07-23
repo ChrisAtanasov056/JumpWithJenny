@@ -42,7 +42,7 @@ public class Program
             options.AddPolicy("AllowOrigin", builder =>
             {
                 builder
-                    .WithOrigins("http://localhost:3000", "https://localhost:3000", "https://localhost:5001") 
+                    .WithOrigins("http://localhost:3000", "https://localhost:3000", "https://localhost:5001 , https://jumpwithjenny.com") 
                     .AllowAnyHeader()
                     .AllowAnyMethod()
                     .AllowCredentials(); 
