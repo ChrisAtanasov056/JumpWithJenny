@@ -7,7 +7,9 @@ import 'slick-carousel/slick/slick-theme.css';
 import './Gallery.scss';
 import { useTranslation } from 'react-i18next'; // ✅ Import
 
-const baseUrl = 'https://localhost:7024';
+import { API_BASE_URL } from '../../api/axios';  
+
+const baseUrl = API_BASE_URL;
 
 const customStyles = {
   content: {

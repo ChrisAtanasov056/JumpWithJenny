@@ -1,17 +1,17 @@
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { useAuth } from '../services/AuthContext';
 import './VerifyEmail.css';
-import axios from 'axios';
+import api from '../services/api'; 
 
 const VerifyEmail = () => {
     const { search } = useLocation();
     const queryParams = new URLSearchParams(search);
     const userId = queryParams.get('userId');
     const token = queryParams.get('token');
-    const navigate = useNavigate();
+
     
-    const { updateUser } = useAuth(); // Destructure updateUser
+    const { updateUser } = useAuth();
     const [isLoading, setIsLoading] = useState(true);
     const [message, setMessage] = useState('');
     const [isError, setIsError] = useState(false);
@@ -26,16 +26,15 @@ const VerifyEmail = () => {
             }
 
             try {
-                const response = await axios.post(`https://localhost:7024/Account/confirmemail`, {
-                    userId: userId,
-                    token: token 
+                const response = await api.post('/Account/confirmemail', {
+                    userId,
+                    token,
                 });
 
                 if (response.status === 200) {
-                    // Use the updated user data from the response
                     updateUser({
                         ...response.data.user,
-                        emailConfirmed: true
+                        emailConfirmed: true,
                     });
                 }
 
