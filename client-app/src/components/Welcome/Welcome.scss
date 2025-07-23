@@ -169,7 +169,6 @@ $transition-speed: 0.4s;
     .welcome-container {
       padding: $spacing-unit * 2.5;
       width: 90%;
-      backdrop-filter: blur(8px);
       
       h1 {
         margin-bottom: $spacing-unit * 1.2;

@@ -23,15 +23,13 @@ $border-radius: 8px;
 
   .container {
     display: flex;
-    flex-direction: row; 
-    justify-content: center;
+    justify-content: space-between;
     align-items: center;
     max-width: 1200px;
     margin: 0 auto;
     padding: 0 1.5rem;
 
     @media (max-width: $mid-breakpoint) {
-      justify-content: space-between;
       padding: 0 1.5rem;
       flex-wrap: wrap;
       gap: 1rem;
@@ -39,18 +37,17 @@ $border-radius: 8px;
 
     @media (max-width: $mobile-breakpoint) {
       padding: 0 1rem;
-      justify-content: space-between;
     }
   }
     
   // Logo
-  .navbar-logo {
+  &-logo {
     height: 40px;
     width: auto;
     transform: scale(2);
     border-radius: 10%;
-    transition: transform 0.3s ;
-    margin-right: 1rem; 
+    transition: transform $transition-speed;
+    margin-right: auto; 
 
     &:hover {
       transform: scale(2.3);
@@ -61,8 +58,10 @@ $border-radius: 8px;
     }
   }
 
-  // Hamburger Toggle
-  .navbar-toggler {
+  
+  // Hamburger Toggle (hidden by default)
+  &-toggler {
+    display: none;
     background: none;
     border: none;
     cursor: pointer;
@@ -71,68 +70,60 @@ $border-radius: 8px;
 
     @media (max-width: $mobile-breakpoint) {
       display: block;
-      
     }
 
-    .navbar-toggler-icon {
+    &-icon {
       display: flex;
       flex-direction: column;
       gap: 5px;
       width: 30px;
-      position: relative;
 
       .line {
         width: 100%;
         height: 3px;
         background-color: $white;
         transition: all $transition-speed ease;
-        transform-origin: center center;
+        transform-origin: center;
 
-        &.active:nth-child(1) {
-          transform: rotate(45deg) translate(5px, 7px) !important;
+        &:nth-child(1).active {
+          transform: rotate(45deg) translate(5px, 7px);
         }
-        &.active:nth-child(2) {
+        &:nth-child(2).active {
           opacity: 0;
         }
-        &.active:nth-child(3) {
+        &:nth-child(3).active {
           transform: rotate(-45deg) translate(4px, -5px);
         }
       }
     }
   }
 
-  // Mobile Menu
-  .navbar-nav {
+  // Navigation Menu
+  &-nav {
     display: flex;
     align-items: center;
-    gap: 1rem;
-    white-space: nowrap;
+    gap: 1.5rem;
+    transition: all $transition-speed ease;
 
     @media (max-width: $mobile-breakpoint) {
       position: fixed;
-      top: 100%;
+      top: 70px; /* Adjust based on navbar height */
       left: 0;
-      right: 0;
-      flex-direction: column;
-      background-color: $accent-color;
       width: 100%;
-      text-align: center;
+      background-color: $accent-color;
+      flex-direction: column;
       padding: 2rem 0;
-      z-index: 999;
-      overflow-y: auto;
-      display: none;
+      clip-path: circle(0px at 90% -10%);
+      -webkit-clip-path: circle(0px at 90% -10%);
+      pointer-events: none;
       opacity: 0;
+      z-index: 999;
 
       &.active {
-        display: flex;
-        animation: popIn 0.3s ease forwards;
+        clip-path: circle(1000px at 90% -10%);
+        -webkit-clip-path: circle(1000px at 90% -10%);
+        pointer-events: all;
         opacity: 1;
-      }
-
-      @keyframes popIn {
-        0% { transform: scale(0.95); opacity: 0; }
-        50% { transform: scale(1.02); }
-        100% { transform: scale(1); opacity: 1; }
       }
     }
 
@@ -150,7 +141,6 @@ $border-radius: 8px;
         &:hover {
           text-decoration: underline;
           text-underline-offset: 8px;
-          background-color: transparent;
         }
       }
 
@@ -158,71 +148,25 @@ $border-radius: 8px;
         background: transparent;
         color: $white;
         border: 2px solid $white;
-        border-radius: 50px; // Extra rounded
+        border-radius: 50px;
         padding: 0.6rem 2rem;
         font-weight: 600;
         letter-spacing: 1px;
         text-transform: uppercase;
-        position: relative;
-        overflow: hidden;
         transition: all 0.4s ease;
-        box-shadow: 0 0 10px rgba($white, 0);
         
-        // Neon glow on hover
         &:hover {
           text-shadow: 0 0 5px $white;
           box-shadow: 0 0 15px rgba($white, 0.8);
           background: rgba($white, 0.05);
           transform: translateY(-2px);
         }
-        
-        // Animated border
-        &::before {
-          content: '';
-          position: absolute;
-          top: -2px;
-          left: -2px;
-          right: -2px;
-          bottom: -2px;
-          border: 2px solid transparent;
-          border-radius: 50px;
-          background: linear-gradient(45deg, $white, $accent-color, $white);
-          background-size: 200% 200%;
-          z-index: -1;
-          animation: borderGradient 3s linear infinite;
-          opacity: 0;
-          transition: opacity 0.3s ease;
-        }
-        
-        &:hover::before {
-          opacity: 1;
-        }
-      }
-      
-      @keyframes borderGradient {
-        0% { background-position: 0% 50% }
-        50% { background-position: 100% 50% }
-        100% { background-position: 0% 50% }
-      }
-
-      .profile-area {
-        background-color: transparent;
-        border: none;
-        color: $white;
-        transition: all $transition-speed ease;
-        margin-top: 0px;
-
-        &:hover {
-          text-decoration: underline;
-          text-underline-offset: 8px;
-          color: $primary-color;
-        }
       }
     }
   }
 
-  // Social Icons
-  .social-icon {
+  // Social Icons (hidden on mobile)
+  .social-icons {
     display: flex;
     gap: 0.75rem;
     margin-left: 1rem;
@@ -233,9 +177,11 @@ $border-radius: 8px;
 
     li {
       list-style: none;
+      
       a {
         color: $white;
         transition: opacity $transition-speed ease;
+        
         &:hover {
           opacity: 0.8;
         }
@@ -244,25 +190,67 @@ $border-radius: 8px;
   }
 }
 
-// Language Switcher Style Adjustments
+// Language Switcher
 .language-switcher {
   display: flex;
   gap: 0.5rem;
+  
   button {
     background: transparent;
-    border: 1px solid #fff;
-    color: #fff;
+    border: 1px solid $white;
+    color: $white;
     padding: 4px 8px;
     cursor: pointer;
     border-radius: 4px;
+    transition: all $transition-speed ease;
 
     &:hover {
-      background-color: #fff;
-      color: #000;
+      background-color: $white;
+      color: $text-color;
     }
   }
 
   @media (max-width: $mobile-breakpoint) {
-    margin-top: 10px;
+    margin-top: 1rem;
+    justify-content: center;
+    width: 100%;
   }
+}
+
+// 1. Completely disable Bootstrap's hamburger icon
+.navbar-toggler {
+  // Remove Bootstrap's SVG background
+  background-image: none !important;
+  
+  // Remove Bootstrap's default border styles
+  border-color: transparent !important;
+  border-width: 0 !important;
+  
+  // Remove focus styles
+  &:focus {
+    box-shadow: none !important;
+    outline: none !important;
+  }
+}
+
+// 2. Ensure your custom white lines take precedence
+.navbar-toggler-icon {
+  // Disable Bootstrap's background image
+  background-image: none !important;
+  
+  // Your custom white lines
+  .line {
+    background: $white !important;
+    // Remove any residual stroke/line effects
+    stroke: transparent !important;
+    stroke-width: 0 !important;
+  }
+}
+
+// 3. Nuclear option to prevent any Bootstrap interference
+[class^="navbar-"], [class*=" navbar-"] {
+  --bs-navbar-toggler-icon-bg: none !important;
+  --bs-navbar-toggler-border-color: transparent !important;
+  --bs-navbar-toggler-border-radius: 0 !important;
+  --bs-navbar-toggler-focus-width: 0 !important;
 }
