@@ -19,12 +19,11 @@ const Schedule = () => {
 
   const isMobile = useMediaQuery({ maxWidth: 768 });
 
-  // Зареждане на тренировки (филтриране само за бъдещи)
-  const fetchWorkouts = async () => {
+  const fetchWorkouts = React.useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
-      const response = await axios.get('/Schedule'); // базов URL е в axios инстанцията
+      const response = await axios.get('/api/Schedule'); 
       const now = new Date();
       const upcoming = response.data
         .filter(w => w.Date && new Date(w.Date) > now)
@@ -36,11 +35,11 @@ const Schedule = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [t]);
 
   useEffect(() => {
     fetchWorkouts();
-  }, [t]);
+  }, [fetchWorkouts]);
 
   // Отваряне и затваряне на модалния прозорец
   const openModal = (workout) => {
