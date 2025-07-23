@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import axios from '../../api/axius'; // axios инстанция с базов URL
 import { useAuth } from '../../services/AuthContext';
 import WorkoutModal from '../WorkoutModal/WorkoutModal';
 import { useTranslation } from 'react-i18next';
@@ -9,37 +9,40 @@ import './Schedule.scss';
 const Schedule = () => {
   const { isAuthenticated, user } = useAuth();
   const { t } = useTranslation();
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedWorkout, setSelectedWorkout] = useState(null);
+
   const [workouts, setWorkouts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [isRegistering, setIsRegistering] = useState({});
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedWorkout, setSelectedWorkout] = useState(null);
 
   const isMobile = useMediaQuery({ maxWidth: 768 });
 
+  // Зареждане на тренировки (филтриране само за бъдещи)
+  const fetchWorkouts = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await axios.get('/Schedule'); // базов URL е в axios инстанцията
+      const now = new Date();
+      const upcoming = response.data
+        .filter(w => w.Date && new Date(w.Date) > now)
+        .sort((a, b) => new Date(a.Date) - new Date(b.Date));
+      setWorkouts(upcoming);
+    } catch (err) {
+      console.error('Error fetching workouts:', err);
+      setError(t('schedule.error'));
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const response = await axios.get('https://localhost:7024/api/Schedule');
-        const now = new Date();
-
-        const upcoming = response.data
-          .filter(w => w.Date && new Date(w.Date) > now)
-          .sort((a, b) => new Date(a.Date) - new Date(b.Date));
-
-        setWorkouts(upcoming);
-      } catch (error) {
-        console.error('Error fetching data:', error);
-        setError(t('schedule.error'));
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchData();
+    fetchWorkouts();
   }, [t]);
 
+  // Отваряне и затваряне на модалния прозорец
   const openModal = (workout) => {
     setSelectedWorkout(workout);
     setIsModalOpen(true);
@@ -50,13 +53,14 @@ const Schedule = () => {
     setSelectedWorkout(null);
   };
 
+  // Регистрация за тренировка
   const handleRegistration = async (workout, shoeSize, cardType, usesOwnShoes) => {
     if (!isAuthenticated) {
       alert(t('schedule.loginRequired'));
       return;
     }
 
-    setIsRegistering((prev) => ({ ...prev, [workout.Id]: true }));
+    setIsRegistering(prev => ({ ...prev, [workout.Id]: true }));
 
     try {
       const payload = {
@@ -67,26 +71,27 @@ const Schedule = () => {
         usesOwnShoes,
       };
 
-      const response = await axios.post('https://localhost:7024/api/Schedule/apply', payload);
+      const response = await axios.post('/Schedule/apply', payload);
 
       if (response.status === 200) {
         const updatedWorkout = response.data;
-        setWorkouts((prevWorkouts) =>
-          prevWorkouts.map((w) => (w.Id === updatedWorkout.Id ? updatedWorkout : w))
+        setWorkouts(prev =>
+          prev.map(w => (w.Id === updatedWorkout.Id ? updatedWorkout : w))
         );
         closeModal();
       }
-    } catch (error) {
-      console.error('Error registering for workout:', error);
-      alert(error.response?.data?.message || t('schedule.registerFailed'));
+    } catch (err) {
+      console.error('Error registering for workout:', err);
+      alert(err.response?.data?.message || t('schedule.registerFailed'));
     } finally {
-      setIsRegistering((prev) => ({ ...prev, [workout.Id]: false }));
+      setIsRegistering(prev => ({ ...prev, [workout.Id]: false }));
     }
   };
 
   if (loading) return <div className="loading">{t('schedule.loading')}</div>;
   if (error) return <div className="error">{error}</div>;
 
+  // Групиране по ден от седмицата
   const groupedWorkouts = workouts.reduce((acc, workout) => {
     const { Day } = workout;
     if (!acc[Day]) acc[Day] = [];
@@ -119,7 +124,6 @@ const Schedule = () => {
       <div className="schedule-container">
         <h2>{t('schedule.title')}</h2>
 
-        {/* Desktop View */}
         {!isMobile && (
           <div className="desktop-schedule">
             <table className="schedule-table">
@@ -132,11 +136,11 @@ const Schedule = () => {
                 </tr>
               </thead>
               <tbody>
-                {['14:00', '15:00', '16:00', '17:00', '18:00', '19:00', '20:00', '21:00'].map((time) => (
+                {['14:00', '15:00', '16:00', '17:00', '18:00', '19:00', '20:00', '21:00'].map(time => (
                   <tr key={time}>
                     <td>{time}</td>
-                    {dayKeys.map((dayKey, i) => {
-                      const workout = groupedWorkouts[dayKey]?.find((w) => w.Time === time);
+                    {dayKeys.map(dayKey => {
+                      const workout = groupedWorkouts[dayKey]?.find(w => w.Time === time);
                       const status = workout?.Status?.toLowerCase();
 
                       return (
@@ -158,7 +162,6 @@ const Schedule = () => {
           </div>
         )}
 
-        {/* Mobile View */}
         {isMobile && (
           <div className="mobile-schedule">
             {dayKeys.map((dayKey, index) => {
@@ -170,7 +173,7 @@ const Schedule = () => {
               return (
                 <div key={dayKey} className="day-column">
                   <h3 className="day-header">{translatedDay}</h3>
-                  {dayWorkouts.map((workout) => {
+                  {dayWorkouts.map(workout => {
                     const status = workout?.Status?.toLowerCase();
                     return (
                       <div
@@ -181,9 +184,7 @@ const Schedule = () => {
                         <span>{workout.Time}</span>
                         <span>
                           {status === 'available' &&
-                            (isRegistering[workout?.Id]
-                              ? t('schedule.registering')
-                              : t('schedule.available'))}
+                            (isRegistering[workout?.Id] ? t('schedule.registering') : t('schedule.available'))}
                           {status === 'booked' && t('schedule.booked')}
                         </span>
                       </div>
