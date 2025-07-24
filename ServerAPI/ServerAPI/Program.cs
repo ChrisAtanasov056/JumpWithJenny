@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -21,6 +22,7 @@ using ServerAPI.Services.Workouts;
 using System.Reflection;
 using System.Security.Claims;
 using System.Text;
+using System.Text.Json;
 
 public partial class Program
 {
@@ -171,9 +173,26 @@ public partial class Program
         }
         else
         {
-            app.UseExceptionHandler("/Home/Error");
             app.UseStatusCodePagesWithReExecute("/Home/Error/{0}");
             app.UseHsts();
+            app.UseExceptionHandler(errorApp =>
+            {
+                errorApp.Run(async context =>
+                {
+                    var exceptionHandlerPathFeature = context.Features.Get<IExceptionHandlerPathFeature>();
+                    var exception = exceptionHandlerPathFeature?.Error;
+
+                    var logger = context.RequestServices.GetRequiredService<ILogger<Program>>();
+                    logger.LogError(exception, "Unhandled exception");
+
+                    context.Response.StatusCode = 500;
+                    context.Response.ContentType = "application/json";
+
+                    var result = JsonSerializer.Serialize(new { error = "Internal Server Error" });
+                    await context.Response.WriteAsync(result);
+                });
+            });
+
         }
 
         app.MapControllers();
