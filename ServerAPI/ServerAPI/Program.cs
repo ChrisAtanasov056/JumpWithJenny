@@ -22,7 +22,7 @@ using System.Reflection;
 using System.Security.Claims;
 using System.Text;
 
-public class Program
+public partial class Program
 {
     public static void Main(string[] args)
     {
@@ -42,12 +42,15 @@ public class Program
             options.AddPolicy("AllowOrigin", builder =>
             {
                 builder
-                    .WithOrigins("http://localhost:3000", "https://localhost:3000", "https://localhost:5001 , https://jumpwithjenny.com") 
+                    .WithOrigins("http://localhost:3000", "https://localhost:3000", "https://localhost:5001", "https://jumpwithjenny.com") 
                     .AllowAnyHeader()
                     .AllowAnyMethod()
                     .AllowCredentials(); 
             });
         });
+
+        services.AddSingleton<IConfiguration>(configuration);
+
 
         services.AddControllers()
             .AddNewtonsoftJson(options =>

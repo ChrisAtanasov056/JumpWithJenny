@@ -1,73 +1,90 @@
-using System.Net;
-using System.Net.Http;
-using System.Text;
-using System.Threading.Tasks;
-using Microsoft.Extensions.Configuration;
-using Newtonsoft.Json;
+using MailKit.Net.Smtp;
+using MimeKit;
 
-namespace ServerAPI.Services;
-
-public class EmailService : IEmailService
+namespace ServerAPI.Services
 {
-    private readonly IConfiguration _config;
-    private readonly HttpClient _httpClient;
-    private readonly IEmailTemplateService _templateService;
-
-    public EmailService(IConfiguration config, IEmailTemplateService templateService)
+    public class EmailService : IEmailService
     {
-        _config = config;
-        _templateService = templateService;
-        _httpClient = new HttpClient();
-    }
+        private readonly IConfiguration _configuration;
+        private readonly ILogger<EmailService> _logger;
+        private readonly IEmailTemplateService _emailTemplateService;
 
-    public async Task SendPasswordResetEmailAsync(string email, string token, string language)
-    {
-        var template = _templateService.GetTemplate("ResetPassword", language);
-        var link = $"{_config["FrontendBaseUrl"]}/reset-password?token={WebUtility.UrlEncode(token)}&email={WebUtility.UrlEncode(email)}";
-
-        var subject = template.Subject;
-        var body = string.Format(template.Body, link);
-
-        await SendEmailAsync(email, subject, body);
-    }
-
-    public async Task SendConfirmationEmailAsync(string email, string token, string language)
-    {
-        var template = _templateService.GetTemplate("ConfirmAccount", language);
-        var link = $"{_config["FrontendBaseUrl"]}/confirm-account?token={WebUtility.UrlEncode(token)}&email={WebUtility.UrlEncode(email)}";
-
-        var subject = template.Subject;
-        var body = string.Format(template.Body, link);
-
-        await SendEmailAsync(email, subject, body);
-    }
-
-    public async Task<bool> SendEmailAsync(string toEmail, string subject, string body)
-    {
-        var request = new
+        public EmailService(
+            IConfiguration configuration,
+            ILogger<EmailService> logger,
+            IEmailTemplateService emailTemplateService)
         {
-            sender = new
+            _configuration = configuration;
+            _logger = logger;
+            _emailTemplateService = emailTemplateService;
+        }
+
+        public async Task SendPasswordResetEmailAsync(string email, string token, string language)
+        {
+            var frontendUrl = _configuration["FrontendBaseUrl"];
+            var resetLink = $"{frontendUrl}/{language}/reset-password?token={System.Web.HttpUtility.UrlEncode(token)}&email={email}";
+
+            var template = _emailTemplateService.GetTemplate("ResetPassword", language);
+            var subject = template.Subject;
+            var body = template.Body.Replace("{resetLink}", resetLink);
+
+            await SendEmailAsync(email, subject, body);
+        }
+
+        public async Task SendConfirmationEmailAsync(string email, string token, string language)
+        {
+            var frontendUrl = _configuration["FrontendBaseUrl"];
+            var confirmationLink = $"{frontendUrl}/{language}/verify-email?token={System.Web.HttpUtility.UrlEncode(token)}&email={email}";
+
+            var template = _emailTemplateService.GetTemplate("ConfirmAccount", language);
+            var subject = template.Subject;
+            var body = template.Body.Replace("{confirmationLink}", confirmationLink);
+
+            await SendEmailAsync(email, subject, body);
+        }
+
+        public async Task<bool> SendEmailAsync(string toEmail, string subject, string body)
+        {
+            try
             {
-                name = _config["EmailSettings:FromName"],
-                email = _config["EmailSettings:FromEmail"]
-            },
-            to = new[] { new { email = toEmail } },
-            subject = subject,
-            htmlContent = body
-        };
+                var smtpHost = _configuration["EmailSettings:SmtpHost"];
+                var smtpPort = int.Parse(_configuration["EmailSettings:SmtpPort"]);
+                var smtpUser = _configuration["EmailSettings:Username"];
+                var smtpPass = _configuration["EmailSettings:Password"];
+                var fromEmail = _configuration["EmailSettings:FromEmail"];
+                var fromName = _configuration["EmailSettings:FromName"];
 
-        var json = JsonConvert.SerializeObject(request);
-        var content = new StringContent(json, Encoding.UTF8, "application/json");
+                var message = new MimeMessage();
+                message.From.Add(new MailboxAddress(fromName, fromEmail));
+                message.To.Add(MailboxAddress.Parse(toEmail));
+                message.Subject = subject;
 
-        _httpClient.DefaultRequestHeaders.Clear();
-        _httpClient.DefaultRequestHeaders.Add("api-key", _config["EmailSettings:BrevoApiKey"]);
+                var bodyBuilder = new BodyBuilder
+                {
+                    HtmlBody = body
+                };
+                message.Body = bodyBuilder.ToMessageBody();
 
-        var response = await _httpClient.PostAsync("https://api.brevo.com/v3/smtp/email", content);
-        if (response.IsSuccessStatusCode)
-            return true;
+                using var client = new SmtpClient();
+                // Свързваме се с SMTP с implicit SSL (port 465)
+                await client.ConnectAsync(smtpHost, smtpPort, true);
 
-        var error = await response.Content.ReadAsStringAsync();
-        Console.WriteLine($"Email failed: {error}");
-        return false;
+                // Аутентификация
+                await client.AuthenticateAsync(smtpUser, smtpPass);
+
+                // Изпращаме
+                await client.SendAsync(message);
+
+                await client.DisconnectAsync(true);
+
+                _logger.LogInformation($"Email sent to {toEmail} with subject '{subject}'.");
+                return true;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Error sending email to {toEmail}");
+                return false;
+            }
+        }
     }
 }
