@@ -1,4 +1,5 @@
 using MailKit.Net.Smtp;
+using MailKit.Security;
 using MimeKit;
 
 namespace ServerAPI.Services
@@ -45,46 +46,67 @@ namespace ServerAPI.Services
 
         public async Task<bool> SendEmailAsync(string toEmail, string subject, string body)
         {
+            var smtpHost = _configuration["EmailSettings:SmtpHost"];
+            var smtpUser = _configuration["EmailSettings:Username"];
+            var smtpPass = _configuration["EmailSettings:Password"];
+            var fromEmail = _configuration["EmailSettings:FromEmail"];
+            var fromName = _configuration["EmailSettings:FromName"];
+
+            var message = new MimeMessage();
+            message.From.Add(new MailboxAddress(fromName, fromEmail));
+            message.To.Add(MailboxAddress.Parse(toEmail));
+            message.Subject = subject;
+
+            var bodyBuilder = new BodyBuilder
+            {
+                HtmlBody = body
+            };
+            message.Body = bodyBuilder.ToMessageBody();
+
+            using var client = new SmtpClient();
+
             try
             {
-                var smtpHost = _configuration["EmailSettings:SmtpHost"];
-                var smtpPort = int.Parse(_configuration["EmailSettings:SmtpPort"]);
-                var smtpUser = _configuration["EmailSettings:Username"];
-                var smtpPass = _configuration["EmailSettings:Password"];
-                var fromEmail = _configuration["EmailSettings:FromEmail"];
-                var fromName = _configuration["EmailSettings:FromName"];
-
-                var message = new MimeMessage();
-                message.From.Add(new MailboxAddress(fromName, fromEmail));
-                message.To.Add(MailboxAddress.Parse(toEmail));
-                message.Subject = subject;
-
-                var bodyBuilder = new BodyBuilder
-                {
-                    HtmlBody = body
-                };
-                message.Body = bodyBuilder.ToMessageBody();
-
-                using var client = new SmtpClient();
-                // Свързваме се с SMTP с implicit SSL (port 465)
-                await client.ConnectAsync(smtpHost, smtpPort, true);
-
-                // Аутентификация
+                _logger.LogInformation("Attempting to connect with SSL (Port 465)...");
+                await client.ConnectAsync(smtpHost, 465, SecureSocketOptions.SslOnConnect);
                 await client.AuthenticateAsync(smtpUser, smtpPass);
-
-                // Изпращаме
-                await client.SendAsync(message);
-
-                await client.DisconnectAsync(true);
-
-                _logger.LogInformation($"Email sent to {toEmail} with subject '{subject}'.");
-                return true;
+                _logger.LogInformation("Authenticated successfully using SSL (Port 465).");
             }
-            catch (Exception ex)
+            catch (Exception sslEx)
             {
-                _logger.LogError(ex, $"Error sending email to {toEmail}");
+                _logger.LogWarning(sslEx, "SSL connection failed. Trying STARTTLS (Port 587)...");
+
+                try
+                {
+                    await client.DisconnectAsync(true);
+
+                    await client.ConnectAsync(smtpHost, 587, SecureSocketOptions.StartTls);
+                    await client.AuthenticateAsync(smtpUser, smtpPass);
+                    _logger.LogInformation("Authenticated successfully using STARTTLS (Port 587).");
+                }
+                catch (Exception tlsEx)
+                {
+                    _logger.LogError(tlsEx, $"Failed to authenticate on both SSL (Port 465) and STARTTLS (Port 587).");
+                    return false;
+                }
+            }
+
+            try
+            {
+                await client.SendAsync(message);
+                _logger.LogInformation($"Email sent to {toEmail} with subject '{subject}'.");
+            }
+            catch (Exception sendEx)
+            {
+                _logger.LogError(sendEx, $"Failed to send email to {toEmail}.");
                 return false;
             }
+            finally
+            {
+                await client.DisconnectAsync(true);
+            }
+
+            return true;
         }
     }
 }

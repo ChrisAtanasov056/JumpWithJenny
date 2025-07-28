@@ -1,8 +1,11 @@
 import React, { useState } from "react";
 import { changePassword } from "../../services/authService";
 import "./ChangePasswordModal.scss";
+import { useTranslation } from "react-i18next"; // ADD
+import { use } from "react";
 
 const ChangePasswordModal = ({ onClose, userId }) => {
+  const { t } = useTranslation();
   const [passwords, setPasswords] = useState({ current: "", new: "", confirm: "" });
   const [error, setError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
@@ -13,17 +16,16 @@ const ChangePasswordModal = ({ onClose, userId }) => {
     setError("");
     setSuccessMessage("");
 
-    // Validation
     if (!passwords.current || !passwords.new || !passwords.confirm) {
-      setError("All fields are required.");
+      setError(t('change_password.errors.all_required'));
       return;
     }
     if (passwords.new.length < 6) {
-      setError("Password must be at least 6 characters.");
+      setError(t('change_password.errors.min_length'));
       return;
     }
     if (passwords.new !== passwords.confirm) {
-      setError("New passwords do not match.");
+      setError(t('change_password.errors.not_matching'));
       return;
     }
 
@@ -36,12 +38,12 @@ const ChangePasswordModal = ({ onClose, userId }) => {
         newPassword: passwords.new,
       });
 
-      setSuccessMessage("Password changed successfully!");
+      setSuccessMessage(t('change_password.success'));
       setTimeout(() => {
         onClose();
       }, 2000);
     } catch (error) {
-      setError(error.response?.data?.message || "Password change failed. Please try again.");
+      setError(error.response?.data?.message || t('change_password.errors.failed'));
     } finally {
       setIsLoading(false);
     }
@@ -51,7 +53,7 @@ const ChangePasswordModal = ({ onClose, userId }) => {
     <div className="password-modal-overlay">
       <div className="password-modal">
         <div className="modal-header">
-          <h3>Change Password</h3>
+          <h3>{t('change_password.title')}</h3>
           <button
             className="close-icon"
             onClick={onClose}
@@ -67,7 +69,7 @@ const ChangePasswordModal = ({ onClose, userId }) => {
 
           <form onSubmit={handleSubmit}>
             <div className="form-group">
-              <label>Current Password</label>
+              <label>{t('change_password.current')}</label>
               <input
                 type="password"
                 value={passwords.current}
@@ -78,7 +80,7 @@ const ChangePasswordModal = ({ onClose, userId }) => {
             </div>
 
             <div className="form-group">
-              <label>New Password</label>
+              <label>{t('change_password.new')}</label>
               <input
                 type="password"
                 value={passwords.new}
@@ -89,7 +91,7 @@ const ChangePasswordModal = ({ onClose, userId }) => {
             </div>
 
             <div className="form-group">
-              <label>Confirm New Password</label>
+              <label>{t('change_password.confirm')}</label>
               <input
                 type="password"
                 value={passwords.confirm}
@@ -105,7 +107,7 @@ const ChangePasswordModal = ({ onClose, userId }) => {
                 className="btn btn-primary"
                 disabled={isLoading}
               >
-                {isLoading ? "Changing..." : "Update Password"}
+                {isLoading ? t('change_password.changing') : t('change_password.update_btn')}
               </button>
               <button
                 type="button"
@@ -113,7 +115,7 @@ const ChangePasswordModal = ({ onClose, userId }) => {
                 onClick={onClose}
                 disabled={isLoading}
               >
-                Cancel
+                {t('change_password.cancel_btn')}
               </button>
             </div>
           </form>

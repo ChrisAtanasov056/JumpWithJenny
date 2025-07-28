@@ -55,23 +55,20 @@ const Navbar = () => {
   return (
     <>
       {/* Navbar */}
-      <nav className="navbar navbar-expand-lg fixed-top">
-      
+      <nav className={`navbar navbar-expand-lg fixed-top ${menuActive ? 'menu-open' : ''}`}>
         <div className="container">
-        <Link  to="/">
-            <a 
-              href="/" 
-              onClick={handleLogoClick}
-            >
-              <img 
-                src="/images/brand_logo_2.png"  // Use absolute path from public folder
-                alt="Jump With Jenny Logo" 
+          <Link to="/">
+            <a href="/" onClick={handleLogoClick}>
+              <img
+                src="/images/brand_logo_2.png"
+                alt="Jump With Jenny Logo"
                 className="navbar-logo"
               />
-            </a>      
+            </a>
           </Link>
-          <button 
-            className={`navbar-toggler ${menuActive ? 'active' : ''}`} 
+
+          <button
+            className={`navbar-toggler ${menuActive ? 'active' : ''}`}
             onClick={toggleMenu}
             aria-label="Toggle navigation"
           >
@@ -81,6 +78,7 @@ const Navbar = () => {
               <div className={`line ${menuActive ? 'active' : ''}`}></div>
             </div>
           </button>
+          
           <div className={`navbar-nav ${isNavActive ? 'active' : ''}`}>
             <li className="nav-item">
               <Link to="welcome" className="nav-link" smooth={true} duration={500} onClick={toggleMenu}>{t('navbar.home')}</Link>
@@ -121,7 +119,7 @@ const Navbar = () => {
               </li>
             )}
           </div>
-          <LanguageDropdown changeLanguage={changeLanguage} /> {/* Pass changeLanguage function */}
+          <LanguageDropdown changeLanguage={changeLanguage} />
         </div>
       </nav>
 

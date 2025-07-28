@@ -1,11 +1,27 @@
 {
     "ResetPassword": {
       "Subject": "Password Reset Request",
-      "Body": "<h1>Password Reset</h1><p>Click the link below to reset your password:</p><a href=\"{0}\">Reset Password</a><p>This link will expire in 24 hours.</p>"
-    },
-    "ConfirmAccount": {
-      "Subject": "Confirm Your Registration",
-      "Body": "<h1>Welcome to Jump With Jenny!</h1><p>Click the link below to confirm your registration:</p><a href=\"{0}\">Confirm Account</a><p>After confirmation, you’ll be able to log in to your account.</p>"
-    }
+      "Heading": "Reset Your Password",
+      "Greeting": "Hello",
+      "Instructions": "We received a request to reset your password. Click the button below to set a new password:",
+      "ButtonText": "Reset Password",
+      "ExpiryNote": "This link will expire in 24 hours.",
+      "NoRequestNote": "If you didn't request a password reset, please ignore this email.",
+      "Signature": "Best regards,<br>The Jump With Jenny Team",
+      "AllRightsReserved": "All rights reserved.",
+      "ContactUs": "Contact Us"  
+  },
+  "VerifyEmail": {
+    "Subject": "Verify Your Email",
+    "Heading": "Email Verification",
+    "Greeting": "Hello",
+    "Instructions": "Please verify your email address by clicking the button below:",
+    "ButtonText": "Verify Email",
+    "ExpiryNote": "This link will expire in 24 hours.",
+    "NoRequestNote": "If you didn't request this, please ignore this email.",
+    "Signature": "Best regards,<br>Your App Team",
+    "AllRightsReserved": "All rights reserved",
+    "ContactUs": "Contact us"
   }
+}
   

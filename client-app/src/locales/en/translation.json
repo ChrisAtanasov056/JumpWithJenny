@@ -136,5 +136,31 @@
         "fullNotice": "This class has reached maximum capacity.",
         "close": "Close",
         "loginPromptTitle": "Please Log In",
-        "loginPromptText": "You need to be logged in to register for this workout."
+        "loginPromptText": "You need to be logged in to register for this workout.",
+
+        
+        "Email Verification": "Email Verification",
+        "Your email has been successfully verified!": "Your email has been successfully verified!",
+        "Invalid verification link.": "Invalid verification link.",
+        "Error confirming email. Please try again.": "Error confirming email. Please try again.",
+        "Return to Home": "Return to Home",
+        "Loading...": "Loading...",
+        
+        "change_password": {
+            "title": "Change Password",
+              "current": "Current Password",
+              "new": "New Password",
+              "confirm": "Confirm New Password",
+              "update_btn": "Update Password",
+              "cancel_btn": "Cancel",
+              "changing": "Changing...",
+              "success": "Password changed successfully!",
+              "errors": {
+                "all_required": "All fields are required.",
+                "min_length": "Password must be at least 6 characters.",
+                "not_matching": "New passwords do not match.",
+                "failed": "Password change failed. Please try again."
+              }
+            }
+          
 }

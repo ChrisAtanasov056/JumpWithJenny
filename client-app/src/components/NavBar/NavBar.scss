@@ -7,7 +7,7 @@ $white: #FFFFFF;
 $text-color: #2C3E50;
 $hover-color: #E74C3C;
 $mobile-breakpoint: 768px;
-$mid-breakpoint: 1000px; 
+$mid-breakpoint: 1000px;
 $transition-speed: 0.3s;
 $border-radius: 8px;
 
@@ -19,35 +19,38 @@ $border-radius: 8px;
   width: 100%;
   top: 0;
   z-index: 1000;
-  backdrop-filter: drop-shadow(4px 4px 10px blue);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 
   .container {
     display: flex;
-    justify-content: space-between;
+    justify-content: center;
     align-items: center;
     max-width: 1200px;
     margin: 0 auto;
     padding: 0 1.5rem;
+    position: relative;
 
     @media (max-width: $mid-breakpoint) {
       padding: 0 1.5rem;
-      flex-wrap: wrap;
-      gap: 1rem;
     }
 
     @media (max-width: $mobile-breakpoint) {
       padding: 0 1rem;
+      flex-wrap: wrap;
     }
   }
-    
+
   // Logo
   &-logo {
     height: 40px;
     width: auto;
     transform: scale(2);
     border-radius: 10%;
-    transition: transform $transition-speed;
-    margin-right: auto; 
+    transition: transform 0.3s;
+    margin-right: 45px;
+    position: fixed;
+    left: 90px;
+    margin-top: -20px;
 
     &:hover {
       transform: scale(2.3);
@@ -55,11 +58,137 @@ $border-radius: 8px;
 
     @media (max-width: $mobile-breakpoint) {
       height: 35px;
+      margin: auto;
+      order: 1;
     }
   }
 
-  
-  // Hamburger Toggle (hidden by default)
+  // Main Navigation Container
+  &-nav-container {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+
+    @media (max-width: $mobile-breakpoint) {
+      order: 3;
+      width: 100%;
+      flex-direction: column;
+      gap: 0;
+    }
+  }
+
+  // Navigation Menu
+  &-nav {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+
+    @media (max-width: $mobile-breakpoint) {
+      flex-direction: column;
+      width: 100%;
+      gap: 0;
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height $transition-speed ease;
+
+      &.active {
+        max-height: 500px;
+        padding: 1rem 0;
+      }
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+
+      @media (max-width: $mobile-breakpoint) {
+        width: 100%;
+        justify-content: center;
+        padding: 0.5rem 0;
+      }
+
+      .nav-link {
+        color: $white;
+        text-decoration: none;
+        padding: 0.5rem 1rem;
+        font-weight: 400;
+        transition: all $transition-speed ease;
+        font-size: 16px;
+        white-space: nowrap; // Prevent text wrapping
+
+        &:hover {
+          text-decoration: underline;
+          text-underline-offset: 8px;
+        }
+
+        @media (max-width: $mobile-breakpoint) {
+          width: 100%;
+          text-align: center;
+          padding: 0.75rem 1rem;
+        }
+      }
+
+      .login-btn {
+        background: transparent;
+        color: $white;
+        border: 2px solid $white;
+        border-radius: 50px;
+        padding: 0.6rem 1.5rem;
+        font-weight: 600;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+        transition: all 0.4s ease;
+        white-space: nowrap;
+        
+        &:hover {
+          text-shadow: 0 0 5px $white;
+          box-shadow: 0 0 15px rgba($white, 0.8);
+          background: rgba($white, 0.05);
+          transform: translateY(-2px);
+        }
+
+        @media (max-width: $mobile-breakpoint) {
+          margin-top: 0.5rem;
+        }
+      }
+
+      .profile-area {
+        background: transparent;
+        border: none;
+        color: $white;
+        cursor: pointer;
+        padding: 0.5rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        .profile-icon {
+          font-size: 1.2rem;
+          transition: transform $transition-speed ease;
+
+          &:hover {
+            transform: scale(1.1);
+          }
+        }
+      }
+    }
+  }
+
+  // Language Dropdown
+  .language-dropdown {
+    margin-left: 1rem;
+
+    @media (max-width: $mobile-breakpoint) {
+      order: 2;
+      margin-left: auto;
+      margin-right: 1rem;
+    }
+  }
+
+  // Hamburger Toggle
   &-toggler {
     display: none;
     background: none;
@@ -67,6 +196,7 @@ $border-radius: 8px;
     cursor: pointer;
     padding: 0.5rem;
     z-index: 1001;
+    order: 2;
 
     @media (max-width: $mobile-breakpoint) {
       display: block;
@@ -97,160 +227,25 @@ $border-radius: 8px;
       }
     }
   }
-
-  // Navigation Menu
-  &-nav {
-    display: flex;
-    align-items: center;
-    gap: 1.5rem;
-    transition: all $transition-speed ease;
-
-    @media (max-width: $mobile-breakpoint) {
-      position: fixed;
-      top: 70px; /* Adjust based on navbar height */
-      left: 0;
-      width: 100%;
-      background-color: $accent-color;
-      flex-direction: column;
-      padding: 2rem 0;
-      clip-path: circle(0px at 90% -10%);
-      -webkit-clip-path: circle(0px at 90% -10%);
-      pointer-events: none;
-      opacity: 0;
-      z-index: 999;
-
-      &.active {
-        clip-path: circle(1000px at 90% -10%);
-        -webkit-clip-path: circle(1000px at 90% -10%);
-        pointer-events: all;
-        opacity: 1;
-      }
-    }
-
-    .nav-item {
-      list-style: none;
-
-      .nav-link {
-        color: $white;
-        text-decoration: none;
-        padding: 0.5rem 1rem;
-        font-weight: 400;
-        transition: color $transition-speed ease;
-        font-size: 16px;
-
-        &:hover {
-          text-decoration: underline;
-          text-underline-offset: 8px;
-        }
-      }
-
-      .login-btn {
-        background: transparent;
-        color: $white;
-        border: 2px solid $white;
-        border-radius: 50px;
-        padding: 0.6rem 2rem;
-        font-weight: 600;
-        letter-spacing: 1px;
-        text-transform: uppercase;
-        transition: all 0.4s ease;
-        
-        &:hover {
-          text-shadow: 0 0 5px $white;
-          box-shadow: 0 0 15px rgba($white, 0.8);
-          background: rgba($white, 0.05);
-          transform: translateY(-2px);
-        }
-      }
-    }
-  }
-
-  // Social Icons (hidden on mobile)
-  .social-icons {
-    display: flex;
-    gap: 0.75rem;
-    margin-left: 1rem;
-
-    @media (max-width: $mobile-breakpoint) {
-      display: none;
-    }
-
-    li {
-      list-style: none;
-      
-      a {
-        color: $white;
-        transition: opacity $transition-speed ease;
-        
-        &:hover {
-          opacity: 0.8;
-        }
-      }
-    }
-  }
 }
 
-// Language Switcher
-.language-switcher {
-  display: flex;
-  gap: 0.5rem;
-  
-  button {
-    background: transparent;
-    border: 1px solid $white;
-    color: $white;
-    padding: 4px 8px;
-    cursor: pointer;
-    border-radius: 4px;
-    transition: all $transition-speed ease;
 
-    &:hover {
-      background-color: $white;
-      color: $text-color;
-    }
-  }
 
-  @media (max-width: $mobile-breakpoint) {
-    margin-top: 1rem;
-    justify-content: center;
-    width: 100%;
-  }
-}
-
-// 1. Completely disable Bootstrap's hamburger icon
+// Disable Bootstrap's default navbar styles
 .navbar-toggler {
-  // Remove Bootstrap's SVG background
   background-image: none !important;
+  border: none !important;
   
-  // Remove Bootstrap's default border styles
-  border-color: transparent !important;
-  border-width: 0 !important;
-  
-  // Remove focus styles
   &:focus {
     box-shadow: none !important;
-    outline: none !important;
   }
 }
 
-// 2. Ensure your custom white lines take precedence
 .navbar-toggler-icon {
-  // Disable Bootstrap's background image
   background-image: none !important;
-  
-  // Your custom white lines
-  .line {
-    background: $white !important;
-    // Remove any residual stroke/line effects
-    stroke: transparent !important;
-    stroke-width: 0 !important;
-  }
 }
 
-// 3. Nuclear option to prevent any Bootstrap interference
 [class^="navbar-"], [class*=" navbar-"] {
   --bs-navbar-toggler-icon-bg: none !important;
   --bs-navbar-toggler-border-color: transparent !important;
-  --bs-navbar-toggler-border-radius: 0 !important;
-  --bs-navbar-toggler-focus-width: 0 !important;
 }

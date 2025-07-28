@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next"; // Add this import
+import i18n from "../../i18n"; 
 import { resendVerificationEmail, verifyEmail } from "../../services/authService";
 import ChangePasswordModal from "../ChangePassword/ChangePasswordModal";
 import "./ProfileModal.scss";
@@ -13,7 +14,8 @@ const ProfileModal = ({ onClose, user, onLogout }) => {
   const handleResendVerification = async () => {
     try {
       setVerificationMessage("");
-      await resendVerificationEmail(localUser.email);
+      // Send current language along with the request
+      await resendVerificationEmail(localUser.email, i18n.language);
       setVerificationMessage(t("profile.verificationEmailSent"));
     } catch (error) {
       setVerificationMessage(t("profile.verificationEmailFailed"));
@@ -83,7 +85,7 @@ const ProfileModal = ({ onClose, user, onLogout }) => {
       {isPasswordModalOpen && (
         <ChangePasswordModal
           onClose={() => setPasswordModalOpen(false)}
-          userId={localUser.Id}
+          userId={localUser.id}
         />
       )}
     </div>

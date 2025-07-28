@@ -1,17 +1,15 @@
-// ChangePasswordModal.jsx
 import React, { useState } from 'react';
-import axios from 'axios';
-import SuccessModal from '../Register/SuccessModal';
-import './ForgotPasswordModal.scss'; // Reuse same styles
+import './ForgotPasswordModal.scss';
 
-const ForgotPasswordModal = ({ onClose, onSubmit }) => {
+const ForgotPasswordModal = ({ onClose, onSubmit, language }) => {
   const [email, setEmail] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
-    await onSubmit(email);
+    const userData = { email };
+    await onSubmit(userData, language);  
     setIsSubmitting(false);
   };
 

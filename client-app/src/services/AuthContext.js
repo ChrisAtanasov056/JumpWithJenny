@@ -8,7 +8,7 @@ export const AuthProvider = ({ children }) => {
     const [isAuthenticated, setIsAuthenticated] = useState(false);
     const [user, setUser] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
-    const [isRefreshing, setIsRefreshing] = useState(false); // Track the refresh state
+    const [isRefreshing, setIsRefreshing] = useState(false);
     const [error, setError] = useState(null);
 
     const validateToken = (token) => {
@@ -39,7 +39,7 @@ export const AuthProvider = ({ children }) => {
             } else {
                 const refreshToken = localStorage.getItem('refreshToken');
                 if (refreshToken) {
-                    await handleTokenRefresh(); // Try refreshing the token
+                    await handleTokenRefresh();
                     setUser(storedUser);
                 } else {
                     logout();
@@ -55,7 +55,7 @@ export const AuthProvider = ({ children }) => {
 
     const handleTokenRefresh = useCallback(async () => {
         if (isRefreshing) {
-            return; // Prevent multiple refresh requests from being sent
+            return;
         }
         setIsRefreshing(true); 
         
@@ -84,6 +84,11 @@ export const AuthProvider = ({ children }) => {
             axios.defaults.headers.common['Authorization'] = `Bearer ${userData.token}`;
             setIsAuthenticated(true);
             setUser(userData);
+            localStorage.setItem('jwtToken', userData.token);
+            localStorage.setItem('user', JSON.stringify(userData));
+            if (userData.refreshToken) {
+                localStorage.setItem('refreshToken', userData.refreshToken);
+            }
         } catch (error) {
             console.error('Login error:', error);
             setError(error);
@@ -104,11 +109,18 @@ export const AuthProvider = ({ children }) => {
         }
     }, []);
 
+    const updateUser = useCallback((newUserData) => {
+        setUser((prevUser) => {
+            const updatedUser = { ...prevUser, ...newUserData };
+            localStorage.setItem('user', JSON.stringify(updatedUser));
+            return updatedUser;
+        });
+    }, []);
+
     useEffect(() => {
         initializeAuth();
     }, [initializeAuth]);
 
-    // Error boundary UI
     if (error) {
         return (
             <div className="error-fallback">
@@ -126,6 +138,7 @@ export const AuthProvider = ({ children }) => {
             user,
             login,
             logout,
+            updateUser, // <- добавихме това тук
             error
         }}>
             {!isLoading && children}

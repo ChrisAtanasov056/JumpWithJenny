@@ -102,7 +102,7 @@
         [HttpPost("reset-password")]
         public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordRequest request)
         {
-            var result = await _authService.ResetPasswordAsync(request);
+            var result = await _authService.ChangePasswordAsync(request);
             
             if (!result.Success)
             {

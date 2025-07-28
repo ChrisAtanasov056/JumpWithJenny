@@ -7,11 +7,11 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faFacebook, faGoogle, faInstagram } from '@fortawesome/free-brands-svg-icons';
 import { signInWithFacebook, signInWithGoogle } from '../../services/firebase.js'; 
 import ForgotPasswordModal from '../ForgotPassword/ForgotPasswordModal.js';
-import axios from 'axios';
+import axios from '../../api/axius.js';
 import { useTranslation } from 'react-i18next';
 
 const AuthModal = ({ onClose, onLoginSuccess, setModalOpen }) => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation(); 
   const [isLogin, setIsLogin] = useState(true);
   const [animationClass, setAnimationClass] = useState('zoom-in');
   const [showSuccessModal, setShowSuccessModal] = useState(false);
@@ -24,9 +24,12 @@ const AuthModal = ({ onClose, onLoginSuccess, setModalOpen }) => {
     { platform: 'Instagram', icon: faInstagram, className: 'instagram-btn' },
   ];
 
-  const handleForgotPassword = async (email) => {
+  const handleForgotPassword = async (userData, language) => {
     try {
-      await axios.post('https://localhost:7024/Account/forgot-password', { email });
+      await axios.post('/Account/forgot-password', {
+        email: userData.email,
+        language: language 
+      });
       setSuccessMessage(t('auth.forgotPasswordSuccess'));
       setShowSuccessModal(true);
       setShowForgotModal(false);
@@ -119,7 +122,11 @@ const AuthModal = ({ onClose, onLoginSuccess, setModalOpen }) => {
       </div>
 
       {showForgotModal && (
-        <ForgotPasswordModal onClose={() => setShowForgotModal(false)} onSubmit={handleForgotPassword} />
+        <ForgotPasswordModal
+          onClose={() => setShowForgotModal(false)}
+          onSubmit={handleForgotPassword}
+          language={i18n.language} 
+        />
       )}
 
       {showSuccessModal && (

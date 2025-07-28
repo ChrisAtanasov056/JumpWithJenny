@@ -59,3 +59,46 @@
     color: #721c24;
     border: 1px solid #f5c6cb;
 }
+
+.return-home-btn {
+    margin-top: 20px;
+    padding: 12px 24px;
+    background-color: #ff6b6b;
+    color: #ffffff;
+    font-size: 16px;
+    font-weight: bold;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.return-home-btn:hover {
+    background-color: #ff4c4c;
+    transform: translateY(-2px);
+}
+
+.return-home-btn:active {
+    background-color: #e04343;
+    transform: translateY(0);
+}
+
+.message-container {
+    margin-top: 20px;
+    font-size: 18px;
+    text-align: center;
+}
+
+.message-success {
+    color: #28a745;
+}
+
+.message-error {
+    color: #dc3545;
+}
+
+.loading-spinner {
+    font-size: 18px;
+    font-weight: bold;
+    color: #555;
+}

@@ -19,8 +19,7 @@ const Login = ({ onClose, onLoginSuccess }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await login(credentials); // Assuming login is the correct service function
-      console.log('Response on submint: ',response)
+      const response = await login(credentials);
       if (response) {
         const { token,refreshToken, user  } = response;
         if (user?.id && user?.username && user?.firstname && user?.lastname && user?.email && user?.role && token && refreshToken) {
@@ -29,7 +28,6 @@ const Login = ({ onClose, onLoginSuccess }) => {
           localStorage.setItem('jwtToken', token);
           localStorage.setItem('refreshToken', refreshToken);
           
-          console.log('USER DATA ON LOGIN: ', localStorage.getItem('user'));
           // Update context with user data and token
           authLogin({ ...user, token, refreshToken});
           // Handle successful login and close modal

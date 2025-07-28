@@ -1,13 +1,16 @@
 {
-    "PasswordReset": {
-      "en": {
-        "subject": "Password Reset Request",
-        "body": "<h1>Password Reset</h1><p>Click the link to reset your password:</p><a href=\"{link}\">Reset Password</a><p>This link expires in 24 hours.</p>"
-      },
-      "bg": {
-        "subject": "Заявка за нова парола",
-        "body": "<h1>Нулиране на парола</h1><p>Натиснете линка, за да нулирате паролата си:</p><a href=\"{link}\">Нулирай парола</a><p>Валидно 24 часа.</p>"
-      }
-    }
+  "en": {
+    "Subject": "Password Reset Request",
+    "Body": "<h1>Reset Your Password</h1><p>Hello,</p><p>We received a request to reset your password. Click the button below to set a new password:</p>{resetButton}<p>If you can't click the button, copy and paste this link into your browser:</p><p><a href='{resetLink}'>{resetLink}</a></p><p>This link will expire in 24 hours.</p><p>If you didn't request a password reset, please ignore this email.</p><p>Best regards,<br>The Jump With Jenny Team</p>",
+    "ButtonText": "Reset Password",
+    "AllRightsReserved": "All rights reserved.",
+    "ContactUs": "Contact Us"
+  },
+  "bg": {
+    "Subject": "Заявка за нулиране на парола",
+    "Body": "<h1>Нулиране на парола</h1><p>Здравейте,</p><p>Получихме заявка за нулиране на паролата Ви. Натиснете бутона по-долу, за да зададете нова парола:</p>{resetButton}<p>Ако не можете да кликнете върху бутона, копирайте и поставете тази връзка в браузъра си:</p><p><a href='{resetLink}'>{resetLink}</a></p><p>Тази връзка ще изтече след 24 часа.</p><p>Ако не сте поискали нулиране на парола, моля игнорирайте този имейл.</p><p>С уважение,<br>Екипът на Jump With Jenny</p>",
+    "ButtonText": "Нулиране на парола",
+    "AllRightsReserved": "Всички права запазени.",
+    "ContactUs": "Контакт с нас"
   }
-  
+}

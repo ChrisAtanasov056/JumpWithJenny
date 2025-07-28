@@ -2,9 +2,12 @@
 
 namespace ServerAPI.Services.AuthService
 {
+    using System.Collections.Concurrent;
+    using System.Net;
     using System.Security.Cryptography;
     using Microsoft.AspNetCore.Identity;
     using Microsoft.EntityFrameworkCore;
+    using Newtonsoft.Json;
     using ServerAPI.Common;
     using ServerAPI.Data;
     using ServerAPI.Models;
@@ -21,6 +24,12 @@ namespace ServerAPI.Services.AuthService
 
         private readonly ILogger<AuthService> _logger;
 
+        private readonly IEmailTemplateService _emailTemplateService;
+
+
+       private readonly ConcurrentDictionary<string, DateTime> _recentResetRequests = new();
+       private readonly TimeSpan _resetRequestCooldown = TimeSpan.FromMinutes(1);
+
         public AuthService(
             UserManager<User> userManager,
             SignInManager<User> signInManager,
@@ -28,7 +37,8 @@ namespace ServerAPI.Services.AuthService
             IEmailService emailService,
             IConfiguration configuration,
             JumpWithJennyDbContext dbContext,
-            ILogger<AuthService> logger)
+            ILogger<AuthService> logger,
+            IEmailTemplateService emailTemplateService)
         {
             _userManager = userManager;
             _signInManager = signInManager;
@@ -37,6 +47,7 @@ namespace ServerAPI.Services.AuthService
             _configuration = configuration;
             _dbContext = dbContext;
             _logger = logger;
+            _emailTemplateService = emailTemplateService;
         }
 
         public async Task<AuthResult> LoginAsync(LoginModel model)
@@ -254,48 +265,104 @@ namespace ServerAPI.Services.AuthService
             };
         }
 
+
         public async Task<AuthResult> ForgotPasswordAsync(ForgotPasswordRequest request)
         {
-            var user = await _userManager.FindByEmailAsync(request.Email);
-            if (user != null)
+            // Validate input
+            if (string.IsNullOrWhiteSpace(request.Email))
             {
-                var token = await _userManager.GeneratePasswordResetTokenAsync(user);
-                var encodedToken = System.Web.HttpUtility.UrlEncode(token);
-                var frontendUrl = _configuration["FrontendBaseUrl"];
-                var resetLink = $"{frontendUrl}/reset-password?token={encodedToken}&email={request.Email}";
-
-                var subject = "Reset Your Password";
-                var body = BuildPasswordResetEmail(resetLink);
-
-                var emailSent = await _emailService.SendEmailAsync(request.Email, subject, body);
-
-                if (!emailSent)
-                {
-                    return new AuthResult
-                    {
-                        Success = false,
-                        Errors = new[] { "Error sending password reset email." }
-                    };
-                }
+                return new AuthResult { Success = false, Errors = new[] { "Email is required." } };
             }
 
-            // Always return success to prevent email enumeration
-            return new AuthResult { Success = true };
+            // Check for recent duplicate request
+            if (_recentResetRequests.TryGetValue(request.Email, out var lastRequestTime) && 
+                DateTime.UtcNow - lastRequestTime < _resetRequestCooldown)
+            {
+                _logger.LogWarning($"Password reset requested too soon for {request.Email}");
+                return new AuthResult { Success = true }; // Return success for security
+            }
+
+            var user = await _userManager.FindByEmailAsync(request.Email);
+            if (user == null)
+            {
+                // For security, return success even if user doesn't exist
+                return new AuthResult { Success = true };
+            }
+
+            try
+            {
+                // Record this request
+                _recentResetRequests[request.Email] = DateTime.UtcNow;
+                
+                var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+                var encodedToken = System.Web.HttpUtility.UrlEncode(token);
+                _logger.LogInformation($"Generated password reset token for {request.Email}: {encodedToken}");
+                var frontendUrl = _configuration["FrontendBaseUrl"];
+                var websiteUrl = _configuration["WebsiteUrl"] ?? frontendUrl;
+                var contactUrl = $"{websiteUrl}/contact";
+                
+                // Default to English if no language specified or if invalid
+                var language = IsValidLanguage(request.Language) ? request.Language : "en";
+
+                var resetLink = $"{frontendUrl}/reset-password?token={WebUtility.UrlEncode(encodedToken)}&email={WebUtility.UrlEncode(request.Email)}";
+
+                // Load email template
+                var emailContent = await PrepareEmailContent(language, "ResetPassword", new
+                {
+                    Link = resetLink,
+                    WebsiteUrl = websiteUrl,
+                    ContactUrl = contactUrl,
+                    FirstName = user.FirstName // Added user name for personalization
+                });
+
+                var emailSent = await _emailService.SendEmailAsync(
+                    request.Email, 
+                    emailContent.Subject, 
+                    emailContent.HtmlContent);
+
+                if (emailSent)
+                {
+                    _logger.LogInformation($"Password reset email sent to {request.Email} in {language}");
+                    return new AuthResult { Success = true };
+                }
+                
+                // Remove the request record if sending failed
+                _recentResetRequests.TryRemove(request.Email, out _);
+                return new AuthResult { 
+                    Success = false, 
+                    Errors = new[] { "Error sending password reset email." } 
+                };
+            }
+            catch (Exception ex)
+            {
+                // Remove the request record if an error occurred
+                _recentResetRequests.TryRemove(request.Email, out _);
+                _logger.LogError(ex, "Error sending password reset email");
+                return new AuthResult { 
+                    Success = false, 
+                    Errors = new[] { "An error occurred while processing your request." } 
+                };
+            }
         }
 
-        public async Task<AuthResult> ResetPasswordAsync(ResetPasswordRequest request)
+
+       
+
+
+        public async Task<AuthResult> ChangePasswordAsync(ResetPasswordRequest request)
         {
-            var user = await _userManager.FindByEmailAsync(request.Email);
+            var user = await _userManager.FindByIdAsync(request.UserId);
             if (user == null)
             {
                 return new AuthResult
                 {
                     Success = false,
-                    Errors = new[] { "Invalid request" }
+                    Errors = new[] { "User not found." }
                 };
             }
 
-            var result = await _userManager.ResetPasswordAsync(user, request.Token, request.NewPassword);
+            var result = await _userManager.ChangePasswordAsync(user, request.CurrentPassword, request.NewPassword);
+
             if (!result.Succeeded)
             {
                 return new AuthResult
@@ -308,36 +375,71 @@ namespace ServerAPI.Services.AuthService
             return new AuthResult { Success = true };
         }
 
+
         public async Task<AuthResult> ResendVerificationEmailAsync(ResendEmailRequest request)
         {
+            // Validate input
+            if (string.IsNullOrWhiteSpace(request.Email))
+            {
+                return new AuthResult { 
+                    Success = false, 
+                    Errors = new[] { "Email is required." } 
+                };
+            }
+
             var user = await _userManager.FindByEmailAsync(request.Email);
             if (user == null || user.EmailConfirmed)
             {
-                return new AuthResult
-                {
-                    Success = false,
-                    Errors = new[] { "Invalid request" }
+                // Return generic message for security
+                return new AuthResult { 
+                    Success = false, 
+                    Errors = new[] { "Invalid request" } 
                 };
             }
 
-            var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
-            var encodedToken = System.Web.HttpUtility.UrlEncode(token);
-            var frontendUrl = _configuration["FrontendBaseUrl"];
-            var verificationLink = $"{frontendUrl}/verify-email?userId={user.Id}&token={encodedToken}";
-
-            var emailBody = BuildVerificationEmail(user.FirstName, verificationLink);
-            var emailSent = await _emailService.SendEmailAsync(user.Email, "Verify Your Email", emailBody);
-
-            if (!emailSent)
+            try
             {
-                return new AuthResult
+                var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+                var frontendUrl = _configuration["FrontendBaseUrl"];
+                var websiteUrl = _configuration["WebsiteUrl"] ?? frontendUrl;
+                var contactUrl = $"{websiteUrl}/contact";
+                
+                // Default to English if no language specified or if invalid
+                var language = IsValidLanguage(request.Language) ? request.Language : "en";
+
+                var verificationLink = $"{frontendUrl}/verify-email?userId={user.Id}&token={WebUtility.UrlEncode(token)}";
+
+                // Load email template
+                var emailContent = await PrepareEmailContent(language, "VerifyEmail", new
                 {
-                    Success = false,
-                    Errors = new[] { "Error sending verification email." }
+                    Link = verificationLink,
+                    WebsiteUrl = websiteUrl,
+                    ContactUrl = contactUrl,
+                    FirstName = user.FirstName // Added first name for personalization
+                });
+
+                var emailSent = await _emailService.SendEmailAsync(
+                    user.Email, 
+                    emailContent.Subject, 
+                    emailContent.HtmlContent);
+
+                _logger.LogInformation($"Verification email sent to {user.Email} in language {language}");
+                
+                return emailSent 
+                    ? new AuthResult { Success = true }
+                    : new AuthResult { 
+                        Success = false, 
+                        Errors = new[] { "Error sending verification email." } 
+                    };
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error sending verification email");
+                return new AuthResult { 
+                    Success = false, 
+                    Errors = new[] { "An error occurred while processing your request." } 
                 };
             }
-
-            return new AuthResult { Success = true };
         }
 
         private UserDto MapToUserDto(User user, string role)
@@ -442,7 +544,53 @@ namespace ServerAPI.Services.AuthService
             }
         }
 
+         private async Task<EmailContent> PrepareEmailContent(string language, string templateName, dynamic templateData)
+        {
+            try
+            {
+                var languageFile = $"emailTexts.{language}.json";
+                var jsonContent = await File.ReadAllTextAsync(Path.Combine("Resources", languageFile));
+                dynamic emailTexts = JsonConvert.DeserializeObject(jsonContent);
+                dynamic templateContent = emailTexts[templateName];
 
+                var emailLayout = await File.ReadAllTextAsync(Path.Combine("Resources", "EmailTemplate.html"));
+                
+                var resetButton = $@"<table cellpadding='0' cellspacing='0' border='0' align='center'>
+                                <tr><td align='center'>
+                                    <a href='{templateData.Link}' class='button'>{(string)templateContent.ButtonText}</a>
+                                </td></tr></table>";
+
+                var bodyContent = $@"
+                    <h1>{(string)templateContent.Heading}</h1>
+                    <p>{(string)templateContent.Greeting}, {templateData.FirstName}</p>
+                    <p>{(string)templateContent.Instructions}</p>
+                    {resetButton}
+                    <p><small>{(string)templateContent.ExpiryNote}</small></p>
+                    <p><small>{(string)templateContent.NoRequestNote}</small></p>
+                    <p>{(string)templateContent.Signature}</p>";
+
+                string finalEmailHtml = emailLayout
+                    .Replace("{{lang}}", language)
+                    .Replace("{{subject}}", (string)templateContent.Subject)
+                    .Replace("{{bodyContent}}", bodyContent)
+                    .Replace("{{websiteUrl}}", templateData.WebsiteUrl)
+                    .Replace("{{contactUrl}}", templateData.ContactUrl)
+                    .Replace("{{currentYear}}", DateTime.Now.Year.ToString())
+                    .Replace("{{allRightsReserved}}", (string)templateContent.AllRightsReserved)
+                    .Replace("{{contactUs}}", (string)templateContent.ContactUs);
+
+                return new EmailContent
+                {
+                    Subject = (string)templateContent.Subject,
+                    HtmlContent = finalEmailHtml
+                };
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Failed to prepare email content for {language}");
+                throw;
+            }
+        }
 
         private string BuildVerificationEmail(string firstName, string verificationLink)
         {
@@ -486,5 +634,19 @@ namespace ServerAPI.Services.AuthService
                     </div>
                 </div>";
         }
+          private bool IsValidLanguage(string language)
+        {
+            var supportedLanguages = new[] { "en", "bg" };
+            return !string.IsNullOrWhiteSpace(language) && supportedLanguages.Contains(language);
+        }
     }
+    
+    internal class EmailContent
+    {
+        public string Subject { get; set; }
+        public string HtmlContent { get; set; }
+    }
+
+
+      
 }

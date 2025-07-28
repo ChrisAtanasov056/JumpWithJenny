@@ -1,7 +1,6 @@
 // src/components/ResetPassword/ResetPassword.jsx
 import React, { useState } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
-import axios from 'axios';
 import SuccessModal from '../Register/SuccessModal';
 import '../Modal/AuthModal.scss';
 import { forgotPassword } from '../../services/authService';
@@ -38,7 +37,7 @@ const ResetPassword = () => {
         email: email,
         newPassword: passwords.newPassword
       })
-      console.log("Resposnse: ", token)
+      console.log("Resposnse: ", response)
       setShowSuccess(true);
       setTimeout(() => navigate('/'), 2000);
     } catch (error) {
@@ -99,7 +98,7 @@ const ResetPassword = () => {
           ) : (
             <SuccessModal 
               message="Password reset successfully!" 
-              onClose={() => navigate('/login')}
+              onClose={() => navigate('/')}
             />
           )}
         </div>

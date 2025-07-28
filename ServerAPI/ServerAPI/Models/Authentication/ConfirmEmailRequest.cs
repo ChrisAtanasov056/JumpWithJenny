@@ -4,6 +4,8 @@ namespace ServerAPI.Models.Authentication
     {
         public string UserId { get; set; }
         public string Token { get; set; }
+
+        public string Language { get; set; }
         
     }
 }
