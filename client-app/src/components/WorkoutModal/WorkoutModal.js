@@ -20,7 +20,7 @@ const WorkoutModal = ({ isOpen, onClose, selectedWorkout, onRegister, isLoggedIn
   useEffect(() => {
     if (isOpen && isLoggedIn && selectedWorkout) {
       resetFormStates();
-      document.cookie = `user-id=${user.id}; Path=/; Secure; SameSite=None`;
+      document.cookie = `user-id=${user.id}; Path=/; Domain=jumpwithjenny.com; Secure; SameSite=None`;
       checkUserRegistration();
     }
   }, [isOpen, selectedWorkout]);
