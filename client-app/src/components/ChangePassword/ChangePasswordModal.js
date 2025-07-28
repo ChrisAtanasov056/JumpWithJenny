@@ -1,8 +1,7 @@
 import React, { useState } from "react";
 import { changePassword } from "../../services/authService";
 import "./ChangePasswordModal.scss";
-import { useTranslation } from "react-i18next"; // ADD
-import { use } from "react";
+import { useTranslation } from "react-i18next"; 
 
 const ChangePasswordModal = ({ onClose, userId }) => {
   const { t } = useTranslation();

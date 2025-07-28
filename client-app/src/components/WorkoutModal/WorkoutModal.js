@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../services/AuthContext';
 import { useTranslation } from 'react-i18next';
-import axios from 'axios';
+import axios from '../../api/axius';
 import './WorkoutModal.scss';
 
 const WorkoutModal = ({ isOpen, onClose, selectedWorkout, onRegister, isLoggedIn }) => {
@@ -39,7 +39,7 @@ const WorkoutModal = ({ isOpen, onClose, selectedWorkout, onRegister, isLoggedIn
     setIsCheckingRegistration(true);
     try {
       const response = await axios.get(
-        `${process.env.REACT_APP_API_URL}/api/Schedule/is-registered/${selectedWorkout.Id}`,
+        `/api/Schedule/is-registered/${selectedWorkout.Id}`,
         { withCredentials: true }
       );
       setIsAlreadyRegistered(response.data);
@@ -55,7 +55,7 @@ const WorkoutModal = ({ isOpen, onClose, selectedWorkout, onRegister, isLoggedIn
   const handleCancelRegistration = async () => {
     try {
       await axios.delete(
-        `${process.env.REACT_APP_API_URL}/api/Schedule/cancel-registration/${selectedWorkout.Id}`,
+        `/api/Schedule/cancel-registration/${selectedWorkout.Id}`,
         { withCredentials: true }
       );
       setIsAlreadyRegistered(false);
@@ -102,6 +102,13 @@ const WorkoutModal = ({ isOpen, onClose, selectedWorkout, onRegister, isLoggedIn
       [t('pulseCard')]: 1,
       [t('individualWorkout')]: 2
     };
+
+    console.log('Submitting registration:', {
+      workout: selectedWorkout,
+      size: selectedSize || 0,
+      card: cardTypeMap[selectedCard],
+      ownShoes: usesOwnShoes
+    });
 
     setSubmittedWorkout(selectedWorkout);
     setTimeout(() => {
