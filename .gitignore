@@ -20,3 +20,4 @@ obj/
 .vscode/
 ServerAPI/ServerAPI/appsetting.json
 ServerAPI/ServerAPI/appsettings.json
+.DS_Store
