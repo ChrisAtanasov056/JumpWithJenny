@@ -41,7 +41,7 @@ const Schedule = () => {
     fetchWorkouts();
   }, [fetchWorkouts]);
 
-  // Отваряне и затваряне на модалния прозорец
+  
   const openModal = (workout) => {
     setSelectedWorkout(workout);
     setIsModalOpen(true);
@@ -70,7 +70,7 @@ const Schedule = () => {
         usesOwnShoes,
       };
 
-      const response = await axios.post('/Schedule/apply', payload);
+      const response = await axios.post('/api/Schedule/apply', payload);
 
       if (response.status === 200) {
         const updatedWorkout = response.data;
@@ -90,7 +90,6 @@ const Schedule = () => {
   if (loading) return <div className="loading">{t('schedule.loading')}</div>;
   if (error) return <div className="error">{error}</div>;
 
-  // Групиране по ден от седмицата
   const groupedWorkouts = workouts.reduce((acc, workout) => {
     const { Day } = workout;
     if (!acc[Day]) acc[Day] = [];
