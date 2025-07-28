@@ -268,7 +268,7 @@ namespace ServerAPI.Services.AuthService
 
         public async Task<AuthResult> ForgotPasswordAsync(ForgotPasswordRequest request)
         {
-            // Validate input
+          
             if (string.IsNullOrWhiteSpace(request.Email))
             {
                 return new AuthResult { Success = false, Errors = new[] { "Email is required." } };
@@ -351,7 +351,8 @@ namespace ServerAPI.Services.AuthService
 
         public async Task<AuthResult> ChangePasswordAsync(ResetPasswordRequest request)
         {
-            var user = await _userManager.FindByIdAsync(request.UserId);
+            var user = await _userManager.FindByIdAsync(request.Id);
+            _logger.LogInformation($"Attempting to change password for user: {user}");
             if (user == null)
             {
                 return new AuthResult
@@ -362,6 +363,33 @@ namespace ServerAPI.Services.AuthService
             }
 
             var result = await _userManager.ChangePasswordAsync(user, request.CurrentPassword, request.NewPassword);
+
+            if (!result.Succeeded)
+            {
+                return new AuthResult
+                {
+                    Success = false,
+                    Errors = result.Errors.Select(e => e.Description)
+                };
+            }
+
+            return new AuthResult { Success = true };
+        }
+
+        public async Task<AuthResult> ResetPasswordAsync(ForgotPasswordResetRequest request)
+        {
+            var user = await _userManager.FindByEmailAsync(request.Email);
+
+            if (user == null)
+            {
+                return new AuthResult
+                {
+                    Success = false,
+                    Errors = new[] { "User not found." }
+                };
+            }
+            var dercriptedToken = System.Web.HttpUtility.UrlDecode(request.Token);
+            var result = await _userManager.ResetPasswordAsync(user, dercriptedToken, request.NewPassword);
 
             if (!result.Succeeded)
             {

@@ -11,6 +11,8 @@ public interface IAuthService
     Task<AuthResult> ChangePasswordAsync(ResetPasswordRequest request);
     Task<AuthResult> ResendVerificationEmailAsync(ResendEmailRequest request);
     Task<AuthResult> RefreshTokenAsync(string token);
+
+    Task<AuthResult> ResetPasswordAsync(ForgotPasswordResetRequest request);
 }
 
 

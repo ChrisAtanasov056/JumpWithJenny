@@ -156,6 +156,7 @@ public partial class Program
         // Middleware configuration
         app.UseHttpsRedirection();
         app.UseStaticFiles();
+        app.UseMiddleware<CspNonceMiddleware>();
         app.UseRouting();
         app.UseCors("AllowOrigin");
         app.UseAuthentication();

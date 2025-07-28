@@ -111,6 +111,20 @@
 
             return Ok();
         }
+
+        [HttpPost("reset-password-token")]
+        public async Task<IActionResult> ResetPasswordWithToken([FromBody] ForgotPasswordResetRequest request)
+        {
+            var result = await _authService.ResetPasswordAsync(request);
+            
+            if (!result.Success)
+            {
+                return BadRequest(new { errors = result.Errors });
+            }
+
+            return Ok(new { message = "Password reset successful." });
+        }
+
         
         [HttpPost("refresh-token")]
         public async Task<IActionResult> Refresh([FromBody] RefreshTokenRequest request)

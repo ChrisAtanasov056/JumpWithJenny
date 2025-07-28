@@ -72,7 +72,7 @@ export const verifyEmail = async (userId, token, language) => {
 // Reset/Forgot Password with language parameter
 export const forgotPassword = async ({ email, token, newPassword }) => {
   try {
-    const response = await axios.post('/Account/reset-password', {
+    const response = await axios.post('/Account/reset-password-token', {
       email: email.trim(),
       token: token.trim(),
       newPassword: newPassword.trim()
