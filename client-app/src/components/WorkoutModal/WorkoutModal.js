@@ -39,7 +39,7 @@ const WorkoutModal = ({ isOpen, onClose, selectedWorkout, onRegister, isLoggedIn
     setIsCheckingRegistration(true);
     try {
       const response = await axios.get(
-        `https://localhost:7024/api/Schedule/is-registered/${selectedWorkout.Id}`,
+        `/api/Schedule/is-registered/${selectedWorkout.Id}`,
         { withCredentials: true }
       );
       setIsAlreadyRegistered(response.data);
@@ -55,7 +55,7 @@ const WorkoutModal = ({ isOpen, onClose, selectedWorkout, onRegister, isLoggedIn
   const handleCancelRegistration = async () => {
     try {
       await axios.delete(
-        `https://localhost:7024/api/Schedule/cancel-registration/${selectedWorkout.Id}`,
+        `/api/Schedule/cancel-registration/${selectedWorkout.Id}`,
         { withCredentials: true }
       );
       setIsAlreadyRegistered(false);
