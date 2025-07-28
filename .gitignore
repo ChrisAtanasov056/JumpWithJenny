@@ -18,3 +18,5 @@ obj/
 *.pdb
 *.vs/
 .vscode/
+ServerAPI/ServerAPI/appsetting.json
+ServerAPI/ServerAPI/appsettings.json
