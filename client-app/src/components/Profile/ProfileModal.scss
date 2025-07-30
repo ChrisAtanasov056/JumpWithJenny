@@ -1,3 +1,4 @@
+@use "sass:color";
 // Updated color variables with better contrast
 $primary-color: #95A5A6;
 $secondary-color: #FFFFFF;
@@ -107,7 +108,7 @@ $box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
     transform: translateX(-50%);
     width: 60px;
     height: 3px;
-    background: linear-gradient(90deg, $accent-color, lighten($accent-color, 15%));
+    background: linear-gradient(90deg, $accent-color, color.adjust($accent-color, $lightness: 15%));
     border-radius: 3px;
   }
   
@@ -218,11 +219,11 @@ $box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
     }
     
     &.change-password-btn {
-      background: linear-gradient(135deg, $text-color, darken($text-color, 5%));
+      background: linear-gradient(135deg, $text-color, color.adjust($text-color, $lightness: -5%));
       color: $white;
       
       &:hover {
-        background: linear-gradient(135deg, darken($text-color, 3%), darken($text-color, 8%));
+        background: linear-gradient(135deg, color.adjust($text-color, $lightness: -3%), color.adjust($text-color, $lightness: -8%));
         
         svg {
           transform: translateX(2px);
@@ -313,7 +314,7 @@ $box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
         color: $white;
         
         &:hover {
-          background: linear-gradient(135deg, darken($accent-color, 5%), darken($hover-color, 5%));
+          background: linear-gradient(135deg, color.adjust($accent-color, $lightness: -5%), color.adjust($hover-color, $lightness: -5%));
         }
       }
       

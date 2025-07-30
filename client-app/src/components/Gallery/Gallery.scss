@@ -1,4 +1,4 @@
-@import '../../../public/css/style.scss';
+@use "../../../public/css/style.scss" as *;
 
 .gallery-section {
     padding: 4rem 2rem;

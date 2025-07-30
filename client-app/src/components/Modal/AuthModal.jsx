@@ -5,9 +5,9 @@ import Register from '../Register/Register';
 import SuccessModal from '../Register/SuccessModal';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faFacebook, faGoogle, faInstagram } from '@fortawesome/free-brands-svg-icons';
-import { signInWithFacebook, signInWithGoogle } from '../../services/firebase.js'; 
-import ForgotPasswordModal from '../ForgotPassword/ForgotPasswordModal.js';
-import axios from '../../api/axius.js';
+import { signInWithFacebook, signInWithGoogle } from '../../services/firebase'; 
+import ForgotPasswordModal from '../ForgotPassword/ForgotPasswordModal';
+import axios from '../../api/axius';
 import { useTranslation } from 'react-i18next';
 
 const AuthModal = ({ onClose, onLoginSuccess, setModalOpen }) => {

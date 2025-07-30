@@ -1,9 +1,9 @@
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
-import { useAuth } from '../services/AuthContext';
+import { useAuth } from './AuthContext';
 import { useTranslation } from 'react-i18next';
 import './VerifyEmail.css';
-import api from '../services/api';
+import api from './api';
 
 const VerifyEmail = () => {
     const { search } = useLocation();

@@ -1,3 +1,4 @@
+@use "sass:color";
 .admin-users {
   padding: 20px;
 
@@ -90,7 +91,7 @@
       transition: background 0.3s;
       
       &:hover {
-        background: darken(#2ecc71, 10%);
+        background: color.adjust(#2ecc71, $lightness: -10%);
       }
     }
   }

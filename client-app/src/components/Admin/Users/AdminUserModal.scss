@@ -1,3 +1,4 @@
+@use "sass:color";
 // AdminUserModal.scss
 
 .admin-user-modal {
@@ -100,7 +101,7 @@
               border: 1px solid #ddd;
   
               &:hover, &:focus {
-                background: darken(#f1f1f1, 10%);
+                background: color.adjust(#f1f1f1, $lightness: -10%);
               }
             }
   
@@ -109,7 +110,7 @@
               color: white;
   
               &:hover, &:focus {
-                background: darken(#e74c3c, 10%);
+                background: color.adjust(#e74c3c, $lightness: -10%);
               }
             }
   
@@ -312,7 +313,7 @@
             color: white;
   
             &:hover, &:focus {
-              background: darken(#3498db, 10%);
+              background: color.adjust(#3498db, $lightness: -10%);
             }
           }
   
@@ -321,7 +322,7 @@
             color: white;
   
             &:hover, &:focus {
-              background: darken(#2ecc71, 10%);
+              background: color.adjust(#2ecc71, $lightness: -10%);
             }
           }
   
@@ -331,7 +332,7 @@
             margin-right: auto;
   
             &:hover, &:focus {
-              background: darken(#e74c3c, 10%);
+              background: color.adjust(#e74c3c, $lightness: -10%);
             }
           }
   
@@ -340,7 +341,7 @@
             border: 1px solid #ddd;
   
             &:hover, &:focus {
-              background: darken(#f1f1f1, 10%);
+              background: color.adjust(#f1f1f1, $lightness: -10%);
             }
           }
   
@@ -349,7 +350,7 @@
             border: 1px solid #ddd;
   
             &:hover, &:focus {
-              background: darken(#f1f1f1, 10%);
+              background: color.adjust(#f1f1f1, $lightness: -10%);
             }
           }
         }

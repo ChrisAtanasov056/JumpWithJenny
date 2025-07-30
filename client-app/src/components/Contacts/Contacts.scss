@@ -1,3 +1,4 @@
+@use "sass:color";
 // Color Variables
 $primary-color: #BDC3C7;
 $secondary-color: #FFFFFF;
@@ -225,12 +226,12 @@ $border-radius: 12px;
       
       &.success {
         background-color: rgba($accent-color, 0.1);
-        color: darken($accent-color, 10%);
+        color: color.adjust($accent-color, $lightness: -10%);
       }
       
       &.error {
         background-color: rgba($accent-color, 0.1);
-        color: darken($accent-color, 10%);
+        color: color.adjust($accent-color, $lightness: -10%);
       }
     }
   }

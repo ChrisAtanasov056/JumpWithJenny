@@ -1,3 +1,4 @@
+@use "sass:color";
 $primary-color: #BDC3C7; // Deep Navy
 $secondary-color: #FFFFFF; // Soft Gray
 $background-color: #ECF0F1; // Warm Beige
@@ -71,7 +72,7 @@ $border-radius: 8px; // Rounded corners
           transition: color $transition-speed;
 
           &:hover {
-            color: darken($text-color, 10%);
+            color: color.adjust($text-color, $lightness: -10%);
           }
 
           input[type="checkbox"] {
@@ -145,7 +146,7 @@ $border-radius: 8px; // Rounded corners
 
             &:hover:not([disabled]) {
               transform: translateY(-2px);
-              background-color: lighten($primary-color, 10%);
+              background-color: color.adjust($primary-color, $lightness: 10%);
               color: $white;
             }
 
@@ -230,7 +231,7 @@ $border-radius: 8px; // Rounded corners
         letter-spacing: 0.5px;
 
         &:hover {
-          background-color: darken($accent-color, 10%);
+          background-color: color.adjust($accent-color, $lightness: -10%);
           transform: translateY(-2px);
           box-shadow: 0 4px 8px rgba($accent-color, 0.3);
         }
@@ -284,7 +285,7 @@ $border-radius: 8px; // Rounded corners
         transition: all $transition-speed;
 
         &:hover {
-          background-color: darken($accent-color, 10%);
+          background-color: color.adjust($accent-color, $lightness: -10%);
           transform: translateY(-2px);
           box-shadow: 0 4px 8px rgba($accent-color, 0.3);
         }
@@ -303,7 +304,7 @@ $border-radius: 8px; // Rounded corners
   }
 
   .available-message {
-    color: darken($primary-color, 20%);
+    color: color.adjust($primary-color, $lightness: -20%);
   }
 }
 
@@ -328,7 +329,7 @@ $border-radius: 8px; // Rounded corners
     transition: all $transition-speed;
 
     &:hover {
-      background-color: darken($primary-color, 10%);
+      background-color: color.adjust($primary-color, $lightness: -10%);
     }
   }
 }
@@ -343,7 +344,7 @@ $border-radius: 8px; // Rounded corners
     font-weight: 600;
     
     &.available {
-      color: darken($primary-color, 20%);
+      color: color.adjust($primary-color, $lightness: -20%);
     }
     
     &.full {
@@ -378,7 +379,7 @@ $border-radius: 8px; // Rounded corners
     transition: all $transition-speed;
 
     &:hover {
-      background-color: darken($primary-color, 10%);
+      background-color: color.adjust($primary-color, $lightness: -10%);
     }
   }
 }
@@ -412,7 +413,7 @@ $border-radius: 8px; // Rounded corners
     transition: all $transition-speed;
 
     &:hover {
-      background-color: darken($primary-color, 10%);
+      background-color: color.adjust($primary-color, $lightness: -10%);
     }
   }
 }
@@ -437,7 +438,7 @@ $border-radius: 8px; // Rounded corners
     transition: background-color $transition-speed;
 
     &:hover {
-      background-color: darken($accent-color, 10%);
+      background-color: color.adjust($accent-color, $lightness: -10%);
     }
   }
 }

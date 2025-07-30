@@ -1,3 +1,4 @@
+@use "sass:color";
 // Color Palette
 $primary-color: #BDC3C7; // Deep Navy
 $secondary-color: #FFFFFF; // Soft Gray
@@ -47,7 +48,7 @@ $border-radius: 8px;
       transform-origin: top;
 
       &:hover {
-        background-color: lighten($background-color, 5%);
+        background-color: color.adjust($background-color, $lightness: 5%);
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
       }
 
@@ -59,7 +60,7 @@ $border-radius: 8px;
         transition: color $transition-speed ease-in-out;
 
         &:hover {
-          color: darken($accent-color, 10%);
+          color: color.adjust($accent-color, $lightness: -10%);
         }
 
         &.active {

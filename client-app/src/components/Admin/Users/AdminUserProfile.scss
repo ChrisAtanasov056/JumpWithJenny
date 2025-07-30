@@ -1,3 +1,4 @@
+@use "sass:color";
 .admin-user-profile {
   .profile-header {
     display: flex;
@@ -116,7 +117,7 @@
       border: none;
 
       &:hover {
-        background: darken(#f39c12, 10%);
+        background: color.adjust(#f39c12, $lightness: -10%);
       }
     }
 
@@ -126,7 +127,7 @@
       border: none;
 
       &:hover {
-        background: darken(#e74c3c, 10%);
+        background: color.adjust(#e74c3c, $lightness: -10%);
       }
     }
   }
@@ -153,7 +154,7 @@
       transition: background 0.3s;
 
       &:hover {
-        background: darken(#3498db, 10%);
+        background: color.adjust(#3498db, $lightness: -10%);
       }
     }
   }
