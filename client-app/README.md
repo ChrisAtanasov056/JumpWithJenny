@@ -68,3 +68,73 @@ This section has moved here: [https://facebook.github.io/create-react-app/docs/d
 ### `npm run build` fails to minify
 
 This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+## Project Overview
+
+JumpWithJenny is a client-side application designed to provide an engaging and interactive user experience. Built with React, it leverages modern web development practices to ensure performance, scalability, and maintainability.
+
+## Features
+
+- Interactive UI components built with React.
+- State management using React hooks.
+- Responsive design for mobile and desktop devices.
+- Integration with backend APIs for dynamic data.
+
+## Prerequisites
+
+Before running the project, ensure you have the following installed:
+
+- Node.js (>= 14.x)
+- npm (>= 6.x)
+
+## Installation
+
+To set up the project locally, follow these steps:
+
+1. Clone the repository:
+    ```bash
+    git clone https://github.com/your-username/JumpWithJenny.git
+    ```
+2. Navigate to the project directory:
+    ```bash
+    cd JumpWithJenny/client-app
+    ```
+3. Install dependencies:
+    ```bash
+    npm install
+    ```
+
+## Running the Application
+
+To start the development server, run:
+```bash
+npm start
+```
+The app will be available at [http://localhost:3000](http://localhost:3000).
+
+## Building for Production
+
+To create a production build, use:
+```bash
+npm run build
+```
+The optimized build will be located in the `build` folder.
+
+## Testing
+
+Run the test suite with:
+```bash
+npm test
+```
+
+## Contributing
+
+Contributions are welcome! Please follow these steps:
+
+1. Fork the repository.
+2. Create a new branch for your feature or bug fix.
+3. Commit your changes and push the branch.
+4. Open a pull request.
+
+## License
+
+This project is licensed under the MIT License. See the `LICENSE` file for details.

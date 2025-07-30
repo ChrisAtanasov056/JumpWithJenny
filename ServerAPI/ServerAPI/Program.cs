@@ -15,6 +15,7 @@ using ServerAPI.Models;
 using ServerAPI.Models.Schedule;
 using ServerAPI.Services;
 using ServerAPI.Services.AuthService;
+using ServerAPI.Services.Contacts;
 using ServerAPI.Services.Mapper;
 using ServerAPI.Services.Schedule;
 using ServerAPI.Services.Users;
@@ -135,6 +136,7 @@ public partial class Program
         // Email Service Configuration
         services.AddScoped<IEmailTemplateService, EmailTemplateService>();
         services.AddScoped<IEmailService, EmailService>();
+        services.AddScoped<IContactService, ContactService>();
 
 
         // AutoMapper configuration

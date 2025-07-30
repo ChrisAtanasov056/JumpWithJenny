@@ -44,7 +44,7 @@ namespace ServerAPI.Services
             await SendEmailAsync(email, subject, body);
         }
 
-        public async Task<bool> SendEmailAsync(string toEmail, string subject, string body)
+        public async Task<bool> SendEmailAsync(string toEmail, string subject, string body, string replyToEmail = null)
         {
             var smtpHost = _configuration["EmailSettings:SmtpHost"];
             var smtpUser = _configuration["EmailSettings:Username"];
@@ -56,6 +56,11 @@ namespace ServerAPI.Services
             message.From.Add(new MailboxAddress(fromName, fromEmail));
             message.To.Add(MailboxAddress.Parse(toEmail));
             message.Subject = subject;
+
+            if (!string.IsNullOrEmpty(replyToEmail))
+            {
+                message.ReplyTo.Add(MailboxAddress.Parse(replyToEmail));
+            }
 
             var bodyBuilder = new BodyBuilder
             {
@@ -108,5 +113,6 @@ namespace ServerAPI.Services
 
             return true;
         }
+
     }
 }

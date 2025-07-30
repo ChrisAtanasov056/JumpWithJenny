@@ -52,6 +52,9 @@ const Navbar = () => {
     i18n.changeLanguage(language);
   };
 
+  const [menuOpen, setMenuOpen] = useState(false);
+;
+
   return (
     <>
       {/* Navbar */}
@@ -78,6 +81,7 @@ const Navbar = () => {
               <div className={`line ${menuActive ? 'active' : ''}`}></div>
             </div>
           </button>
+
           
           <div className={`navbar-nav ${isNavActive ? 'active' : ''}`}>
             <li className="nav-item">

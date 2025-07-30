@@ -1,0 +1,102 @@
+// SuccessModal.scss
+@use 'sass:color';
+
+$success-modal-accent: #E74C3C !default;
+$success-modal-text: #2C3E50 !default;
+$success-modal-white: #FFFFFF !default;
+$success-modal-transition: 0.3s !default;
+$success-modal-radius: 12px !default;
+
+// All classes prefixed with success-modal__
+.success-modal {
+  &__overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.9); // Doesn't use variables to prevent conflicts
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    backdrop-filter: blur(8px);
+    animation: success-modal-fadeIn $success-modal-transition ease-out;
+  }
+
+  &__content {
+    background: $success-modal-white;
+    padding: 2.5rem;
+    border-radius: $success-modal-radius;
+    text-align: center;
+    max-width: 450px;
+    width: 90%;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+    animation: success-modal-slideUp $success-modal-transition ease-out;
+    border: 1px solid rgba($success-modal-accent, 0.1);
+  }
+
+  &__icon {
+    font-size: 4rem;
+    color: $success-modal-accent;
+    margin-bottom: 1.5rem;
+    animation: success-modal-bounce $success-modal-transition * 2 ease;
+  }
+
+  &__title {
+    font-size: 1.75rem;
+    margin-bottom: 1rem;
+    color: $success-modal-text;
+    
+    &::after {
+      content: '';
+      display: block;
+      width: 50px;
+      height: 3px;
+      background: $success-modal-accent;
+      margin: 0.8rem auto;
+    }
+  }
+
+  &__text {
+    margin-bottom: 2rem;
+    font-size: 1.1rem;
+    line-height: 1.6;
+    color: color.scale($success-modal-text, $lightness: 20%);
+  }
+
+  &__button {
+    background: $success-modal-accent;
+    color: $success-modal-white;
+    border: none;
+    padding: 0.8rem 2rem;
+    border-radius: $success-modal-radius - 4;
+    cursor: pointer;
+    transition: all $success-modal-transition ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    
+    &:hover {
+      background: color.scale($success-modal-accent, $lightness: -10%);
+      transform: translateY(-2px);
+    }
+  }
+
+  &__close-icon {
+    font-size: 0.9rem;
+  }
+}
+
+// Scoped animations
+@keyframes success-modal-fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes success-modal-slideUp {
+  from { transform: translateY(20px); opacity: 0.8; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes success-modal-bounce {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+}

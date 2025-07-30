@@ -1,5 +1,5 @@
-// Using your existing color variables
-$primary-color: #BDC3C7; 
+// Color Variables
+$primary-color: #BDC3C7;
 $secondary-color: #FFFFFF;
 $background-color: #ECF0F1;
 $accent-color: #E74C3C;
@@ -7,249 +7,292 @@ $white: #FFFFFF;
 $text-color: #2C3E50;
 $hover-color: #E74C3C;
 $transition-speed: 0.3s;
-$border-radius: 12px; // Slightly more rounded
+$border-radius: 12px;
 
 .contact-section {
-  background: linear-gradient(135deg, rgba($background-color, 0.95) 0%, rgba($white, 0.9) 100%);
-  padding: 4rem 2rem;
-  text-align: center;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  flex-direction: column;
-  animation: fadeInUp 1s ease-out;
-  position: relative;
-  overflow: hidden;
-
-  // Decorative elements
-  &::before {
-    content: '';
-    position: absolute;
-    top: -50px;
-    right: -50px;
-    width: 200px;
-    height: 200px;
-    background: rgba($accent-color, 0.1);
-    border-radius: 50%;
-    z-index: 0;
-  }
-
-  h2 {
-    color: $text-color;
-    font-size: clamp(1.8rem, 4vw, 2.8rem);
-    font-weight: 700;
-    margin-bottom: 1.5rem;
-    position: relative;
-    z-index: 1;
-    
-    &::after {
-      content: '';
-      display: block;
-      width: 80px;
-      height: 4px;
-      background: $accent-color;
-      margin: 1rem auto 0;
-      border-radius: 2px;
-    }
-  }
-
+  padding: 4rem 0;
+  background-color: $background-color;
+  color: $text-color;
+  
   .contact-container {
-    display: flex;
-    justify-content: space-between;
-    gap: 3rem;
-    flex-wrap: wrap;
-    width: 100%;
     max-width: 1200px;
-    position: relative;
-    z-index: 1;
-
-    .contact-form {
-      flex: 1;
-      min-width: 300px;
-      background: $white;
-      padding: 2.5rem;
-      border-radius: $border-radius;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
-      transition: transform $transition-speed ease;
-      backdrop-filter: blur(5px);
-      border: 1px solid rgba($primary-color, 0.2);
-
-      &:hover {
-        transform: translateY(-5px);
-      }
-
-      .form-group {
-        margin-bottom: 1.5rem;
-        text-align: left;
-
-        label {
-          display: block;
-          margin-bottom: 0.8rem;
-          font-size: 1rem;
-          color: $text-color;
-          font-weight: 500;
-        }
-
-        input,
-        textarea {
-          width: 100%;
-          padding: 1rem;
-          font-size: 1rem;
-          border: 1px solid rgba($primary-color, 0.3);
-          border-radius: $border-radius;
-          outline: none;
-          transition: all $transition-speed ease;
-          background: rgba($background-color, 0.3);
-
-          &:focus {
-            border-color: $accent-color;
-            box-shadow: 0 0 0 3px rgba($accent-color, 0.2);
-          }
-        }
-
-        textarea {
-          min-height: 150px;
-          resize: vertical;
-        }
-      }
-
-      .submit-button {
+    margin: 0 auto;
+    padding: 0 2rem;
+  }
+  
+  .contact-header {
+    text-align: center;
+    margin-bottom: 3rem;
+    
+    .section-title {
+      font-size: 2.5rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+      color: $text-color;
+      position: relative;
+      display: inline-block;
+      
+      &::after {
+        content: '';
+        position: absolute;
+        bottom: -10px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 80px;
+        height: 4px;
         background: $accent-color;
-        color: $white;
-        padding: 1rem 2rem;
-        font-size: 1.1rem;
-        font-weight: 600;
-        border: none;
-        border-radius: $border-radius * 2;
-        cursor: pointer;
-        transition: all $transition-speed ease;
-        width: 100%;
-        box-shadow: 0 4px 15px rgba($accent-color, 0.3);
-        position: relative;
-        overflow: hidden;
-
-        &::before {
-          content: '';
-          position: absolute;
-          top: 0;
-          left: -100%;
-          width: 100%;
-          height: 100%;
-          background: linear-gradient(90deg, transparent, rgba($white, 0.3), transparent);
-          transition: 0.5s;
-        }
-
-        &:hover {
-          background: $hover-color;
-          transform: translateY(-2px);
-          box-shadow: 0 6px 20px rgba($accent-color, 0.4);
-
-          &::before {
-            left: 100%;
-          }
-        }
-
-        &:active {
-          transform: translateY(0);
-        }
+        border-radius: 2px;
       }
     }
-
-    .map-section {
-      flex: 1;
-      min-width: 300px;
-      display: flex;
-      flex-direction: column;
+    
+    .section-subtitle {
+      font-size: 1.1rem;
+      color: $primary-color;
+      max-width: 700px;
+      margin: 0 auto;
+    }
+  }
+  
+  .contact-content {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 3rem;
+    
+    @media (max-width: 768px) {
+      grid-template-columns: 1fr;
+    }
+  }
+  
+  .contact-form {
+    background: $white;
+    padding: 2rem;
+    border-radius: $border-radius;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+    
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr;
       gap: 1.5rem;
-
-      h3 {
-        font-size: 1.5rem;
-        color: $text-color;
-        font-weight: 600;
-        margin-bottom: 0.5rem;
-      }
-
-      .contact-info {
-        background: $white;
-        padding: 2rem;
-        border-radius: $border-radius;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
-        text-align: left;
+    }
+    
+    .form-group {
+      position: relative;
+      margin-bottom: 1rem;
+      
+      &.floating-label {
+        label {
+          position: absolute;
+          top: 16px;
+          left: 12px;
+          color: $primary-color;
+          font-size: 1rem;
+          pointer-events: none;
+          transition: all $transition-speed ease;
+        }
         
-        p {
-          margin-bottom: 1rem;
-          display: flex;
-          align-items: center;
-          gap: 0.8rem;
-          color: $text-color;
+        input, textarea, select {
+          width: 100%;
+          padding: 16px 12px 8px;
+          font-size: 1rem;
+          border: 1px solid $primary-color;
+          border-radius: $border-radius - 4;
+          background-color: transparent;
+          transition: all $transition-speed ease;
           
-          i {
-            color: $accent-color;
-            font-size: 1.2rem;
-            min-width: 24px;
+          &:focus {
+            outline: none;
+            border-color: $accent-color;
+            
+            + label {
+              color: $accent-color;
+              transform: translateY(-12px) scale(0.85);
+            }
+            
+            ~ .input-border {
+              width: 100%;
+              background: $accent-color;
+            }
           }
         }
+        
+        input.has-value, 
+        textarea.has-value,
+        select.has-value {
+          + label {
+            transform: translateY(-12px) scale(0.85);
+            color: $primary-color;
+          }
+        }
+        
+        .input-border {
+          position: absolute;
+          bottom: 0;
+          left: 0;
+          width: 0;
+          height: 2px;
+          transition: width $transition-speed ease;
+        }
       }
-
-      .map-container {
-        height: 300px;
-        border-radius: $border-radius;
-        overflow: hidden;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
-        border: 1px solid rgba($primary-color, 0.2);
-
-        iframe {
-          width: 100%;
-          height: 100%;
-          border: none;
+      
+      &.select-group {
+        select {
+          appearance: none;
+          padding-right: 32px;
+        }
+        
+        .select-arrow {
+          position: absolute;
+          top: 50%;
+          right: 12px;
+          width: 0;
+          height: 0;
+          border-left: 5px solid transparent;
+          border-right: 5px solid transparent;
+          border-top: 5px solid $primary-color;
+          pointer-events: none;
+          transform: translateY(-50%);
+        }
+      }
+      
+      &.textarea-group {
+        textarea {
+          resize: vertical;
+          min-height: 120px;
+        }
+      }
+    }
+  }
+  
+  .form-footer {
+    margin-top: 2rem;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+    
+    .submit-button {
+      position: relative;
+      padding: 12px 30px;
+      background: $accent-color;
+      color: $white;
+      border: none;
+      border-radius: 50px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      overflow: hidden;
+      transition: all $transition-speed ease;
+      box-shadow: 0 4px 15px rgba($accent-color, 0.3);
+      
+      &:hover {
+        background: $hover-color;
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba($accent-color, 0.4);
+      }
+      
+      &:active {
+        transform: translateY(0);
+      }
+      
+      &.submitting {
+        padding-right: 50px;
+        
+        .button-text {
+          opacity: 0;
+        }
+      }
+      
+      .button-spinner {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 20px;
+        height: 20px;
+        border: 3px solid rgba($white, 0.3);
+        border-top-color: $white;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+      }
+    }
+    
+    .form-message {
+      padding: 12px 20px;
+      border-radius: $border-radius - 4;
+      font-size: 0.9rem;
+      font-weight: 500;
+      transition: all $transition-speed ease;
+      
+      &.success {
+        background-color: rgba($accent-color, 0.1);
+        color: darken($accent-color, 10%);
+      }
+      
+      &.error {
+        background-color: rgba($accent-color, 0.1);
+        color: darken($accent-color, 10%);
+      }
+    }
+  }
+  
+  .contact-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+    
+    .info-title {
+      font-size: 1.5rem;
+      margin-bottom: 1rem;
+      color: $text-color;
+      position: relative;
+      padding-bottom: 0.5rem;
+      
+      &::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 50px;
+        height: 3px;
+        background: $accent-color;
+      }
+    }
+    
+    .map-container {
+      border-radius: $border-radius;
+      overflow: hidden;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+      
+      iframe {
+        display: block;
+      }
+    }
+    
+    .details-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      
+      .detail-item {
+        display: flex;
+        align-items: center;
+        padding: 0.8rem 0;
+        border-bottom: 1px solid $primary-color;
+        
+        &:last-child {
+          border-bottom: none;
+        }
+        
+        .detail-icon {
+          margin-right: 1rem;
+          font-size: 1.2rem;
+          color: $accent-color;
         }
       }
     }
   }
 }
 
-@keyframes fadeInUp {
-  0% {
-    opacity: 0;
-    transform: translateY(30px);
-  }
-  100% {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-// Responsive Design
-@media (max-width: 900px) {
-  .contact-section {
-    padding: 3rem 1.5rem;
-    
-    .contact-container {
-      flex-direction: column;
-      gap: 2rem;
-      
-      .contact-form,
-      .map-section {
-        width: 100%;
-      }
-    }
-  }
-}
-
-@media (max-width: 480px) {
-  .contact-section {
-    padding: 2rem 1rem;
-    
-    .contact-container {
-      .contact-form {
-        padding: 1.5rem;
-      }
-      
-      .map-section {
-        .contact-info {
-          padding: 1.5rem;
-        }
-      }
-    }
-  }
+@keyframes spin {
+  to { transform: translate(-50%, -50%) rotate(360deg); }
 }

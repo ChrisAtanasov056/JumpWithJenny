@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { FaStar, FaChevronLeft, FaChevronRight } from 'react-icons/fa';
 import './HappyCustomers.scss';
 
 const HappyCustomers = () => {
@@ -8,93 +9,120 @@ const HappyCustomers = () => {
   const testimonials = [
     {
       id: 1,
-      name: 'Иван Петров',
-      role: 'Спортист',
-      comment: 'Невероятни резултати за кратко време! Професионален подход и перфектна организация.',
-      rating: 5,
-      avatar: 'https://randomuser.me/api/portraits/men/32.jpg'
+      name: 'Мария Иванова',
+      comment: 'Най-доброто място за тренировки. Персонализиран подход към всеки клиент и видими резултати.',
+      rating: 5
     },
     {
       id: 2,
-      name: 'Мария Иванова',
-      role: 'Фитнес инструктор',
-      comment: 'Най-доброто място за тренировки. Персонализиран подход към всеки клиент и видими резултати.',
-      rating: 4,
-      avatar: 'https://randomuser.me/api/portraits/women/44.jpg'
+      name: 'Стефка Николова',
+      comment: 'Уникално изживяване! Енергията и мотивацията на тренировките са заразителни.',
+      rating: 5
     },
     {
       id: 3,
-      name: 'Георги Димитров',
-      role: 'Аматьор',
-      comment: 'Доволен съм от постигнатите резултати. Препоръчвам на всички, които искат да подобрят формата си!',
-      rating: 5,
-      avatar: 'https://randomuser.me/api/portraits/men/75.jpg'
+      name: 'Елена Василева',
+      comment: 'С всяка тренировка се чувствам все по-силна и уверена. Благодарение на Жени!',
+      rating: 5
+    },
+    {
+      id: 4,
+      name: 'Антония Стоянова',
+      comment: 'Програмите са адаптирани към всякакво ниво. Чувствам се част от страхотна общност.',
+      rating: 5
+    },
+    {
+      id: 5,
+      name: 'Десислава Георгиева',
+      comment: 'Всяка тренировка е истинско удоволствие! Жени, винаги знае как да ни мотивира.',
+      rating: 5
+    },
+    {
+      id: 6,
+      name: 'Ива Пенева',
+      comment: 'Обичам енергията и положителното настроение на тренировките. Перфектно за разтоварване след работа!',
+      rating: 4
+    },
+    {
+      id: 7,
+      name: 'Надежда Тодорова',
+      comment: 'След всеки час се чувствам заредена и вдъхновена.!',
+      rating: 5
+    },
+    {
+      id: 8,
+      name: 'Кристина Алексиева',
+      comment: 'От първата тренировка се влюбих в атмосферата и начина, по който Жени работи с нас.',
+      rating: 5
+    },
+    {
+      id: 9,
+      name: 'Габриела Илиева',
+      comment: 'Страхотна комбинация от забавление и ефективна тренировка! Виждам реална промяна.',
+      rating: 5
+    },
+    {
+      id: 10,
+      name: 'Ралица Николова',
+      comment: 'Това не е просто тренировка – това е начин на живот!',
+      rating: 5
     }
   ];
+  
 
   const nextSlide = () => {
-    setCurrentIndex((prevIndex) => (prevIndex + 1) % testimonials.length);
+    setCurrentIndex((prev) => (prev + 1) % testimonials.length);
   };
 
   const prevSlide = () => {
-    setCurrentIndex((prevIndex) => (prevIndex - 1 + testimonials.length) % testimonials.length);
+    setCurrentIndex((prev) => (prev - 1 + testimonials.length) % testimonials.length);
   };
 
   useEffect(() => {
     if (!isHovered) {
-      const interval = setInterval(() => {
-        nextSlide();
-      }, 5000);
-      return () => clearInterval(interval);
+      const timer = setTimeout(nextSlide, 5000);
+      return () => clearTimeout(timer);
     }
-  }, [isHovered]);
+  }, [currentIndex, isHovered]);
 
   return (
-    <section className="carousel-section">
-      <div className="container">
-        <h2 className="title">Доволни клиенти</h2>
+    <div className="happy-customers">
+      <h2 className="section-title">Какво казват клиентите?</h2>
+      
+      <div 
+        className="testimonial-card"
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
+      >
+        <p className="testimonial-comment">"{testimonials[currentIndex].comment}"</p>
         
-        <div 
-          className="carousel-container"
-          onMouseEnter={() => setIsHovered(true)}
-          onMouseLeave={() => setIsHovered(false)}
-        >
-          <button className="arrow prev" onClick={prevSlide}>&lt;</button>
-          
-          <div className="carousel-multi-wrapper">
-            <div 
-              className="carousel-track" 
-              style={{ transform: `translateX(-${currentIndex * 100}%)` }}
-            >
-              {testimonials.map((testimonial) => (
-                <div key={testimonial.id} className="carousel-slide">
-                  <div className="avatar-container">
-                    <img src={testimonial.avatar} alt={testimonial.name} className="avatar" />
-                  </div>
-                  <p className="quote">"{testimonial.comment}"</p>
-                  <div className="author-info">
-                    <h3 className="author">{testimonial.name}</h3>
-                    <p className="role">{testimonial.role}</p>
-                  </div>
-                  <div className="stars">
-                    {[...Array(5)].map((_, i) => (
-                      <span 
-                        key={i} 
-                        className={i < testimonial.rating ? 'star-filled' : 'star-empty'}
-                      >
-                        ★
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              ))}
-            </div>
+        <div className="testimonial-author">
+          <span className="author-name">{testimonials[currentIndex].name}</span>
+          <div className="star-rating">
+            {[...Array(5)].map((_, i) => (
+              <FaStar 
+                key={i} 
+                className={i < testimonials[currentIndex].rating ? 'star filled' : 'star'}
+              />
+            ))}
           </div>
-          
-          <button className="arrow next" onClick={nextSlide}>&gt;</button>
+        </div>
+
+        <div className="testimonial-controls">
+          <button className="arrow-btn" onClick={prevSlide}><FaChevronLeft /></button>
+          <div className="pagination">
+            {testimonials.map((_, i) => (
+              <span 
+                key={i} 
+                className={`bar ${i === currentIndex ? 'active' : ''}`}
+                onClick={() => setCurrentIndex(i)}
+              />
+            ))}
+          </div>
+          <button className="arrow-btn" onClick={nextSlide}><FaChevronRight /></button>
         </div>
       </div>
-    </section>
+    </div>
   );
 };
 

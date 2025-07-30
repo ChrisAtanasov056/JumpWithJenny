@@ -1,0 +1,128 @@
+// Footer.scss
+$accent-color: #E74C3C;
+$text-color: #2C3E50;
+$white: #FFFFFF;
+$transition-speed: 0.3s;
+
+
+.footer-animated {
+  background: $text-color;
+  color: $white;
+  padding: 1.2rem;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+  max-height: 31vh;
+
+  .footer-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 2rem;
+  }
+
+  .jump-animation {
+    margin: 0 auto 2rem;
+    width: 80px;
+    height: 80px;
+    position: relative;
+    justify-content: center; /* Add this */
+
+    .kangoo-shoe {
+      font-size: 3rem;
+      position: absolute;
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      animation: jump 1.5s infinite alternate;
+      z-index: 2;
+      display: inline-block;
+    }
+
+    .shadow {
+      width: 40px;
+      height: 10px;
+      background: rgba($accent-color, 0.3);
+      border-radius: 50%;
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+      animation: shadow 1.5s infinite alternate;
+      filter: blur(2px);
+    }
+  }
+
+  .social-links {
+    display: flex;
+    justify-content: center;
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+
+    .social-btn {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      color: $white;
+      text-decoration: none;
+      padding: 0.7rem 1.2rem;
+      border-radius: 50px;
+      transition: all $transition-speed ease;
+      background: rgba($white, 0.1);
+
+      &:hover {
+        background: $accent-color;
+        transform: translateY(-3px);
+
+        .icon {
+          transform: scale(1.2);
+        }
+      }
+
+      .icon {
+        font-size: 1.3rem;
+        transition: transform $transition-speed ease;
+        
+        /* Platform-specific colors */
+        &.fa-facebook { color: #1877F2; }
+        &.fa-tiktok { color: #69C9D0; }
+        &.fa-instagram { 
+          background: radial-gradient(circle at 30% 107%, #fdf497 0%, #fdf497 5%, #fd5949 45%, #d6249f 60%, #285AEB 90%);
+          -webkit-background-clip: text;
+          background-clip: text;
+          color: transparent;
+        }
+      }
+
+      &:hover .icon {
+        color: $white !important;
+        background: none !important;
+      }
+
+      .label {
+        font-size: 0.9rem;
+      }
+    }
+  }
+
+  .copyright {
+    font-size: 0.9rem;
+    color: rgba($white, 0.7);
+  }
+}
+
+.kangoo-shoe-img {
+  width: 60px;
+  height: auto;
+  animation: jump 1.5s infinite alternate;
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));
+}
+
+@keyframes jump {
+  0% { transform: translate(-0%, 0) scale(1); }
+  100% { transform: translate(-0%, -20px) scale(1.2); }
+}
+
+@keyframes shadow {
+  0% { width: 40px; opacity: 0.7; }
+  100% { width: 30px; opacity: 0.4; }
+}

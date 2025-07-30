@@ -249,3 +249,15 @@ $border-radius: 8px;
   --bs-navbar-toggler-icon-bg: none !important;
   --bs-navbar-toggler-border-color: transparent !important;
 }
+
+@media (max-width: 991px) {
+  .navbar.menu-open {
+    .navbar-logo {
+      display: none !important;
+    }
+
+    .language-dropdown {
+      display: none !important;
+    }
+  }
+}

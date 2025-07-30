@@ -20,6 +20,7 @@
     "startText": "Get Started",
 
     "galleryTitle": "Photo Gallery",
+    "gallerySubtitle": "Explore photos from my Kangoo Jump classes. Each picture captures the fun and energy we share together!",
     "galleryAlt": "Gallery item",
 
     "schedule": {
@@ -44,22 +45,38 @@
     },
     "faq": {
         "title": "Frequently Asked Questions",
-        "q1": "What is Kangoo Jump?",
+        "q1": "What is Kangoo Jumps?",
         "a1": "Kangoo Jump is a fun and high-intensity workout that uses special rebound shoes designed to reduce impact and increase calorie burn.",
-        "q2": "How can I book a Kangoo Jump class?",
+        "q2": "How can I book a Kangoo Jumps class?",
         "a2": "You can book a class by visiting our schedule page or contacting us directly through the contact form.",
-        "q3": "What are the benefits of Kangoo Jump?",
-        "a3": "Kangoo Jump helps improve cardiovascular fitness, strengthens muscles, and enhances coordination while minimizing joint stress.",
+        "q3": "What are the benefits of Kangoo Jumps?",
+        "a3": "Kangoo Jumps helps improve cardiovascular fitness, strengthens muscles, and enhances coordination while minimizing joint stress.",
         "q4": "Do I need to bring my own shoes?",
-        "a4": "We provide Kangoo Jump shoes for all participants, but feel free to bring your own if you prefer."
+        "a4": "We provide Kangoo Jumps shoes for all participants, but feel free to bring your own if you prefer."
     },
     "contacts": {
-        "title": "Contact Us",
+        "title": "Contact",
+        "subtitle": "Do you have questions or want to get in touch? Use the form below to send a message. I'll get back to you as soon as possible!",
+        "description2": "You can also reach me through social media or by email.",
+        "selectSubject": "Select a subject...",
+        "subject": "Subject",
+        "subjectTraining": "Training Inquiry",
+        "subjectTrial": "Trial Class Booking",
+        "subjectShoes": "Kangoo Shoes Question",
+        "subjectMedia": "Media/Business Inquiry",
+        "subjectOther": "Other",
+        "customSubject": "Enter your subject",
+        "errorMessage": "An error occurred while sending.",
         "name": "Name",
         "email": "Email",
         "message": "Message",
-        "send": "Send Message",
-        "location": "Where You Can Find Us"
+        "send": "Send",
+        "sending": "Sending...",
+        "location": "Where You Can Find Us",
+        "contactDetails": "Contact Details",
+        "successMessage": "Your message has been sent!",
+        "successDescription": "Thank you, we will contact you as soon as possible.",
+        "ok": "OK"
     },
     "profile": {
         "title": "Your Profile",
