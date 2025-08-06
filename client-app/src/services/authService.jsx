@@ -1,12 +1,10 @@
 import axios from '../api/axius';
 
-
 // Register a new user
 export const create = async (userData) => {
-  console.log("Create: ", userData);
   try {
-    const response = await axios.post('/Account/signup', userData);
-    return response.data; // Adjust according to your API response structure
+    const response = await axios.post('/Account/signup',userData);
+    return response.data;
   } catch (error) {
     if (error.response) {
       console.error('🚨 Server responded with:', error.response.status, error.response.data);
@@ -19,46 +17,50 @@ export const create = async (userData) => {
   }
 };
 
-// Login an existing user
 export const login = async (userData) => {
   try {
+    console.log("Login data:", userData);
     const response = await axios.post('/Account/login', {
-      Email: userData.email, 
+      Email: userData.email,
       Password: userData.password,
     });
-    return response.data; 
+    console.log("Login response:", response.data);
+    if (response.data.token) {
+      localStorage.setItem('token', response.data.token);
+    }
+    if (response.data.refreshToken) {
+      localStorage.setItem('refreshToken', response.data.refreshToken);
+    }
+    return response.data;
   } catch (error) {
     console.error('Login error:', error);
-    throw error; 
+    throw error;
   }
 };
 
 // Change Password
 export const changePassword = async (userData) => {
   try {
-    console.log("ChangePassword params:", userData);
     const response = await axios.post('/Account/reset-password', {
       id: userData.id,
       currentPassword: userData.currentPassword,
       newPassword: userData.newPassword,
     });
-    return response.data;  // return the response directly
+    return response.data;
   } catch (error) {
     console.error('Change password error:', error);
-    throw error;  // Throw the error to propagate it to the component
+    throw error;
   }
 };
 
+// Verify Email
 export const verifyEmail = async (userId, token, language) => {
   try {
-    console.log("VerifyEmail params:", userId, token, language);
     const response = await axios.post('/Account/confirmemail', {
       userId,
       token,
-      language,  
-    }); 
-    console.log("VerifyEmail response:", response);
-
+      language,
+    });
     if (response.status === 200) {
       const statusResponse = await axios.get(`/verifyEmailStatus?userId=${userId}`);
       return statusResponse.data.user;
@@ -69,7 +71,7 @@ export const verifyEmail = async (userId, token, language) => {
   }
 };
 
-// Reset/Forgot Password with language parameter
+// Reset/Forgot Password
 export const forgotPassword = async ({ email, token, newPassword }) => {
   try {
     const response = await axios.post('/Account/reset-password-token', {
@@ -87,7 +89,6 @@ export const forgotPassword = async ({ email, token, newPassword }) => {
       success: true,
       data: response.data
     };
-
   } catch (error) {
     console.error('Reset password error:', {
       status: error.response?.status,
@@ -103,18 +104,43 @@ export const forgotPassword = async ({ email, token, newPassword }) => {
   }
 };
 
-
-
+// Resend Verification Email
 export const resendVerificationEmail = async (email, language) => {
   try {
     const response = await axios.post('/Account/resend-verification', {
       Email: email,
-      language, 
+      language,
     });
     console.log('Resend verification response:', response);
     return response.data;
   } catch (error) {
     console.error('Resend verification email error:', error);
+    throw error;
+  }
+};
+
+// Google Login
+export const googleLogin = async (googleToken) => {
+  try {
+    console.log("Google login token:", googleToken);
+    const response = await axios.post('api/Auth/google-login', {
+      code: googleToken,
+    });
+
+    if (response.data.Success) {
+      // Запазване на токените в localStorage (ако отговорът ги връща)
+        if (response.data.Token) {
+          localStorage.setItem('token', response.Token);
+        }
+        if (response.data.RefreshToken) {
+          localStorage.setItem('refreshToken', response.RefreshToken);
+        }
+      return response.data;
+    } else {
+      throw new Error('Google login неуспешен');
+    }
+  } catch (error) {
+    console.error('Google login error:', error);
     throw error;
   }
 };

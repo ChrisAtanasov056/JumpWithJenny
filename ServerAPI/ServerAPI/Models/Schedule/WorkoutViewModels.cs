@@ -1,7 +1,6 @@
 ﻿namespace ServerAPI.Models.Schedule
 {
     using ServerAPI.Services.Mapper;
-    using ServerAPI.Models.Common;
 
     public class WorkoutViewModels : IMapFrom<Workout>
     {

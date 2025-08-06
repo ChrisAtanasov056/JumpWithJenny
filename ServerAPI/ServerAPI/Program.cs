@@ -2,7 +2,6 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Newtonsoft.Json.Serialization;
@@ -12,7 +11,6 @@ using ServerAPI.Data.Common.Repositories;
 using ServerAPI.Data.Repositories;
 using ServerAPI.Data.Seeding;
 using ServerAPI.Models;
-using ServerAPI.Models.Schedule;
 using ServerAPI.Services;
 using ServerAPI.Services.AuthService;
 using ServerAPI.Services.Contacts;
@@ -20,7 +18,6 @@ using ServerAPI.Services.Mapper;
 using ServerAPI.Services.Schedule;
 using ServerAPI.Services.Users;
 using ServerAPI.Services.Workouts;
-using System.Reflection;
 using System.Security.Claims;
 using System.Text;
 using System.Text.Json;
@@ -122,6 +119,7 @@ public partial class Program
         services.AddTransient<IUserService, UserService>();
         services.AddScoped<IAuthService, AuthService>();
         services.AddScoped<IWorkoutServices, WorkoutServices>();
+        services.AddHttpClient<IGoogleAuthService, GoogleAuthService>();
 
         // Logging and Swagger
         services.AddLogging();
@@ -137,6 +135,7 @@ public partial class Program
         services.AddScoped<IEmailTemplateService, EmailTemplateService>();
         services.AddScoped<IEmailService, EmailService>();
         services.AddScoped<IContactService, ContactService>();
+        services.AddScoped<IGoogleAuthService, GoogleAuthService>();
 
 
         // AutoMapper configuration
@@ -161,6 +160,12 @@ public partial class Program
         app.UseMiddleware<CspNonceMiddleware>();
         app.UseRouting();
         app.UseCors("AllowOrigin");
+        app.Use(async (context, next) =>
+            {
+                context.Response.Headers.Append("Cross-Origin-Opener-Policy", "same-origin-allow-popups");
+                await next();
+            });
+
         app.UseAuthentication();
         app.UseAuthorization();
 

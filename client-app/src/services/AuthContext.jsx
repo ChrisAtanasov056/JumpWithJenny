@@ -95,6 +95,24 @@ export const AuthProvider = ({ children }) => {
         }
     }, []);
 
+    const googleLogin = useCallback((userData) => {
+        try {
+            axios.defaults.headers.common['Authorization'] = `Bearer ${userData.token}`;
+            setIsAuthenticated(true);
+            setUser(userData);
+            localStorage.setItem('jwtToken', userData.token);
+            localStorage.setItem('user', JSON.stringify(userData));
+            if (userData.refreshToken) {
+                localStorage.setItem('refreshToken', userData.refreshToken);
+            }
+        } catch (error) {
+            console.error('Google login error:', error);
+            setError(error);
+        }
+    }, []);
+    
+
+    
     const logout = useCallback(() => {
         try {
             localStorage.removeItem('jwtToken');
@@ -138,7 +156,8 @@ export const AuthProvider = ({ children }) => {
             user,
             login,
             logout,
-            updateUser, // <- добавихме това тук
+            googleLogin,
+            updateUser,
             error
         }}>
             {!isLoading && children}

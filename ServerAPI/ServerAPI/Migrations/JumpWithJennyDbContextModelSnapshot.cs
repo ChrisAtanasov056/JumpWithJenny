@@ -292,6 +292,9 @@ namespace ServerAPI.Migrations
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("boolean");
 
+                    b.Property<bool>("IsExternalLogin")
+                        .HasColumnType("boolean");
+
                     b.Property<string>("LastName")
                         .HasColumnType("varchar(50)");
 
@@ -323,6 +326,12 @@ namespace ServerAPI.Migrations
 
                     b.Property<string>("ProfilePictureUrl")
                         .HasColumnType("text");
+
+                    b.Property<string>("ProviderId")
+                        .HasColumnType("varchar(100)");
+
+                    b.Property<string>("ProviderName")
+                        .HasColumnType("varchar(50)");
 
                     b.Property<string>("SecurityStamp")
                         .HasColumnType("text");

@@ -10,7 +10,6 @@
     using System.Threading.Tasks;
     using ServerAPI.Models.Common;
     using Microsoft.AspNetCore.Identity;
-    using System.Security.Cryptography.X509Certificates;
 
     public class JumpWithJennyDbContext : IdentityDbContext<User, UserRole, string>
     {

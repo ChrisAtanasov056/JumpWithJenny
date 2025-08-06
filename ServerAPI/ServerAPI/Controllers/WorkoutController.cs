@@ -1,14 +1,10 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
 using ServerAPI.Models.Schedule;
 using ServerAPI.Services.Schedule;
 using ServerAPI.Services.Workouts;
 using ServerAPI.ViewModels;
 using ServerAPI.ViewModels.Workout;
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 
 namespace ServerAPI.Controllers
 {

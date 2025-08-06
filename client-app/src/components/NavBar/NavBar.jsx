@@ -132,6 +132,7 @@ const Navbar = () => {
           onClose={toggleModal} 
           onLoginSuccess={handleLoginSuccess} 
           setModalOpen={setModalOpen} 
+          
         />
       )}
 

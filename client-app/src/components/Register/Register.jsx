@@ -1,8 +1,15 @@
-import React, { useState } from 'react';
+// src/components/Register/Register.jsx
+
+import React, { useState, useRef, useEffect } from 'react';
 import { useAuth } from '../../services/AuthContext';
 import { create } from '../../services/authService';
 import './Register.scss';
 import { useTranslation } from 'react-i18next';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faExclamationCircle, faCheckCircle, faTimesCircle } from '@fortawesome/free-solid-svg-icons';
+import i18n from "../../i18n"; 
+
+const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 const Register = ({ onClose, onLoginSuccess, onRegisterSuccess }) => {
   const { t } = useTranslation();
@@ -16,11 +23,68 @@ const Register = ({ onClose, onLoginSuccess, onRegisterSuccess }) => {
   });
   const [retypedPassword, setRetypedPassword] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
-  const [isRegistering, setIsRegistering] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [passwordFocused, setPasswordFocused] = useState(false);
+  const [emailError, setEmailError] = useState(''); // Нов state за грешка на имейла
+
+  const inputRefs = {
+    firstName: useRef(null),
+    lastName: useRef(null),
+    userName: useRef(null),
+    email: useRef(null),
+    password: useRef(null),
+    retypedPassword: useRef(null),
+  };
+
+  useEffect(() => {
+    Object.keys(inputRefs).forEach(key => {
+      if (inputRefs[key].current?.value) {
+        inputRefs[key].current.closest('.form-field').classList.add('has-content');
+      }
+    });
+  }, []);
+
+  const handleFocus = (e) => {
+    const container = e.target.closest('.form-field');
+    container.classList.add('is-focused');
+  };
+
+  const handleBlur = (e) => {
+    const container = e.target.closest('.form-field');
+    container.classList.remove('is-focused');
+    if (e.target.value) {
+      container.classList.add('has-content');
+    } else {
+      container.classList.remove('has-content');
+    }
+  };
+
+  const handlePasswordFocus = (e) => {
+    handleFocus(e);
+    setPasswordFocused(true);
+  };
+  
+  const handlePasswordBlur = (e) => {
+    handleBlur(e);
+    setPasswordFocused(false);
+  };
+
+  const handleEmailBlur = (e) => {
+    handleBlur(e);
+    if (!isEmailValid(credentials.email)) {
+      setEmailError(t('register.invalidEmailError'));
+    } else {
+      setEmailError('');
+    }
+  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setCredentials(prev => ({ ...prev, [name]: value }));
+    // Можете да нулирате emailError, когато потребителят започне да пише отново
+    if (name === 'email' && emailError) {
+      setEmailError('');
+    }
   };
 
   const handleRetypedPasswordChange = (e) => {
@@ -29,123 +93,208 @@ const Register = ({ onClose, onLoginSuccess, onRegisterSuccess }) => {
 
   const passwordsMatch = credentials.password === retypedPassword;
 
+  const isEmailValid = (email) => {
+    return emailRegex.test(email);
+  };
+
   const handleSubmit = async (e) => {
+
+    const language = i18n.language || 'en'; 
+
+    credentials.language = language;
+    
     e.preventDefault();
+    console.log("Credentials: ", credentials)
+    // Проверка на имейл формата преди изпращане
+    if (!isEmailValid(credentials.email)) {
+      setEmailError(t('register.invalidEmailError'));
+      return;
+    }
+    
+    // Проверка за съвпадение на паролите
     if (!passwordsMatch) {
       setErrorMessage(t('register.passwordMismatchError'));
       return;
     }
-
+    
+    setErrorMessage('');
+    
     try {
-      setIsRegistering(true);
+      setIsLoading(true);
       const response = await create(credentials);
 
       if (response?.token && response?.user) {
-        localStorage.setItem('jwtToken', response.token);
-        localStorage.setItem('user', JSON.stringify(response.user));
         authLogin({ ...response.user, token: response.token });
         onRegisterSuccess(t('register.successMessage'));
       } else {
-        setErrorMessage(t('register.incompleteDataError'));
+        setErrorMessage(response?.message || t('register.incompleteDataError'));
       }
     } catch (error) {
-      setErrorMessage(t('register.credentialsError'));
+      console.error('Registration error:', error);
+      setErrorMessage(error.response?.data?.message || t('register.credentialsError'));
     } finally {
-      setIsRegistering(false);
+      setIsLoading(false);
     }
   };
 
+  const passwordCriteria = [
+    { label: t('register.passwordLength'), isValid: credentials.password.length >= 6 },
+    { label: t('register.passwordUppercase'), isValid: /[A-Z]/.test(credentials.password) },
+    { label: t('register.passwordNumber'), isValid: /[0-9]/.test(credentials.password) },
+  ];
+
   return (
-    <div className="register-container">
-      <form onSubmit={handleSubmit} className="register-form">
-        <h2>{t('register.createAccount')}</h2>
-        
-        <div className="form-grid">
-          {/* First Name */}
-          <div className="form-group">
-            <label>{t('register.firstNameLabel')}</label>
-            <input
-              type="text"
-              name="firstName"
-              value={credentials.firstName}
-              onChange={handleChange}
-              required
-            />
-          </div>
-
-          {/* Last Name */}
-          <div className="form-group">
-            <label>{t('register.lastNameLabel')}</label>
-            <input
-              type="text"
-              name="lastName"
-              value={credentials.lastName}
-              onChange={handleChange}
-              required
-            />
-          </div>
-
-          {/* Username */}
-          <div className="form-group full-width">
-            <label>{t('register.userNameLabel')}</label>
-            <input
-              type="text"
-              name="userName"
-              value={credentials.userName}
-              onChange={handleChange}
-              required
-            />
-          </div>
-
-          {/* Email */}
-          <div className="form-group full-width">
-            <label>{t('register.emailLabel')}</label>
-            <input
-              type="email"
-              name="email"
-              value={credentials.email}
-              onChange={handleChange}
-              required
-            />
-          </div>
-
-          {/* Password */}
-          <div className="form-group">
-            <label>{t('register.passwordLabel')}</label>
-            <input
-              type="password"
-              name="password"
-              value={credentials.password}
-              onChange={handleChange}
-              required
-            />
-          </div>
-
-          {/* Retyped Password */}
-          <div className="form-group">
-            <label>{t('register.retypePasswordLabel')}</label>
-            <input
-              type="password"
-              name="retypedPassword"
-              value={retypedPassword}
-              onChange={handleRetypedPasswordChange}
-              required
-            />
-            {!passwordsMatch && <div className="error-message">{t('register.passwordMismatchError')}</div>}
-          </div>
+    <form onSubmit={handleSubmit} className="register-form">
+      <div className="form-grid two-columns">
+        <div className="form-field">
+          <label htmlFor="firstName" className="floating-label">{t('register.firstNameLabel')}</label>
+          <input
+            type="text"
+            id="firstName"
+            name="firstName"
+            ref={inputRefs.firstName}
+            value={credentials.firstName}
+            onChange={handleChange}
+            onFocus={handleFocus}
+            onBlur={handleBlur}
+            required
+            className="form-input"
+          />
+          <div className="input-line"></div>
         </div>
 
-        {errorMessage && <div className="error-message">{errorMessage}</div>}
+        <div className="form-field">
+          <label htmlFor="lastName" className="floating-label">{t('register.lastNameLabel')}</label>
+          <input
+            type="text"
+            id="lastName"
+            name="lastName"
+            ref={inputRefs.lastName}
+            value={credentials.lastName}
+            onChange={handleChange}
+            onFocus={handleFocus}
+            onBlur={handleBlur}
+            required
+            className="form-input"
+          />
+          <div className="input-line"></div>
+        </div>
+      </div>
 
-        <button 
-          type="submit" 
-          className="sign-up-button"
-          disabled={isRegistering || !passwordsMatch}
-        >
-          {isRegistering ? t('register.creatingAccount') : t('register.signUpButton')}
-        </button>
-      </form>
-    </div>
+      <div className="form-grid">
+        <div className="form-field full-width">
+          <label htmlFor="userName" className="floating-label">{t('register.userNameLabel')}</label>
+          <input
+            type="text"
+            id="userName"
+            name="userName"
+            ref={inputRefs.userName}
+            value={credentials.userName}
+            onChange={handleChange}
+            onFocus={handleFocus}
+            onBlur={handleBlur}
+            required
+            className="form-input"
+          />
+          <div className="input-line"></div>
+        </div>
+
+        <div className="form-field full-width">
+          <label htmlFor="email" className="floating-label">{t('register.emailLabel')}</label>
+          <input
+            type="email"
+            id="email"
+            name="email"
+            ref={inputRefs.email}
+            value={credentials.email}
+            onChange={handleChange}
+            onFocus={handleFocus}
+            onBlur={handleEmailBlur} // Извиква новата функция
+            required
+            className="form-input"
+          />
+          <div className="input-line"></div>
+          {emailError && (
+            <div className="error-message">
+              <FontAwesomeIcon icon={faExclamationCircle} className="error-icon" />
+              <span className="error-text">{emailError}</span>
+            </div>
+          )}
+        </div>
+      </div>
+
+      <div className="form-grid two-columns">
+        <div className="form-field">
+          <label htmlFor="password" className="floating-label">{t('register.passwordLabel')}</label>
+          <input
+            type="password"
+            id="password"
+            name="password"
+            ref={inputRefs.password}
+            value={credentials.password}
+            onChange={handleChange}
+            onFocus={handlePasswordFocus}
+            onBlur={handlePasswordBlur}
+            required
+            className="form-input"
+          />
+          <div className="input-line"></div>
+          {passwordFocused && (
+            <div className="password-criteria">
+              <ul>
+                {passwordCriteria.map((item, index) => (
+                  <li key={index} className={item.isValid ? 'valid' : 'invalid'}>
+                    <FontAwesomeIcon icon={item.isValid ? faCheckCircle : faTimesCircle} />
+                    <span>{item.label}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+        </div>
+
+        <div className="form-field">
+          <label htmlFor="retypedPassword" className="floating-label">{t('register.retypePasswordLabel')}</label>
+          <input
+            type="password"
+            id="retypedPassword"
+            value={retypedPassword}
+            onChange={handleRetypedPasswordChange}
+            onFocus={handleFocus}
+            onBlur={handleBlur}
+            ref={inputRefs.retypedPassword}
+            required
+            className="form-input"
+          />
+          <div className="input-line"></div>
+          {retypedPassword.length > 0 && (
+            <div className={`password-match-icon ${passwordsMatch ? 'valid' : 'invalid'}`}>
+              <FontAwesomeIcon icon={passwordsMatch ? faCheckCircle : faTimesCircle} />
+            </div>
+          )}
+        </div>
+      </div>
+
+      {errorMessage && (
+        <div className="error-message">
+          <FontAwesomeIcon icon={faExclamationCircle} className="error-icon" />
+          <span className="error-text">{errorMessage}</span>
+        </div>
+      )}
+
+      <button
+        type="submit"
+        className={`submit-button ${isLoading ? 'is-loading' : ''}`}
+        disabled={isLoading || !passwordsMatch || !isEmailValid(credentials.email)}
+      >
+        <span className="button-text">
+          {isLoading ? t('register.creatingAccount') : t('register.signUpButton')}
+        </span>
+        {isLoading && (
+          <span className="button-loader"></span>
+        )}
+      </button>
+    </form>
   );
 };
 

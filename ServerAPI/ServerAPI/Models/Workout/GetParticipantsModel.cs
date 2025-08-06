@@ -1,4 +1,3 @@
-using System.Drawing;
 using ServerAPI.Models.Enums;
 
 namespace ServerAPI.ViewModels.Workout

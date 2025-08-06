@@ -1,4 +1,5 @@
-@use "sass:color";
+// src/components/AuthModal/AuthModal.scss
+
 $primary-color: #BDC3C7;
 $secondary-color: #FFFFFF;
 $background-color: #ECF0F1;
@@ -6,183 +7,280 @@ $accent-color: #E74C3C;
 $white: #FFFFFF;
 $text-color: #2C3E50;
 $hover-color: #E74C3C;
-$mobile-breakpoint: 768px;
 $transition-speed: 0.3s;
-$border-radius: 8px;
+$border-radius: 12px;
+$shadow: 0 4px 20px rgba(44, 62, 80, 0.1);
 
-.modal-overlay {
+.auth-modal-overlay {
   position: fixed;
   top: 0;
   left: 0;
   width: 100%;
-  height: 90vh;
-  background-color: rgba(0, 0, 0, 0.6);
+  height: 100%;
+  background: rgba(44, 62, 80, 0.7);
   display: flex;
   justify-content: center;
-  align-items: flex-start;
-  padding-top: 40px;
+  align-items: center;
   z-index: 1000;
-  overflow-y: auto;
+  backdrop-filter: blur(5px);
+}
+.auth-content {
+  .dynamic-form {
+    transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
+    opacity: 1;
+    transform: translateY(0);
+
+    &.is-animating {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+  }
+}
+.auth-modal-card {
+  position: relative;
+  width: 90%;
+  max-width: 450px;
+  background: $secondary-color;
+  border-radius: $border-radius;
+  box-shadow: $shadow;
+  padding: 3rem;
+  text-align: center;
+  color: $text-color;
+  animation: slideIn 0.5s forwards;
+  
+  @media (min-width: 768px) {
+    max-width: 600px;
+  }
 }
 
-.modal-content {
-  background-color: $white;
-  border-radius: $border-radius;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
-  width: 90%;
-  max-width: 400px;
-  padding: 0px;
-  position: relative;
-  margin-bottom: 40px;
-  animation: fadeIn $transition-speed ease-in-out;
+.auth-close-btn {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  color: $primary-color;
+  cursor: pointer;
+  transition: color 0.2s;
 
-  &.register-mode {
-    max-width: 550px;
-    padding: 0px;
+  &:hover {
+    color: $hover-color;
+  }
+}
 
-    .register-container {
-      padding: 0;
-      max-height: 90%;
-    }
+.auth-content {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.auth-header {
+  margin-bottom: 2rem;
+
+  h2 {
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+    color: $text-color;
   }
 
-  .close-button {
-    position: absolute;
-    top: 12px;
-    right: 12px;
-    background: none;
-    border: none;
-    font-size: 24px;
-    cursor: pointer;
+  p {
     color: $primary-color;
-    transition: color $transition-speed;
+    font-size: 1rem;
+  }
+}
 
-    &:hover {
-      color: $text-color;
-    }
+.auth-form-container {
+  width: 100%;
+  position: relative;
+}
+
+.dynamic-form {
+  // Container for the active form
+  animation: fadeIn 0.5s ease-in-out;
+}
+
+.forgot-password-btn {
+  background: none;
+  border: none;
+  color: $primary-color;
+  font-size: 0.9rem;
+  cursor: pointer;
+  margin-top: 1rem;
+  transition: color 0.2s;
+
+  &:hover {
+    color: $accent-color;
+  }
+}
+
+.auth-error-msg {
+  color: $accent-color;
+  font-size: 0.9rem;
+  margin-top: 1rem;
+}
+
+.auth-footer {
+  margin-top: 2rem;
+  
+  .switch-text {
+    color: $primary-color;
+    font-size: 0.9rem;
+    margin-bottom: 1rem;
   }
 
-  .form-container {
-    margin-bottom: 0;
-
-    &.zoom-in {
-      animation: zoomIn $transition-speed ease-in-out;
-    }
-
-    &.zoom-out {
-      animation: zoomOut $transition-speed ease-in-out;
-    }
-  }
-
-  .auth-options {
-    text-align: center;
-    margin: 15px 0;
-  }
-
-  .toggle-button {
+  .switch-mode-btn {
     background: none;
     border: none;
     color: $accent-color;
+    font-weight: bold;
     cursor: pointer;
-    font-size: 14px;
-    padding: 0;
-    text-decoration: underline;
-    transition: color $transition-speed;
+    transition: color 0.2s;
 
     &:hover {
+      text-decoration: underline;
+    }
+  }
+
+  .social-text {
+    position: relative;
+    color: $primary-color;
+    font-size: 0.9rem;
+    margin: 1rem 0;
+
+    &::before, &::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      width: 40%;
+      height: 1px;
+      background-color: $primary-color;
+    }
+
+    &::before {
+      left: 0;
+    }
+
+    &::after {
+      right: 0;
+    }
+  }
+}
+
+.social-login-section {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+
+  .social-btn {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 1.2rem;
+    cursor: pointer;
+    transition: transform 0.2s;
+    border: 1px solid $primary-color;
+    color: $text-color;
+    
+    &:hover {
+      transform: scale(1.1);
+      border-color: $hover-color;
       color: $hover-color;
     }
   }
 
-  .auth-footer {
-    margin-top: 20px;
-    border-top: 1px solid color.adjust($primary-color, $lightness: 20%);
-    padding-top: 20px;
-
-    .toggle-prompt {
-      text-align: center;
-      margin-bottom: 20px;
-      color: $text-color;
+  .fb-btn {
+    background-color: #3b5998;
+    color: $white;
+    border: none;
+    
+    &:hover {
+      color: $white;
     }
   }
+  .google-btn {
+    .GBox-root {
+      width: 40px !important;
+      height: 40px !important;
+      border-radius: 50% !important;
+    }
+   
+    
+  }
 
-  .social-login {
-    display: flex;
-    justify-content: center;
-    gap: 16px;
-
-    .social-btn {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      width: 40px;
-      height: 40px;
-      border-radius: 50%;
-      border: none;
-      cursor: pointer;
-      transition: transform $transition-speed;
-
-      &:hover {
-        transform: scale(1.1);
-      }
-
-      &.fb-btn {
-        background-color: #1877f2;
-        color: $white;
-      }
-
-      &.google-btn {
-        background-color: #db4437;
-        color: $white;
-      }
-
-      &.instagram-btn {
-        background-color: #e4405f;
-        color: $white;
-      }
+  .instagram-btn {
+    background: #f09433;
+    background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%);
+    color: $white;
+    border: none;
+    
+    &:hover {
+      color: $white;
     }
   }
 }
 
-@media (max-width: $mobile-breakpoint) {
-  .modal-overlay {
-    padding-top: 20px;
-    align-items: flex-start;
+// src/components/AuthModal/AuthModal.scss
+
+/* Унифицирани стилове за бутоните */
+.social-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #ccc;
+  cursor: pointer;
+  transition: all 0.3s ease;
+
+  &:hover {
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
   }
 
-  .modal-content {
-    width: 95%;
-    padding: 20px 15px;
+  .svg-inline--fa {
+    width: 20px;
+    height: 20px;
+  }
+}
 
-    &.register-mode {
-      max-width: 95%;
+/* Стил за Google SVG иконата */
+.social-btn.google-btn {
+  .gsi-material-button-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+
+    svg {
+      width: 100%;
+      height: 100%;
+      display: block;
     }
+  }
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateY(-50px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
   }
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
-@keyframes zoomIn {
   from {
-    transform: scale(0.95);
     opacity: 0;
   }
   to {
-    transform: scale(1);
     opacity: 1;
-  }
-}
-
-@keyframes zoomOut {
-  from {
-    transform: scale(1);
-    opacity: 1;
-  }
-  to {
-    transform: scale(0.95);
-    opacity: 0;
   }
 }

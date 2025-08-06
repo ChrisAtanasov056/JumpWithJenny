@@ -16,6 +16,7 @@ import Gallery from './components/Gallery/Gallery';
 import ResetPassword from './components/ForgotPassword/ResetPassword';
 import WorkoutView from './components/Admin/Workouts/WorkoutView';
 import './i18n';
+import { GoogleOAuthProvider } from '@react-oauth/google';
 
 // Admin imports
 import AdminLayout from './components/Admin/AdminLayout';
@@ -31,18 +32,20 @@ function App() {
   }, []);
 
   return (
-    <AuthProvider>
-      <Router>
-        <AppContent />
-      </Router>
-    </AuthProvider>
+    <GoogleOAuthProvider clientId="964806187908-jh2rbhu76tb1uos1q9v57gevlfmigioq.apps.googleusercontent.com">
+      <AuthProvider>
+        <Router>
+          <AppContent />
+        </Router>
+      </AuthProvider>
+    </GoogleOAuthProvider>
   );
 }
 
 const ProtectedAdminRoute = ({ children }) => {
   const { user } = useAuth();
 
-  if (!user) return <Navigate to="/login" />;
+  if (!user) return <Navigate to="/" />;
   if (user.role !== 'Admin' && user.role !== 'Administrator') return <Navigate to="/" />;
   return children;
 };

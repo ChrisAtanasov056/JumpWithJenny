@@ -4,7 +4,6 @@
     using Microsoft.EntityFrameworkCore;
     using ServerAPI.Data.Common.Repositories;
     using ServerAPI.Models;
-    using ServerAPI.Models.Authentication;
     using ServerAPI.Services.Mapper;
     using ServerAPI.ViewModels.Users;
     using System;

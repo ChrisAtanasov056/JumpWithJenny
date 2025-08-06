@@ -1,8 +1,6 @@
 ﻿using ServerAPI.Models.Common;
 using Microsoft.AspNetCore.Identity;
 using System.ComponentModel.DataAnnotations.Schema;
-using System;
-using System.Collections.Generic;
 
 namespace ServerAPI.Models
 {
@@ -28,6 +26,15 @@ namespace ServerAPI.Models
 
         [Column(TypeName = "text")] 
         public string Description { get; set; }
+
+        [Column(TypeName = "varchar(100)")]
+        public string ProviderId { get; set; }
+
+        [Column(TypeName = "varchar(50)")]
+        public string ProviderName { get; set; } 
+
+        public bool IsExternalLogin { get; set; } = false;
+
 
         public ICollection<Appointment> Appointments { get; set; }
 

@@ -1,6 +1,5 @@
 namespace ServerAPI.Models.Authentication
 {
-    using System.ComponentModel.DataAnnotations;
     public class ResetPasswordRequest
     {
         public string Id { get; set; }

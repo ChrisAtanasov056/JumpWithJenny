@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import SuccessModal from '../Register/SuccessModal';
-import '../Modal/AuthModal.scss';
+import './ResetPassword.scss';
 import { forgotPassword } from '../../services/authService';
 
 const ResetPassword = () => {

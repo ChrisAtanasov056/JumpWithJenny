@@ -1,4 +1,3 @@
-using Microsoft.Extensions.Logging;
 using ServerAPI.Models;
 using ServerAPI.Models.Enums;
 

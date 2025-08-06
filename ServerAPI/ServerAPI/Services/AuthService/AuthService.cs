@@ -5,13 +5,13 @@ namespace ServerAPI.Services.AuthService
     using System.Collections.Concurrent;
     using System.Net;
     using System.Security.Cryptography;
+    using global::ServerAPI.Common;
+    using global::ServerAPI.Data;
+    using global::ServerAPI.Models;
+    using global::ServerAPI.Models.Authentication;
     using Microsoft.AspNetCore.Identity;
     using Microsoft.EntityFrameworkCore;
     using Newtonsoft.Json;
-    using ServerAPI.Common;
-    using ServerAPI.Data;
-    using ServerAPI.Models;
-    using ServerAPI.Models.Authentication;
     public class AuthService : IAuthService
     {
         private readonly UserManager<User> _userManager;
@@ -140,12 +140,30 @@ namespace ServerAPI.Services.AuthService
             }
 
             var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
-            var encodedToken = System.Web.HttpUtility.UrlEncode(token);
-            var frontendUrl = _configuration["FrontendBaseUrl"];
-            var verificationLink = $"{frontendUrl}/verify-email?userId={user.Id}&token={encodedToken}";
+                var frontendUrl = _configuration["FrontendBaseUrl"];
+                var websiteUrl = _configuration["WebsiteUrl"] ?? frontendUrl;
+                var contactUrl = $"{websiteUrl}/contact";
+                
+                // Default to English if no language specified or if invalid
+                var language = IsValidLanguage(model.Language) ? model.Language : "en";
 
-            var emailBody = BuildVerificationEmail(user.FirstName, verificationLink);
-            var emailSent = await _emailService.SendEmailAsync(user.Email, "Verify Your Email", emailBody);
+                var verificationLink = $"{frontendUrl}/verify-email?userId={user.Id}&token={WebUtility.UrlEncode(token)}";
+
+                // Load email template
+                var emailContent = await PrepareEmailContent(language, "VerifyEmail", new
+                {
+                    Link = verificationLink,
+                    WebsiteUrl = websiteUrl,
+                    ContactUrl = contactUrl,
+                    FirstName = user.FirstName // Added first name for personalization
+                });
+
+                var emailSent = await _emailService.SendEmailAsync(
+                    user.Email, 
+                    emailContent.Subject, 
+                    emailContent.HtmlContent);
+
+                _logger.LogInformation($"Verification email sent to {user.Email} in language {language}");
 
             if (!emailSent)
             {
@@ -196,6 +214,15 @@ namespace ServerAPI.Services.AuthService
         {
             try
             {
+                _logger.LogInformation($"Confirming email for user {request.UserId} with token {request.Token}");
+                if (string.IsNullOrWhiteSpace(request.UserId) || string.IsNullOrWhiteSpace(request.Token))
+                {
+                    return new AuthResult
+                    {
+                        Success = false,
+                        Errors = new[] { "User ID and token are required." }
+                    };
+                }
                 var user = await _userManager.FindByIdAsync(request.UserId);
                 if (user == null)
                 {
@@ -434,7 +461,7 @@ namespace ServerAPI.Services.AuthService
                 
                 // Default to English if no language specified or if invalid
                 var language = IsValidLanguage(request.Language) ? request.Language : "en";
-
+                _logger.LogInformation($"Resending verification email for user {user.Email} in language {language}");
                 var verificationLink = $"{frontendUrl}/verify-email?userId={user.Id}&token={WebUtility.UrlEncode(token)}";
 
                 // Load email template

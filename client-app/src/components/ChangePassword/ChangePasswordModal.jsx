@@ -1,7 +1,9 @@
 import React, { useState } from "react";
 import { changePassword } from "../../services/authService";
 import "./ChangePasswordModal.scss";
-import { useTranslation } from "react-i18next"; 
+import { useTranslation } from "react-i18next";
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faTimes, faLock, faSpinner, faCheckCircle, faExclamationCircle } from '@fortawesome/free-solid-svg-icons';
 
 const ChangePasswordModal = ({ onClose, userId }) => {
   const { t } = useTranslation();
@@ -49,75 +51,101 @@ const ChangePasswordModal = ({ onClose, userId }) => {
   };
 
   return (
-    <div className="password-modal-overlay">
-      <div className="password-modal">
+    <div className="modal-overlay">
+      <div className="change-password-modal">
         <div className="modal-header">
-          <h3>{t('change_password.title')}</h3>
+          <h3 className="title">{t('change_password.title')}</h3>
           <button
-            className="close-icon"
+            className="close-btn"
             onClick={onClose}
             disabled={isLoading}
           >
-            &times;
+            <FontAwesomeIcon icon={faTimes} />
           </button>
         </div>
 
         <div className="modal-body">
-          {error && <div className="alert error">{error}</div>}
-          {successMessage && <div className="alert success">{successMessage}</div>}
-
-          <form onSubmit={handleSubmit}>
-            <div className="form-group">
-              <label>{t('change_password.current')}</label>
-              <input
-                type="password"
-                value={passwords.current}
-                onChange={(e) => setPasswords({ ...passwords, current: e.target.value })}
-                disabled={isLoading}
-                required
-              />
+          {error && (
+            <div className="alert error">
+              <FontAwesomeIcon icon={faExclamationCircle} /> {error}
             </div>
-
-            <div className="form-group">
-              <label>{t('change_password.new')}</label>
-              <input
-                type="password"
-                value={passwords.new}
-                onChange={(e) => setPasswords({ ...passwords, new: e.target.value })}
-                disabled={isLoading}
-                required
-              />
+          )}
+          {successMessage && (
+            <div className="alert success">
+              <FontAwesomeIcon icon={faCheckCircle} /> {successMessage}
             </div>
+          )}
 
-            <div className="form-group">
-              <label>{t('change_password.confirm')}</label>
-              <input
-                type="password"
-                value={passwords.confirm}
-                onChange={(e) => setPasswords({ ...passwords, confirm: e.target.value })}
-                disabled={isLoading}
-                required
-              />
-            </div>
+          {!successMessage && (
+            <form onSubmit={handleSubmit}>
+              <div className="form-group">
+                <label>{t('change_password.current')}</label>
+                <div className="input-icon-container">
+                  <FontAwesomeIcon icon={faLock} className="input-icon" />
+                  <input
+                    type="password"
+                    value={passwords.current}
+                    onChange={(e) => setPasswords({ ...passwords, current: e.target.value })}
+                    disabled={isLoading}
+                    required
+                  />
+                </div>
+              </div>
 
-            <div className="modal-actions">
-              <button
-                type="submit"
-                className="btn btn-primary"
-                disabled={isLoading}
-              >
-                {isLoading ? t('change_password.changing') : t('change_password.update_btn')}
-              </button>
-              <button
-                type="button"
-                className="btn btn-secondary"
-                onClick={onClose}
-                disabled={isLoading}
-              >
-                {t('change_password.cancel_btn')}
-              </button>
-            </div>
-          </form>
+              <div className="form-group">
+                <label>{t('change_password.new')}</label>
+                <div className="input-icon-container">
+                  <FontAwesomeIcon icon={faLock} className="input-icon" />
+                  <input
+                    type="password"
+                    value={passwords.new}
+                    onChange={(e) => setPasswords({ ...passwords, new: e.target.value })}
+                    disabled={isLoading}
+                    required
+                  />
+                </div>
+              </div>
+
+              <div className="form-group">
+                <label>{t('change_password.confirm')}</label>
+                <div className="input-icon-container">
+                  <FontAwesomeIcon icon={faLock} className="input-icon" />
+                  <input
+                    type="password"
+                    value={passwords.confirm}
+                    onChange={(e) => setPasswords({ ...passwords, confirm: e.target.value })}
+                    disabled={isLoading}
+                    required
+                  />
+                </div>
+              </div>
+
+              <div className="modal-actions">
+                <button
+                  type="submit"
+                  className="btn btn-primary"
+                  disabled={isLoading}
+                >
+                  {isLoading ? (
+                    <>
+                      <FontAwesomeIcon icon={faSpinner} className="fa-spin" />
+                      {t('change_password.changing')}
+                    </>
+                  ) : (
+                    t('change_password.update_btn')
+                  )}
+                </button>
+                <button
+                  type="button"
+                  className="btn btn-secondary"
+                  onClick={onClose}
+                  disabled={isLoading}
+                >
+                  {t('change_password.cancel_btn')}
+                </button>
+              </div>
+            </form>
+          )}
         </div>
       </div>
     </div>

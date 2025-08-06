@@ -2,9 +2,7 @@
 
     using Microsoft.AspNetCore.Cors;
     using Microsoft.AspNetCore.Mvc;
-    using ServerAPI.Models;
     using ServerAPI.Models.Authentication;
-    using ServerAPI.Services.Users;
 
     [Route("/[controller]")]
     [EnableCors("AllowOrigin")]
@@ -27,7 +25,6 @@
             {
                 return BadRequest(ModelState);
             }
-
             var result = await _authService.SignUpAsync(model);
             
             if (!result.Success)
