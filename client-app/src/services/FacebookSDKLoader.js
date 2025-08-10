@@ -6,16 +6,19 @@ export default function FacebookSDKLoader() {
 
     console.log("FB App ID:", import.meta.env.VITE_FACEBOOK_APP_ID);
 
-    window.fbAsyncInit = function () {
-      FB.init({
-        appId: import.meta.env.VITE_FACEBOOK_APP_ID,
-        cookie: true,
-        xfbml: true,
-        version: "v23.0",
+    let fbInitPromise = new Promise((resolve) => {
+        window.fbAsyncInit = function () {
+          FB.init({
+            appId: import.meta.env.VITE_FACEBOOK_APP_ID,
+            cookie: true,
+            xfbml: true,
+            version: "v23.0",
+          });
+          console.log("Facebook SDK initialized");
+          window.fbInitialized = true;
+          resolve();
+        };
       });
-      console.log("Facebook SDK initialized");
-      window.fbInitialized = true;
-    };
 
     const script = document.createElement("script");
     script.id = "facebook-jssdk";

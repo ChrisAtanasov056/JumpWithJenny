@@ -111,26 +111,23 @@ const AuthModal = ({ onClose, onLoginSuccess, setModalOpen }) => {
     }, 300);
   };
 
-  const handleSocialLogin = (platform) => {
+  const handleSocialLogin = async (platform) => {
     if (platform === 'Google') {
       googleSignIn();
     } else if (platform === 'Facebook') {
-      if (window.FB) {
-        window.FB.login(
-          function (response) {
-            if (response.authResponse) {
-              const accessToken = response.authResponse.accessToken;
-              handleFacebookLoginSuccess(accessToken);
-            } else {
-              setErrorMessage(t('login.facebookLoginFailed'));
-            }
-          },
-          { scope: 'public_profile,email' }
-        );
-      } else {
-        setErrorMessage(t('login.facebookLoginFailed'));
-      }
-    } else if (platform === 'Instagram') {
+      await fbInitPromise;  
+      window.FB.login(
+        function (response) {
+          if (response.authResponse) {
+            const accessToken = response.authResponse.accessToken;
+            handleFacebookLoginSuccess(accessToken);
+          } else {
+            setErrorMessage(t('login.facebookLoginFailed'));
+          }
+        },
+        { scope: 'public_profile,email' }
+      );
+    }  else if (platform === 'Instagram') {
       // Instagram login not implemented yet
     }
   };
