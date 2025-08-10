@@ -22,3 +22,46 @@ ServerAPI/ServerAPI/appsetting.json
 ServerAPI/ServerAPI/appsettings.json
 .DS_Store
 client-app/.env.production
+
+# React / Node / Frontend
+node_modules/
+dist/
+build/
+.next/
+out/
+.env.local
+.env.development.local
+.env.production.local
+*.log
+
+# .NET / Backend
+bin/
+obj/
+*.userprefs
+*.suo
+*.cache
+*.pdb
+*.vs/
+.vscode/
+
+# Ignore appsettings.json (често съдържа конфиденциални настройки)
+ServerAPI/ServerAPI/appsetting.json
+ServerAPI/ServerAPI/appsettings.json
+
+# Ignore publish folder (файлове от публикация/дистрибуция)
+ServerAPI/publish/
+
+# Ignore all .dll files in ServerAPI/ServerAPI/ (библиотеки)
+ServerAPI/ServerAPI/*.dll
+
+# Ignore other билд файлове и конфигурации
+ServerAPI/ServerAPI/ServerAPI
+ServerAPI/ServerAPI/ServerAPI.dll
+ServerAPI/ServerAPI/ServerAPI.staticwebassets.endpoints.json
+ServerAPI/ServerAPI/web.config.bak
+
+# Ignore .env production file in client app
+client-app/.env.production
+
+# MacOS system files
+.DS_Store
