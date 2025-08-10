@@ -1,4 +1,7 @@
-import { useEffect } from "react";
+let fbInitResolve;
+const fbInitPromise = new Promise((resolve) => {
+  fbInitResolve = resolve;
+});
 
 export default function FacebookSDKLoader() {
   useEffect(() => {
@@ -6,19 +9,17 @@ export default function FacebookSDKLoader() {
 
     console.log("FB App ID:", import.meta.env.VITE_FACEBOOK_APP_ID);
 
-    let fbInitPromise = new Promise((resolve) => {
-        window.fbAsyncInit = function () {
-          FB.init({
-            appId: import.meta.env.VITE_FACEBOOK_APP_ID,
-            cookie: true,
-            xfbml: true,
-            version: "v23.0",
-          });
-          console.log("Facebook SDK initialized");
-          window.fbInitialized = true;
-          resolve();
-        };
+    window.fbAsyncInit = function () {
+      FB.init({
+        appId: import.meta.env.VITE_FACEBOOK_APP_ID,
+        cookie: true,
+        xfbml: true,
+        version: "v23.0",
       });
+      console.log("Facebook SDK initialized");
+      window.fbInitialized = true;
+      fbInitResolve();
+    };
 
     const script = document.createElement("script");
     script.id = "facebook-jssdk";
@@ -38,3 +39,5 @@ export default function FacebookSDKLoader() {
 
   return null;
 }
+
+export { fbInitPromise };
