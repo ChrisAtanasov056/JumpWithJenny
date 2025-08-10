@@ -182,8 +182,12 @@ const AuthModal = ({ onClose, onLoginSuccess, setModalOpen }) => {
           {platform === 'Google' ? (
             <button
               onClick={() => handleSocialLogin('Google')}
+  onClick={() => { // <-- Отворете къдрава скоба
+    console.log('Google login button clicked!');
+    googleSignIn();
+  }} // <-- Затворете къдрава скоба
               className={`social-btn ${className}`}
-            >
+              >
               <div className="gsi-material-button-icon">
                 <svg
                   version="1.1"
