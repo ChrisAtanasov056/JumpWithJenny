@@ -65,3 +65,4 @@ client-app/.env.production
 
 # MacOS system files
 .DS_Store
+client-app/.env

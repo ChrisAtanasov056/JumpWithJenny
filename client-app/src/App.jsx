@@ -18,7 +18,8 @@ import WorkoutView from './components/Admin/Workouts/WorkoutView';
 import './i18n';
 import { GoogleOAuthProvider } from '@react-oauth/google';
 
-import FacebookSDKLoader from './services/FacebookSDKLoader';  
+// ВАЖНО: Уверете се, че файлът във вашата система е кръстен FacebookSDKContext.jsx
+import { FacebookSDKProvider } from './services/FacebookSDKContext.jsx';
 
 // Admin imports
 import AdminLayout from './components/Admin/AdminLayout';
@@ -36,9 +37,11 @@ function App() {
   return (
     <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>
       <AuthProvider>
-        <Router>
-          <AppContent />
-        </Router>
+        <FacebookSDKProvider>
+          <Router>
+            <AppContent />
+          </Router>
+        </FacebookSDKProvider>
       </AuthProvider>
     </GoogleOAuthProvider>
   );
@@ -59,7 +62,6 @@ const AppContent = () => {
 
   return (
     <>
-      <FacebookSDKLoader />   
       {!isAdminRoute && <Navbar user={user} />}
       <Routes>
         {/* Public routes */}

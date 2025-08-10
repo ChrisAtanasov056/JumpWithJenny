@@ -5,12 +5,14 @@ import Register from '../Register/Register';
 import SuccessModal from '../Register/SuccessModal';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faFacebook, faInstagram } from '@fortawesome/free-brands-svg-icons';
+import { faSpinner } from '@fortawesome/free-solid-svg-icons';
 import ForgotPasswordModal from '../ForgotPassword/ForgotPasswordModal';
 import { useTranslation } from 'react-i18next';
 import { useGoogleLogin } from '@react-oauth/google';
 import { useAuth } from '../../services/AuthContext';
 import { googleLogin, facebookLogin } from '../../services/authService';
 import axios from 'axios';
+import { useFacebookSDK } from '../../services/FacebookSDKContext.jsx';
 
 const AuthModal = ({ onClose, onLoginSuccess, setModalOpen }) => {
   const { t, i18n } = useTranslation();
@@ -21,6 +23,8 @@ const AuthModal = ({ onClose, onLoginSuccess, setModalOpen }) => {
   const [errorMessage, setErrorMessage] = useState('');
   const { googleLogin: authLogin } = useAuth();
   const [isAnimating, setIsAnimating] = useState(false);
+
+  const { isFbSdkReady } = useFacebookSDK();
 
   const socialPlatforms = [
     { platform: 'Google', className: 'google-btn' },
@@ -111,11 +115,10 @@ const AuthModal = ({ onClose, onLoginSuccess, setModalOpen }) => {
     }, 300);
   };
 
-  const handleSocialLogin = async (platform) => {
+  const handleSocialLogin = (platform) => {
     if (platform === 'Google') {
       googleSignIn();
     } else if (platform === 'Facebook') {
-      await fbInitPromise;  
       window.FB.login(
         function (response) {
           if (response.authResponse) {
@@ -127,8 +130,8 @@ const AuthModal = ({ onClose, onLoginSuccess, setModalOpen }) => {
         },
         { scope: 'public_profile,email' }
       );
-    }  else if (platform === 'Instagram') {
-      // Instagram login not implemented yet
+    } else if (platform === 'Instagram') {
+      // Вход с Instagram все още не е имплементиран
     }
   };
 
@@ -144,10 +147,10 @@ const AuthModal = ({ onClose, onLoginSuccess, setModalOpen }) => {
 
   const renderSocialButtons = () => (
     <div className="social-login-section">
-      {socialPlatforms.map(({ platform, icon, className }) => (
-        <React.Fragment key={platform}>
-          {platform === 'Google' ? (
-            <button onClick={() => handleSocialLogin('Google')} className={`social-btn ${className}`}>
+      {socialPlatforms.map(({ platform, icon, className }) => {
+        if (platform === 'Google') {
+          return (
+            <button onClick={() => handleSocialLogin('Google')} className={`social-btn ${className}`} key={platform}>
               <div className="gsi-material-button-icon">
                 <svg
                   version="1.1"
@@ -163,13 +166,30 @@ const AuthModal = ({ onClose, onLoginSuccess, setModalOpen }) => {
                 </svg>
               </div>
             </button>
-          ) : (
-            <button onClick={() => handleSocialLogin(platform)} className={`social-btn ${className}`}>
+          );
+        } else if (platform === 'Facebook') {
+          return (
+            <button
+              onClick={isFbSdkReady ? () => handleSocialLogin(platform) : null}
+              className={`social-btn ${className} ${!isFbSdkReady ? 'loading-btn' : ''}`}
+              key={platform}
+              disabled={!isFbSdkReady}
+            >
+              {isFbSdkReady ? (
+                <FontAwesomeIcon icon={icon} />
+              ) : (
+                <FontAwesomeIcon icon={faSpinner} spin />
+              )}
+            </button>
+          );
+        } else {
+          return (
+            <button onClick={() => handleSocialLogin(platform)} className={`social-btn ${className}`} key={platform}>
               <FontAwesomeIcon icon={icon} />
             </button>
-          )}
-        </React.Fragment>
-      ))}
+          );
+        }
+      })}
     </div>
   );
 
@@ -199,26 +219,18 @@ const AuthModal = ({ onClose, onLoginSuccess, setModalOpen }) => {
                   <Register onRegisterSuccess={handleRegisterSuccess} />
                 )}
               </div>
-
-              {renderSocialButtons()}
-
-              <div className="toggle-form">
-                {isLogin ? (
-                  <>
-                    <p>
-                      {t('auth.noAccount')} <button onClick={toggleForm}>{t('auth.register')}</button>
-                    </p>
-                  </>
-                ) : (
-                  <>
-                    <p>
-                      {t('auth.haveAccount')} <button onClick={toggleForm}>{t('auth.login')}</button>
-                    </p>
-                  </>
-                )}
+              
+              <div className="auth-footer">
+                {errorMessage && <div className="auth-error-msg">{errorMessage}</div>}
+                <div className="switch-text">
+                  {isLogin ? t('auth.dontHaveAccount') : t('auth.alreadyHaveAccount')}{' '}
+                  <button onClick={toggleForm} className="switch-mode-btn">
+                    {isLogin ? t('auth.register') : t('auth.login')}
+                  </button>
+                </div>
+                <div className="social-text">{t('auth.orContinueWith')}</div>
+                {renderSocialButtons()}
               </div>
-
-              {errorMessage && <div className="error-message">{errorMessage}</div>}
             </div>
           </div>
         </div>
