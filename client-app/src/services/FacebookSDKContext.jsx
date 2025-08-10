@@ -16,11 +16,9 @@ export const FacebookSDKProvider = ({ children }) => {
       }
       return;
     }
-
-    // Инициализираме Promise, която ще се реши, когато SDK е готов
     window.fbAsyncInit = function () {
       window.FB.init({
-        appId: import.meta.env.VITE_FACEBOOK_APP_ID, // Вашият App ID
+        appId: import.meta.env.VITE_APP_FACEBOOK_APP_ID,
         cookie: true,
         xfbml: true,
         version: "v23.0",
