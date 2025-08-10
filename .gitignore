@@ -21,4 +21,3 @@ obj/
 ServerAPI/ServerAPI/appsetting.json
 ServerAPI/ServerAPI/appsettings.json
 .DS_Store
-client-app/.env.production
