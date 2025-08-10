@@ -1,160 +1,159 @@
-$primary-color: #BDC3C7;
-$secondary-color: #FFFFFF;
-$background-color: #ECF0F1;
-$accent-color: #E74C3C;
-$white: #FFFFFF;
-$text-color: #2C3E50;
-$hover-color: #E74C3C;
-$transition-speed: 0.3s;
-$border-radius: 12px;
+// Променливи за цветове и други
+$primary-color: #ff6b6b; // Пример: червено
+$text-color: #333;
+$bg-color: #f8f9fa;
+$card-bg: #fff;
+$shadow-color: rgba(0, 0, 0, 0.1);
 
 .happy-customers {
+  padding: 60px 20px;
+  background-color: $bg-color;
+  text-align: center;
+  overflow: hidden; // Скрива преливащото съдържание
+}
+
+.section-title {
+  font-size: 2.5rem;
+  color: $text-color;
+  margin-bottom: 50px;
+  font-weight: 700;
+  transform: translateY(20px);
+  opacity: 0;
+  animation: fadeInDown 0.8s forwards;
+}
+
+.carousel-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+.testimonials-list {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 20px; // Разстояние между картите
+  transition: transform 0.5s ease-in-out; // Анимация на прехода
+}
+
+.testimonial-card {
+  background: $card-bg;
+  border-radius: 15px;
+  padding: 30px;
+  box-shadow: 0 4px 20px $shadow-color;
+  transition: all 0.5s ease;
+  min-height: 250px; // За да са еднакво високи
   display: flex;
   flex-direction: column;
-  align-items: center;
-  padding: 2rem;
-  background: $background-color;
-
-  .section-title {
-    font-size: 2rem;
-    margin-bottom: 2rem;
-    font-weight: bold;
-    color: $text-color;
+  justify-content: space-between;
+  text-align: left;
+  
+  // Стилове за неактивните карти
+  &.inactive {
+    transform: scale(0.85); // Намалява размера
+    opacity: 0.5; // Прави ги полупрозрачни
+    pointer-events: none; // Спира взаимодействия с тях
+    box-shadow: none;
   }
-
-  .testimonial-card {
-    background: $secondary-color;
-    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
-    padding: 2rem;
-    max-width: 1200px;
-    border-radius: $border-radius;
-    text-align: center;
-    transition: transform $transition-speed ease, box-shadow $transition-speed ease;
-    opacity: 0;
-    animation: fadeIn 0.6s forwards;
-
-    &:hover {
-      transform: translateY(-5px);
-      box-shadow: 0 12px 25px rgba(0, 0, 0, 0.15);
-    }
-
-    .testimonial-comment {
-      font-size: 1.2rem;
-      font-style: italic;
-      margin-bottom: 1.5rem;
-      color: $text-color;
-    }
-
-    .testimonial-author {
-      .author-name {
-        font-weight: bold;
-        font-size: 1rem;
-        margin-bottom: 0.5rem;
-        display: block;
-        color: $text-color;
-      }
-
-      .star-rating {
-        .star {
-          color: $primary-color;
-          font-size: 1.3rem;
-          transition: color $transition-speed;
-
-          &.filled {
-            color: $accent-color;
-          }
-        }
-      }
-    }
-
-    .testimonial-controls {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin-top: 1.5rem;
-
-      .arrow-btn {
-        background: transparent;
-        border: none;
-        font-size: 1.5rem;
-        cursor: pointer;
-        color: $text-color;
-        transition: color $transition-speed;
-
-        &:hover {
-          color: $hover-color;
-        }
-      }
-
-      .pagination {
-        display: flex;
-        gap: 0.3rem;
-        margin: 0 1rem;
-
-        .bar {
-          width: 30px;
-          height: 4px;
-          background: $primary-color;
-          border-radius: 2px;
-          cursor: pointer;
-          transition: background $transition-speed, transform 0.3s;
-
-          &.active {
-            background: $accent-color;
-            animation: pulse 1.5s infinite;
-            transform: scale(1.2);
-          }
-        }
-      }
-    }
+  
+  // Стилове за активната карта
+  &.active {
+    transform: scale(1);
+    opacity: 1;
+    z-index: 10;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
   }
 }
 
-@keyframes fadeIn {
+.testimonial-comment {
+  font-style: italic;
+  font-size: 1.1rem;
+  color: $text-color;
+  margin-bottom: 20px;
+}
+
+.testimonial-author {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  margin-top: auto;
+}
+
+.author-name {
+  font-weight: 600;
+  color: $primary-color;
+  font-size: 1.2rem;
+  margin-bottom: 5px;
+}
+
+.star-rating .star {
+  color: #ccc; // Празни звезди
+  font-size: 1rem;
+  margin-right: 2px;
+  
+  &.filled {
+    color: #ffc107; // Жълти звезди
+  }
+}
+
+.arrow-btn {
+  background: none;
+  border: none;
+  font-size: 2rem;
+  color: $primary-color;
+  cursor: pointer;
+  transition: transform 0.3s ease, color 0.3s ease;
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 20;
+
+  &:hover {
+    transform: translateY(-50%) scale(1.2);
+    color: darken($primary-color, 15%);
+  }
+  
+  &.left {
+    left: -50px;
+  }
+  &.right {
+    right: -50px;
+  }
+}
+
+.pagination {
+  display: flex;
+  justify-content: center;
+  margin-top: 30px;
+  gap: 10px;
+}
+
+.dot {
+  width: 12px;
+  height: 12px;
+  background-color: #ccc;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.3s ease;
+
+  &.active {
+    background-color: $primary-color;
+    transform: scale(1.2);
+  }
+}
+
+// Анимация за появяване на секцията
+@keyframes fadeInDown {
   from {
     opacity: 0;
-    transform: translateY(10px);
+    transform: translateY(-20px);
   }
   to {
     opacity: 1;
     transform: translateY(0);
-  }
-}
-
-@keyframes pulse {
-  0% { transform: scale(1.2); }
-  50% { transform: scale(1.3); }
-  100% { transform: scale(1.2); }
-}
-
-@media (max-width: 600px) {
-  .happy-customers {
-    .testimonial-card {
-      padding: 1.5rem;
-
-      .testimonial-comment {
-        font-size: 1rem;
-      }
-
-      .testimonial-author {
-        .author-name {
-          font-size: 0.9rem;
-        }
-
-        .star-rating .star {
-          font-size: 1.1rem;
-        }
-      }
-
-      .testimonial-controls {
-        .arrow-btn {
-          font-size: 1.2rem;
-        }
-
-        .pagination .bar {
-          width: 20px;
-        }
-      }
-    }
   }
 }

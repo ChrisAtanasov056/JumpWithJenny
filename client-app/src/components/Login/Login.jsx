@@ -79,12 +79,12 @@ const Login = ({ onClose, onLoginSuccess }) => {
   return (
     <form onSubmit={handleSubmit} className="login-form">
       <div className="form-field">
-        <label htmlFor="email" className="floating-label">
+        <label htmlFor="login-email" className="floating-label">
           {t('login.emailLabel')}
         </label>
         <input
           type="email"
-          id="email"
+          id="login-email"
           name="email"
           ref={emailRef}
           value={credentials.email}

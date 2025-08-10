@@ -19,12 +19,11 @@ export const create = async (userData) => {
 
 export const login = async (userData) => {
   try {
-    console.log("Login data:", userData);
     const response = await axios.post('/Account/login', {
       Email: userData.email,
       Password: userData.password,
     });
-    console.log("Login response:", response.data);
+    console.log('Login response:', response.data.token);
     if (response.data.token) {
       localStorage.setItem('token', response.data.token);
     }
@@ -128,7 +127,6 @@ export const googleLogin = async (googleToken) => {
     });
 
     if (response.data.Success) {
-      // Запазване на токените в localStorage (ако отговорът ги връща)
         if (response.data.Token) {
           localStorage.setItem('token', response.Token);
         }
@@ -141,6 +139,30 @@ export const googleLogin = async (googleToken) => {
     }
   } catch (error) {
     console.error('Google login error:', error);
+    throw error;
+  }
+};
+
+export const facebookLogin = async (accessToken) => {
+  try {
+    console.log("Facebook access token:", accessToken); 
+    const response = await axios.post('api/Auth/facebook-login', {
+      accessToken: accessToken,
+    });
+
+    if (response.data.Success) {
+        if (response.data.Token) {
+          localStorage.setItem('token', response.data.Token);
+        }
+        if (response.data.RefreshToken) {
+          localStorage.setItem('refreshToken', response.data.RefreshToken);
+        }
+      return response.data;
+    } else {
+      throw new Error('Facebook login неуспешен');
+    }
+  } catch (error) {
+    console.error('Facebook login error:', error);
     throw error;
   }
 };

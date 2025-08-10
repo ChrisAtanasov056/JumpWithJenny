@@ -27,8 +27,7 @@ public partial class Program
     public static void Main(string[] args)
     {
         var builder = WebApplication.CreateBuilder(args);
-        builder.Logging.AddConsole(); // This enables console logging
-        
+        builder.Logging.AddConsole(); // This enables console logg
         ConfigureServices(builder.Services, builder.Configuration);
         var app = builder.Build();
         Configure(app);
@@ -65,34 +64,69 @@ public partial class Program
 
         services.AddTransient<JwtTokenService>();
 
-        // JWT configuration
-        var jwtSection = configuration.GetSection("Jwt");
+       var jwtSection = configuration.GetSection("Jwt");
         services.Configure<JwtSettings>(jwtSection);
         var jwtSettings = jwtSection.Get<JwtSettings>();
         var key = Encoding.ASCII.GetBytes(jwtSettings.Secret);
 
         services.AddAuthentication(options =>
         {
+            // Задаваме JWT като основна схема за аутентикация
             options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
             options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+            options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;  // това помага понякога да няма конфликт
         })
         .AddJwtBearer(options =>
-    {
-        options.TokenValidationParameters = new TokenValidationParameters
         {
-            ValidateIssuer = true,
-            ValidateAudience = true,
-            ValidateLifetime = true,
-            ValidateIssuerSigningKey = true,
-            ValidIssuer = configuration["Jwt:Issuer"],
-            ValidAudience = configuration["Jwt:Audience"],
-            IssuerSigningKey = new SymmetricSecurityKey(
-                Encoding.UTF8.GetBytes(configuration["Jwt:Secret"])),
-            RoleClaimType = ClaimTypes.Role,
-            NameClaimType = ClaimTypes.Name
-        };
-    });
+            options.RequireHttpsMetadata = false; // Винаги true за продукция, false за локално
+            options.SaveToken = true;
+            options.TokenValidationParameters = new TokenValidationParameters
+            {
+                ValidateIssuer = true,
+                ValidateAudience = true,
+                ValidateLifetime = true,
+                ValidateIssuerSigningKey = true,
+                ValidIssuer = jwtSettings.Issuer,
+                ValidAudience = jwtSettings.Audience,
+                IssuerSigningKey = new SymmetricSecurityKey(key),
+                RoleClaimType = ClaimTypes.Role,
+                NameClaimType = ClaimTypes.Name
+            };
 
+            options.Events = new JwtBearerEvents
+            {
+                OnAuthenticationFailed = context =>
+                {
+                    Console.WriteLine("❌ Authentication failed: " + context.Exception);
+                    var logger = context.HttpContext.RequestServices
+                        .GetRequiredService<ILogger<Program>>();
+                    logger.LogError(context.Exception, "❌ Authentication failed");
+                    return Task.CompletedTask;
+                },
+                OnTokenValidated = context =>
+                {
+                    Console.WriteLine("✅ Token validated for user: " +
+                        (context.Principal.Identity?.Name ?? "Unknown"));
+                    var logger = context.HttpContext.RequestServices
+                        .GetRequiredService<ILogger<Program>>();
+                    logger.LogInformation("✅ Token validated for user {User}",
+                        context.Principal.Identity?.Name ?? "Unknown");
+                    return Task.CompletedTask;
+                },
+                OnChallenge = context =>
+                {
+                    Console.WriteLine($"⚠️ JWT challenge: {context.Error} - {context.ErrorDescription}");
+                    var logger = context.HttpContext.RequestServices
+                        .GetRequiredService<ILogger<Program>>();
+                    logger.LogWarning("⚠️ JWT challenge: {Error} - {Description}",
+                        context.Error, context.ErrorDescription);
+                    return Task.CompletedTask;
+                }
+            };
+        });
+
+
+        
         // Identity configuration
         services.AddIdentity<User, UserRole>(IdentityOptionsProvider.GetIdentityOptions)
             .AddRoles<UserRole>()
@@ -120,7 +154,11 @@ public partial class Program
         services.AddScoped<IAuthService, AuthService>();
         services.AddScoped<IWorkoutServices, WorkoutServices>();
         services.AddHttpClient<IGoogleAuthService, GoogleAuthService>();
-
+        services.AddScoped<IEmailService, EmailService>();
+        services.AddScoped<IEmailTemplateService, EmailTemplateService>();
+        services.AddScoped<IContactService, ContactService>();
+        services.AddScoped<IFacebookAuthService, FacebookAuthService>();
+        
         // Logging and Swagger
         services.AddLogging();
         services.AddEndpointsApiExplorer();

@@ -1,4 +1,9 @@
-// Color Palette
+@use "sass:color";
+// Цветови променливи за статуса
+$available-color: #2ecc71; // Зелен за налични слотове
+$booked-color: #e74c3c;    // Червен за резервирани слотове
+
+// Основна цветова палитра
 $primary-color: #BDC3C7; // Deep Navy
 $secondary-color: #FFFFFF; // Soft Gray
 $background-color: #ECF0F1; // Warm Beige
@@ -9,7 +14,7 @@ $hover-color: #E74C3C; // Coral Accent for hover effects
 $transition-speed: 0.3s; // Transition speed
 $border-radius: 8px; // Rounded corners
 
-// General Schedule Section Styles
+// Общи стилове за секцията с графика
 .schedule-section {
   background-color: $background-color; 
   padding: 4rem 0; 
@@ -28,19 +33,20 @@ $border-radius: 8px; // Rounded corners
   border-radius: $border-radius;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   padding: 1.5rem;
-  animation: fadeInUp 2s ease-in-out; /* Animation for the schedule */
+  animation: fadeInUp 2s ease-in-out;
+
+  h2 {
+    font-size: 2rem;
+    color: $text-color;
+    margin-bottom: 2rem;
+    text-align: center;
+    font-weight: 700;
+  }
 }
 
-h2 {
-  font-size: 2rem;
-  color: $text-color;
-  margin-bottom: 2rem;
-  text-align: center; /* Ensure it's centered above the schedule */
-}
-
-// Desktop Table
+// Таблица за десктоп
 .desktop-schedule {
-  display: block; /* Show on desktop */
+  display: block;
 
   .schedule-table {
     width: 100%;
@@ -52,46 +58,70 @@ h2 {
     border: 1px solid #ddd;
     text-align: center;
     font-size: 1.1rem;
-    transition: background-color 0.3s ease, transform 0.3s ease;
+    transition: background-color $transition-speed ease, transform $transition-speed ease;
   }
 
   th {
     background-color: $accent-color;
     color: $white;
+    font-weight: 700;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+    box-shadow: inset 0 -3px 10px rgba(0, 0, 0, 0.15);
+    transition: background-color $transition-speed ease;
+
+    &:hover {
+      background-color: color.adjust($accent-color, $lightness: -10%);
+      cursor: default;
+    }
+  }
+
+  tbody tr {
+    transition: background-color $transition-speed ease;
+
+    &:hover {
+      background-color: color.adjust($accent-color, $lightness: 40%);
+    }
   }
 
   .schedule-cell {
     cursor: pointer;
+    transition: transform $transition-speed ease, box-shadow $transition-speed ease;
 
     &.available {
-      background-color: #2ecc71; /* Green for available slots */
+      background-color: $available-color;
       color: $white;
 
-      &:hover {
-        transform: scale(1.1); /* Slightly scale on hover */
+      &:hover, &:focus {
+        transform: scale(1.05);
+        box-shadow: 0 4px 15px rgba(46, 204, 113, 0.5);
+        outline: none;
       }
     }
 
     &.booked {
-      background-color: #e74c3c; /* Red for booked slots */
+      background-color: $booked-color;
       color: $white;
 
-      &:hover {
-        transform: scale(1.1); /* Slightly scale on hover */
+      &:hover, &:focus {
+        transform: scale(1.05);
+        box-shadow: 0 4px 15px rgba(231, 76, 60, 0.5);
+        outline: none;
       }
     }
 
     &.empty {
-      background-color: #f7f7f7; /* Gray for empty slots */
+      background-color: #f7f7f7;
       color: #999;
-      cursor: default; /* No pointer cursor for empty cells */
+      cursor: default;
+      box-shadow: none;
+      transform: none;
     }
   }
 }
 
-// Mobile List
+// Мобилен изглед - списък с дни и слотове
 .mobile-schedule {
-  display: none; /* Hide on desktop */
+  display: none;
 
   .day-column {
     margin-bottom: 1.5rem;
@@ -102,7 +132,7 @@ h2 {
     transition: all $transition-speed ease;
 
     &:hover {
-      transform: translateY(-5px); /* Slight lift on hover */
+      transform: translateY(-5px);
       box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     }
   }
@@ -115,6 +145,8 @@ h2 {
   }
 
   .time-slot {
+    position: relative;
+    padding-left: 1.8rem;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -126,27 +158,52 @@ h2 {
     color: $text-color;
     transition: all $transition-speed ease;
 
+    &::before {
+      content: '';
+      position: absolute;
+      left: 0.6rem;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 1rem;
+      height: 1rem;
+      border-radius: 50%;
+      background-color: transparent;
+      transition: background-color $transition-speed ease;
+    }
+
     &.available {
-      background-color: #2ecc71; /* Green for available slots */
+      background-color: $available-color;
       color: $white;
 
-      &:hover {
-        transform: scale(1.05); /* Slightly scale on hover */
+      &::before {
+        background-color: $available-color;
+      }
+
+      &:hover, &:focus {
+        transform: scale(1.05);
+        box-shadow: 0 4px 15px rgba(46, 204, 113, 0.5);
+        outline: none;
       }
     }
 
     &.booked {
-      background-color: #e74c3c; /* Red for booked slots */
+      background-color: $booked-color;
       color: $white;
 
-      &:hover {
-        transform: scale(1.05); /* Slightly scale on hover */
+      &::before {
+        background-color: $booked-color;
+      }
+
+      &:hover, &:focus {
+        transform: scale(1.05);
+        box-shadow: 0 4px 15px rgba(231, 76, 60, 0.5);
+        outline: none;
       }
     }
   }
 }
 
-// Animation for fading and sliding in the whole section
+// Анимация за появяване и изместване нагоре
 @keyframes fadeInUp {
   0% {
     opacity: 0;
@@ -158,7 +215,7 @@ h2 {
   }
 }
 
-// Responsive Design for Mobile and Tablets
+// Отзивчив дизайн (Mobile & Tablets)
 @media (max-width: 768px) {
   .schedule-section {
     padding: 2rem 0; 

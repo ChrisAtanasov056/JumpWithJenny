@@ -1,28 +1,25 @@
-﻿namespace ServerAPI.Controllers
-{
-    using Microsoft.AspNetCore.Authorization;
-    using Microsoft.AspNetCore.Http;
-    using Microsoft.AspNetCore.Mvc;
-    using Microsoft.Extensions.Logging;
-    using ServerAPI.Models.Schedule;
-    using ServerAPI.Services.Schedule;
-    using System;
-    using System.Threading.Tasks;
+﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
+using ServerAPI.Models.Schedule;
+using ServerAPI.Services.Schedule;
+using System.Security.Claims;
+using System.Threading.Tasks;
 
+namespace ServerAPI.Controllers
+{   
     [Route("api/[controller]")]
     [ApiController]
     public class ScheduleController : ControllerBase
     {
         private readonly IScheduleService _scheduleService;
-
-        private IHttpContextAccessor _httpContextAccessor;
-
         private readonly ILogger<ScheduleController> _logger;
 
-        public ScheduleController(IScheduleService scheduleService, IHttpContextAccessor httpContextAccessor, ILogger<ScheduleController> logger)
+        public ScheduleController(IScheduleService scheduleService, ILogger<ScheduleController> logger)
         {
             _scheduleService = scheduleService;
-            _httpContextAccessor = httpContextAccessor;
             _logger = logger;
         }
 
@@ -36,6 +33,7 @@
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "Error getting all workouts.");
                 return StatusCode(500, $"Internal server error: {ex.Message}");
             }
         }
@@ -52,7 +50,7 @@
                 }
                 return Ok(new
                 {
-                    message = "Successfully applied for the workout.",
+                    message = "Successfully retrieved workout details.",
                     workout = new
                     {
                         workout.Id,
@@ -67,25 +65,29 @@
                             s.IsTaken
                         })
                     }
-                    });
+                });
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, $"Error getting workout by ID: {id}");
                 return StatusCode(500, $"Internal server error: {ex.Message}");
             }
         }
 
         [HttpPost("apply")]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         public async Task<IActionResult> ApplyForWorkout([FromBody] ApplyForWorkoutRequest request)
         {
             try
             {
-                _logger.LogInformation($"Received request to apply for workout: {request.WorkoutId} with userId: {request.UserId}");
+                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                _logger.LogInformation($"Received request to apply for workout: {request.WorkoutId} with userId: {userId}");
+                
                 var updatedWorkout = await _scheduleService.ApplyForWorkoutAsync(
                     request.WorkoutId,
                     request.ShoeSize, 
                     request.CardType,
-                    request.UserId,
+                    userId, 
                     request.UsesOwnShoes
                 );
 
@@ -108,32 +110,26 @@
                         {
                             s.Shoe.Id,
                             s.Shoe.Size,
-                    
                         })
                     }
                 });
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "Error applying for workout.");
                 return StatusCode(500, $"Internal server error: {ex.Message}");
             }
         }
-
+        
         [HttpGet("is-registered/{workoutId}")]
-        [AllowAnonymous]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         public async Task<ActionResult<bool>> IsUserRegistered(string workoutId)
         {
             try
             {
-                // Get userId from cookie
-                var userId = _httpContextAccessor.HttpContext?.Request.Cookies["user-id"];
-                _logger.LogInformation($"Retrieved userId from cookie: {userId}");
-                if (string.IsNullOrEmpty(userId))
-                {
-                    return Ok(false); // Not registered if no cookie
-                }
-
-                // Validate inputs
+                _logger.LogInformation($"Checking registration status for workout {workoutId}");
+                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                
                 if (string.IsNullOrWhiteSpace(workoutId))
                 {
                     return BadRequest("Workout ID is required");
@@ -146,21 +142,18 @@
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error checking registration status");
-                return StatusCode(500, "Error checking registration status");
+                return StatusCode(500, $"Internal server error: {ex.Message}");
             }
         }
 
         [HttpDelete("cancel-registration/{workoutId}")]
-        [AllowAnonymous]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         public async Task<IActionResult> CancelRegistration(string workoutId)
         {
             try
             {
-                // Get userId from cookie
-                var userId = _httpContextAccessor.HttpContext?.Request.Cookies["user-id"];
-                _logger.LogInformation($"Retrieved userId from cookie: {userId}");
-
-                // Call the service to cancel the registration
+                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                
                 var isCanceled = await _scheduleService.CancelRegistrationAsync(workoutId, userId);
 
                 if (!isCanceled)
@@ -178,7 +171,7 @@
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error canceling registration");
-                return StatusCode(500, "Error canceling registration");
+                return StatusCode(500, $"Internal server error: {ex.Message}");
             }
         }
     }

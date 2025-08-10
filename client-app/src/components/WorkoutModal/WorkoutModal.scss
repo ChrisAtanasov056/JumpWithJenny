@@ -1,472 +1,394 @@
-@use "sass:color";
-$primary-color: #BDC3C7; // Deep Navy
-$secondary-color: #FFFFFF; // Soft Gray
-$background-color: #ECF0F1; // Warm Beige
-$accent-color: #E74C3C; // Coral Accent
-$white: #FFFFFF; // White
-$text-color: #2C3E50; // Deep Navy for text
-$hover-color: #E74C3C; // Coral Accent for hover effects
-$transition-speed: 0.3s; // Transition speed
-$border-radius: 8px; // Rounded corners
+/* Нов SCSS файл за WorkoutModal */
+$primary-color: #f73665;
+$secondary-color: #2c3e50;
+$background-color: rgba(44, 62, 80, 0.8);
+$card-background: #ffffff;
+$text-color: #34495e;
+$light-text-color: #7f8c8d;
+$border-color: #ecf0f1;
+$success-color: #2ecc71;
+$error-color: #e74c3c;
+$info-color: #3498db;
+$transition-speed: 0.3s;
+$border-radius: 12px;
 
-// Modal Styles
+@keyframes bounce {
+  0%, 20%, 50%, 80%, 100% {
+    transform: translateY(0);
+  }
+  40% {
+    transform: translateY(-10px);
+  }
+  60% {
+    transform: translateY(-5px);
+  }
+}
+
 .modal-overlay {
   position: fixed;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  background-color: rgba(0, 0, 0, 0.5);
   display: flex;
   justify-content: center;
   align-items: center;
   z-index: 1000;
-  animation: fadeIn $transition-speed ease-in-out;
+  background-color: $background-color;
+  backdrop-filter: blur(5px);
+}
 
-  .modal-content {
-    background-color: $white;
-    padding: 15px;
-    border-radius: $border-radius;
-    width: 90%;
-    max-width: 400px;
+.modal-content {
+  position: relative;
+  width: 90%;
+  max-width: 500px;
+  background: $card-background;
+  border-radius: $border-radius;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  padding: 30px;
+  color: $text-color;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  overflow-y: auto;
+  max-height: 90vh;
+
+  .close-btn {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    background: none;
+    border: none;
+    font-size: 24px;
+    color: $light-text-color;
+    cursor: pointer;
+    transition: color $transition-speed;
+    &:hover {
+      color: $primary-color;
+    }
+  }
+
+  .modal-header {
     text-align: center;
-    position: relative;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-    animation: slideIn $transition-speed ease-in-out;
+    margin-bottom: 25px;
+    border-bottom: 1px solid $border-color;
+    padding-bottom: 20px;
 
-    .close {
-      position: absolute;
-      top: 15px;
-      right: 15px;
-      cursor: pointer;
-      font-size: 22px;
-      color: $text-color;
-      transition: color $transition-speed;
+    .header-icon {
+      font-size: 3rem;
+      color: $primary-color;
+      margin-bottom: 10px;
+      animation: bounce 1s infinite;
+    }
 
-      &:hover {
-        color: $hover-color;
-      }
+    h3 {
+      font-size: 1.2rem;
+      color: $light-text-color;
+      font-weight: 500;
+      margin: 0;
     }
 
     h2 {
-      color: $text-color;
-      margin-bottom: 20px;
-      font-size: 1.4rem;
-    }
-
-    form {
-      display: flex;
-      flex-direction: column;
-      gap: 20px;
-
-      .form-group {
-        margin-bottom: 10px;
-        text-align: left;
-
-        .checkbox-label {
-          display: flex;
-          align-items: center;
-          cursor: pointer;
-          color: $text-color;
-          font-weight: 500;
-          transition: color $transition-speed;
-
-          &:hover {
-            color: color.adjust($text-color, $lightness: -10%);
-          }
-
-          input[type="checkbox"] {
-            position: absolute;
-            opacity: 0;
-            cursor: pointer;
-            height: 0;
-            width: 0;
-          }
-
-          .checkbox-custom {
-            position: relative;
-            height: 20px;
-            width: 20px;
-            background-color: $white;
-            border: 2px solid $primary-color;
-            border-radius: 4px;
-            margin-right: 10px;
-            transition: all $transition-speed;
-
-            &:after {
-              content: "";
-              position: absolute;
-              display: none;
-              left: 6px;
-              top: 2px;
-              width: 5px;
-              height: 10px;
-              border: solid $white;
-              border-width: 0 2px 2px 0;
-              transform: rotate(45deg);
-            }
-          }
-
-          input:checked ~ .checkbox-custom {
-            background-color: $accent-color;
-            border-color: $accent-color;
-
-            &:after {
-              display: block;
-            }
-          }
-        }
-      }
-
-      .size-selection {
-        label {
-          display: block;
-          margin-bottom: 10px;
-          color: $text-color;
-          font-weight: bold;
-          text-align: left;
-        }
-
-        .size-buttons {
-          display: flex;
-          gap: 10px;
-          justify-content: space-between;
-
-          .size-button {
-            flex: 1;
-            padding: 12px 0;
-            border: 2px solid $primary-color;
-            border-radius: $border-radius;
-            background-color: $white;
-            color: $text-color;
-            cursor: pointer;
-            transition: all $transition-speed;
-            position: relative;
-            font-weight: 500;
-
-            &:hover:not([disabled]) {
-              transform: translateY(-2px);
-              background-color: color.adjust($primary-color, $lightness: 10%);
-              color: $white;
-            }
-
-            &.active {
-              background-color: $accent-color;
-              border-color: $accent-color;
-              color: $white;
-              transform: translateY(-2px);
-              box-shadow: 0 4px 8px rgba($accent-color, 0.2);
-
-              .checkmark {
-                display: inline-block;
-              }
-            }
-
-            &:disabled {
-              opacity: 0.5;
-              cursor: not-allowed;
-            }
-
-            .checkmark {
-              display: none;
-              margin-left: 5px;
-              font-size: 16px;
-            }
-          }
-        }
-      }
-
-      .card-selection {
-        label {
-          display: block;
-          margin-bottom: 10px;
-          color: $text-color;
-          font-weight: bold;
-          text-align: left;
-        }
-
-        select {
-          width: 100%;
-          padding: 12px;
-          border: 2px solid $primary-color;
-          border-radius: $border-radius;
-          font-size: 16px;
-          color: $text-color;
-          transition: all $transition-speed;
-          background-color: $white;
-          appearance: none;
-          background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
-          background-repeat: no-repeat;
-          background-position: right 10px center;
-          background-size: 16px;
-
-          &:focus {
-            border-color: $accent-color;
-            outline: none;
-            box-shadow: 0 0 0 2px rgba($accent-color, 0.2);
-          }
-        }
-      }
-
-      .error-message {
-        color: $accent-color;
-        font-size: 14px;
-        margin: -10px 0 10px;
-        text-align: left;
-        font-weight: 500;
-      }
-
-      .submit-button {
-        background-color: $accent-color;
-        color: $white;
-        border: none;
-        padding: 12px;
-        cursor: pointer;
-        border-radius: $border-radius;
-        font-size: 16px;
-        font-weight: 600;
-        transition: all $transition-speed;
-        margin-top: 10px;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-
-        &:hover {
-          background-color: color.adjust($accent-color, $lightness: -10%);
-          transform: translateY(-2px);
-          box-shadow: 0 4px 8px rgba($accent-color, 0.3);
-        }
-
-        &:active {
-          transform: translateY(0);
-        }
-      }
-    }
-
-    .success-animation {
-      padding: 20px 0;
-
-      .checkmark {
-        font-size: 48px;
-        color: $accent-color;
-        animation: bounce 0.5s ease-in-out;
-        margin-bottom: 15px;
-      }
-
-      p {
-        color: $text-color;
-        font-size: 1.1rem;
-        font-weight: 500;
-      }
-    }
-
-    .login-prompt {
-      padding: 20px 0;
-
-      h2 {
-        color: $text-color;
-        margin-bottom: 15px;
-      }
-
-      p {
-        color: $text-color;
-        margin-bottom: 25px;
-        font-size: 1rem;
-      }
-
-      button {
-        background-color: $accent-color;
-        color: $white;
-        border: none;
-        padding: 12px 25px;
-        cursor: pointer;
-        border-radius: $border-radius;
-        font-size: 16px;
-        font-weight: 600;
-        transition: all $transition-speed;
-
-        &:hover {
-          background-color: color.adjust($accent-color, $lightness: -10%);
-          transform: translateY(-2px);
-          box-shadow: 0 4px 8px rgba($accent-color, 0.3);
-        }
-      }
+      font-size: 2rem;
+      font-weight: 700;
+      margin: 5px 0 0;
+      color: $secondary-color;
     }
   }
-}
 
-.spots-info {
-  margin-bottom: 20px;
-  font-size: 1.1rem;
-  font-weight: 500;
-
-  .full-message {
-    color: $accent-color;
+  .modal-body {
+    padding-top: 10px;
   }
 
-  .available-message {
-    color: color.adjust($primary-color, $lightness: -20%);
-  }
-}
-
-.full-notice {
-  text-align: center;
-  padding: 20px 0;
-
-  p {
-    color: $text-color;
-    margin-bottom: 20px;
-  }
-
-  .close-button {
-    background-color: $primary-color;
-    color: $white;
-    border: none;
-    padding: 12px 25px;
-    cursor: pointer;
+  .status-message {
+    text-align: center;
+    padding: 20px;
     border-radius: $border-radius;
-    font-size: 16px;
-    font-weight: 600;
-    transition: all $transition-speed;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 
-    &:hover {
-      background-color: color.adjust($primary-color, $lightness: -10%);
+    .status-icon {
+      font-size: 3rem;
+      margin-bottom: 15px;
     }
-  }
-}
 
-// Update existing styles to handle disabled state
-.spots-info {
-  margin-bottom: 20px;
-  font-size: 1.1rem;
-  font-weight: 500;
-  
-  .spots-text {
-    font-weight: 600;
-    
-    &.available {
-      color: color.adjust($primary-color, $lightness: -20%);
+    p {
+      font-size: 1.2rem;
+      font-weight: 600;
     }
-    
+
+    &.loading {
+      .status-icon { color: $info-color; }
+    }
+    &.success {
+      .status-icon { color: $success-color; }
+    }
+    &.info {
+      .status-icon { color: $info-color; }
+    }
     &.full {
-      color: $accent-color;
+      .status-icon { color: $error-color; }
     }
   }
-  
-  .full-message {
-    color: $accent-color;
-    font-weight: 500;
-  }
-}
 
-.full-notice {
-  text-align: center;
-  padding: 20px 0;
-
-  p {
-    color: $text-color;
-    margin-bottom: 20px;
-  }
-
-  .close-button {
-    background-color: $primary-color;
-    color: $white;
-    border: none;
-    padding: 12px 25px;
-    cursor: pointer;
-    border-radius: $border-radius;
-    font-size: 16px;
-    font-weight: 600;
-    transition: all $transition-speed;
-
-    &:hover {
-      background-color: color.adjust($primary-color, $lightness: -10%);
-    }
-  }
-}
-
-.loading-message {
-  padding: 20px;
-  text-align: center;
-  color: $text-color;
-  font-size: 1.1rem;
-}
-
-.already-registered {
-  text-align: center;
-  padding: 20px 0;
-
-  p {
-    color: $text-color;
-    margin-bottom: 20px;
-    font-size: 1.1rem;
-  }
-
-  .close-button {
-    background-color: $primary-color;
-    color: $white;
-    border: none;
-    padding: 12px 25px;
-    cursor: pointer;
-    border-radius: $border-radius;
-    font-size: 16px;
-    font-weight: 600;
-    transition: all $transition-speed;
-
-    &:hover {
-      background-color: color.adjust($primary-color, $lightness: -10%);
-    }
-  }
-}
-
-// Add to your WorkoutModal.scss
-.already-registered {
-  text-align: center;
-  padding: 20px 0;
-
-  p {
-    margin-bottom: 20px;
-  }
-
-  .cancel-button {
-    background-color: $accent-color;
+  .btn-cancel {
+    background-color: $error-color;
     color: white;
     border: none;
-    padding: 12px 24px;
-    border-radius: $border-radius;
+    padding: 10px 20px;
+    border-radius: 50px;
     cursor: pointer;
-    font-size: 16px;
-    transition: background-color $transition-speed;
-
+    font-weight: 600;
+    margin-top: 15px;
+    transition: transform $transition-speed;
     &:hover {
-      background-color: color.adjust($accent-color, $lightness: -10%);
+      transform: scale(1.05);
+    }
+  }
+
+  .login-prompt-card {
+    text-align: center;
+    padding: 30px 20px;
+    .prompt-icon {
+      font-size: 3rem;
+      color: $primary-color;
+      margin-bottom: 15px;
+    }
+    h3 {
+      font-size: 1.5rem;
+      color: $secondary-color;
+    }
+    p {
+      font-size: 1rem;
+      color: $light-text-color;
+      margin: 10px 0 20px;
+    }
+    .btn-close-prompt {
+      background: $primary-color;
+      color: white;
+      border: none;
+      padding: 12px 25px;
+      border-radius: 50px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background $transition-speed;
+      &:hover {
+        background: darken($primary-color, 10%);
+      }
+    }
+  }
+
+  .spot-progress {
+    margin-bottom: 25px;
+    text-align: center;
+
+    .spots-text {
+      font-size: 1rem;
+      color: $light-text-color;
+    }
+    .progress-bar-container {
+      background: $border-color;
+      border-radius: 50px;
+      height: 10px;
+      margin-top: 10px;
+      overflow: hidden;
+    }
+    .progress-bar {
+      height: 100%;
+      background: linear-gradient(to right, $primary-color, darken($primary-color, 10%));
+      border-radius: 50px;
+      transition: width 0.5s ease;
+    }
+  }
+  
+  .form-section {
+    margin-bottom: 25px;
+    
+    .section-title {
+      font-size: 1rem;
+      font-weight: 600;
+      color: $secondary-color;
+      margin-bottom: 15px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      
+      .fa-icon {
+        color: $primary-color;
+      }
+    }
+    
+    .option-group {
+      display: flex;
+      gap: 15px;
+      flex-wrap: wrap;
+    }
+  }
+
+  .checkbox-container {
+    display: block;
+    position: relative;
+    padding-left: 30px;
+    margin-bottom: 12px;
+    cursor: pointer;
+    font-size: 1rem;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    
+    input {
+      position: absolute;
+      opacity: 0;
+      cursor: pointer;
+      height: 0;
+      width: 0;
+      
+      &:checked ~ .checkmark {
+        background-color: $primary-color;
+      }
+      
+      &:checked ~ .checkmark:after {
+        display: block;
+      }
+    }
+    
+    .checkmark {
+      position: absolute;
+      top: 0;
+      left: 0;
+      height: 20px;
+      width: 20px;
+      background-color: #eee;
+      border-radius: 4px;
+      
+      &:after {
+        content: "";
+        position: absolute;
+        display: none;
+        left: 7px;
+        top: 3px;
+        width: 5px;
+        height: 10px;
+        border: solid white;
+        border-width: 0 3px 3px 0;
+        transform: rotate(45deg);
+      }
+    }
+  }
+
+  .size-selection-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    margin-top: 15px;
+
+    .size-btn {
+      background: $border-color;
+      color: $secondary-color;
+      border: none;
+      border-radius: $border-radius / 2;
+      padding: 10px 5px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 1rem;
+      transition: all $transition-speed;
+      
+      &:hover {
+        background: darken($border-color, 5%);
+      }
+      
+      &.active {
+        background: $primary-color;
+        color: white;
+      }
+      
+      small {
+        font-size: 0.75rem;
+        color: $light-text-color;
+        transition: color $transition-speed;
+      }
+
+      &.active small {
+        color: white;
+      }
+    }
+  }
+
+  .card-select-wrapper {
+    position: relative;
+    
+    &:after {
+      content: '▼';
+      position: absolute;
+      top: 50%;
+      right: 15px;
+      transform: translateY(-50%);
+      font-size: 1rem;
+      color: $light-text-color;
+      pointer-events: none;
+    }
+
+    .styled-select {
+      width: 100%;
+      padding: 12px;
+      font-size: 1rem;
+      background: $border-color;
+      border: 1px solid transparent;
+      border-radius: $border-radius / 2;
+      -webkit-appearance: none;
+      -moz-appearance: none;
+      appearance: none;
+      cursor: pointer;
+      color: $secondary-color;
+      transition: border-color $transition-speed;
+      
+      &:hover, &:focus {
+        border-color: $primary-color;
+        outline: none;
+      }
+    }
+  }
+
+  .error-message {
+    color: $error-color;
+    text-align: center;
+    margin: 15px 0;
+    font-size: 0.9rem;
+  }
+
+  .btn-submit {
+    width: 100%;
+    padding: 15px;
+    background: $primary-color;
+    color: white;
+    border: none;
+    border-radius: 50px;
+    font-size: 1.1rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all $transition-speed;
+    
+    &:hover {
+      background: darken($primary-color, 10%);
+      transform: translateY(-2px);
+    }
+    
+    &:disabled {
+      background: #bdc3c7;
+      cursor: not-allowed;
+      transform: none;
     }
   }
 }
 
-.success-animation {
-  p {
-    margin-top: 10px;
+@media (max-width: 600px) {
+  .modal-content {
+    padding: 20px;
   }
-}
-
-// Animations
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
-@keyframes slideIn {
-  from { 
-    transform: translateY(-20px); 
-    opacity: 0;
+  .modal-header h2 {
+    font-size: 1.5rem;
   }
-  to { 
-    transform: translateY(0); 
-    opacity: 1;
+  .size-selection-grid {
+    grid-template-columns: repeat(2, 1fr);
   }
-}
-
-@keyframes bounce {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-10px); }
 }

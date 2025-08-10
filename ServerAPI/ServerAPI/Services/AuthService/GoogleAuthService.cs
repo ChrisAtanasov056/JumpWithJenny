@@ -60,7 +60,6 @@ namespace ServerAPI.Services.AuthService
                 return await GenerateAuthResultForUser(user);
             }
 
-            // Създай нов потребител
             user = new User
             {
                 UserName = payload.Email,

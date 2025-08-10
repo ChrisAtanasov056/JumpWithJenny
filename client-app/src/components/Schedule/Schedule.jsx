@@ -52,7 +52,6 @@ const Schedule = () => {
     setSelectedWorkout(null);
   };
 
-  // Регистрация за тренировка
   const handleRegistration = async (workout, shoeSize, cardType, usesOwnShoes) => {
     if (!isAuthenticated) {
       alert(t('schedule.loginRequired'));
@@ -77,7 +76,6 @@ const Schedule = () => {
         setWorkouts(prev =>
           prev.map(w => (w.Id === updatedWorkout.Id ? updatedWorkout : w))
         );
-        closeModal();
       }
     } catch (err) {
       console.error('Error registering for workout:', err);

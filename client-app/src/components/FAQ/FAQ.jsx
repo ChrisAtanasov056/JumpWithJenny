@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
-import { useTranslation } from 'react-i18next'; // ← Add this
+import { useTranslation } from 'react-i18next';
+import { FaChevronDown } from 'react-icons/fa';
 import './FAQ.scss';
 
 const FAQ = () => {
-  const { t } = useTranslation(); // ← Add this
+  const { t } = useTranslation();
 
   const faqData = [
     {
@@ -41,12 +42,12 @@ const FAQ = () => {
               className={`faq-question ${activeIndex === index ? 'active' : ''}`}
             >
               {item.question}
+              <FaChevronDown className="icon" />
             </div>
-            {activeIndex === index && (
-              <div className={`faq-answer ${activeIndex === index ? 'active' : ''}`}>
-                {item.answer}
-              </div>
-            )}
+            {/* ✅ Променяме логиката за рендериране на отговора, за да работи по-добре с анимацията */}
+            <div className={`faq-answer ${activeIndex === index ? 'active' : ''}`}>
+              <p>{item.answer}</p>
+            </div>
           </div>
         ))}
       </div>

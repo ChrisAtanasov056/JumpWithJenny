@@ -217,7 +217,7 @@ $shadow: 0 4px 20px rgba(44, 62, 80, 0.1);
     background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%);
     color: $white;
     border: none;
-    
+    display: none;
     &:hover {
       color: $white;
     }

@@ -1,129 +1,114 @@
 @use "sass:color";
-// Color Palette
-$primary-color: #BDC3C7; // Deep Navy
-$secondary-color: #FFFFFF; // Soft Gray
-$background-color: #ECF0F1; // Warm Beige (new section background color)
-$accent-color: #E74C3C; // Coral Accent
+$primary-color: #BDC3C7;
+$secondary-color: #FFFFFF;
+$background-color: #ECF0F1;
+$accent-color: #E74C3C;
 $white: #FFFFFF;
 $text-color: #2C3E50;
 $hover-color: #E74C3C;
-$transition-speed: 0.5s; // Adjusted for smoother effect
+$mobile-breakpoint: 768px;
+$transition-speed: 0.3s;
 $border-radius: 8px;
 
-// General FAQ Section Styles
 .faq-section {
+  padding: 5rem 2rem;
   background-color: $background-color;
-  height: auto;
-  padding: 3rem;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
+  font-family: 'Inter', sans-serif;
   text-align: center;
-  border-radius: $border-radius;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
-  animation: fadeInUp 2.2s ease-in-out;
 
   h2 {
-    color: $text-color;
     font-size: 2.5rem;
-    font-weight: 600;
-    margin-bottom: 1.5rem;
-  }
-
-  .faq-list {
-    width: 100%;
-    max-width: 900px;
-    margin-top: 2rem;
-    padding: 0;
-    list-style: none;
-
-    .faq-item {
-      background-color: $white;
-      margin: 0.8rem 0;
-      padding: 1.2rem;
-      border-radius: $border-radius;
-      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-      transition: all 0.4s ease-in-out;
-      transform-origin: top;
-
-      &:hover {
-        background-color: color.adjust($background-color, $lightness: 5%);
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-      }
-
-      .faq-question {
-        font-size: 1.2rem;
-        font-weight: bold;
-        color: $text-color;
-        cursor: pointer;
-        transition: color $transition-speed ease-in-out;
-
-        &:hover {
-          color: color.adjust($accent-color, $lightness: -10%);
-        }
-
-        &.active {
-          color: $accent-color;
-        }
-      }
-
-      .faq-answer {
-        margin-top: 1rem;
-        font-size: 1rem;
-        color: $text-color;
-        opacity: 0;
-        height: 0;
-        overflow: hidden;
-        clip-path: inset(0 0 100% 0);
-        transition: 
-          clip-path 0.6s cubic-bezier(0.25, 1, 0.5, 1),
-          opacity 0.3s ease-in-out 0.2s;
-
-        &.active {
-          opacity: 1;
-          height: auto;
-          clip-path: inset(0 0 0 0);
-        }
-      }
+    font-weight: 700;
+    color: $text-color;
+    margin-bottom: 3.5rem;
+    position: relative;
+  
+    &::after {
+      content: '';
+      display: block;
+      width: 60px;
+      height: 4px;
+      background-color: $accent-color;
+      margin: 10px auto 0;
+      border-radius: 2px;
     }
   }
 }
 
-// Animation for fading and sliding in
-@keyframes fadeInUp {
-  0% {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  
-  100% {
-    opacity: 1;
-    transform: translateY(0);
+.faq-list {
+  max-width: 800px;
+  margin: 0 auto;
+  text-align: left;
+}
+
+.faq-item {
+  margin-bottom: 1rem;
+  border-radius: $border-radius;
+  overflow: hidden;
+  background-color: $secondary-color;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  transition: box-shadow $transition-speed ease;
+
+  &:hover {
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
   }
 }
 
-// Responsive Design for Mobile
-@media (max-width: 768px) {
-  .faq-section {
-    padding: 2rem;
+.faq-question {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.5rem 2rem;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: $text-color;
+  cursor: pointer;
+  border-bottom: 1px solid $primary-color;
+  transition: background-color $transition-speed ease, color $transition-speed ease;
+
+  .icon {
+    font-size: 1.2rem;
+    color: $accent-color;
+    transition: transform $transition-speed ease;
   }
 
-  .faq-list {
-    max-width: 100%;
-    padding: 0;
-    margin-top: 1rem;
-  }
+  &.active {
+    background-color: $hover-color;
+    color: $white;
+    border-bottom: none;
 
-  .faq-item {
-    padding: 1rem;
+    .icon {
+      color: $white;
+      transform: rotate(180deg);
+    }
   }
+}
 
-  .faq-question {
-    font-size: 1.1rem;
+.faq-answer {
+  padding: 0 2rem;
+  max-height: 0;
+  overflow: hidden;
+  background-color: color.adjust($background-color, $lightness: 2%);
+  color: #555;
+  transition: max-height 0.4s ease-in-out, padding 0.4s ease-in-out;
+
+  &.active {
+    max-height: 250px; /* Увеличете при нужда */
+    padding: 1.5rem 2rem;
+    
+    p {
+      animation: fadeIn 0.5s ease-in-out;
+    }
   }
+}
 
-  .faq-answer {
-    font-size: 0.95rem;
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }

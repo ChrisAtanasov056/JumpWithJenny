@@ -68,7 +68,7 @@ namespace ServerAPI.Services.Schedule
                 // Explicitly update the WorkoutShoes entity
                 _workoutRepository.Update(workout);
             }
-
+            _logger.LogInformation($"Assigned shoe: {assignedShoe?.Id}, Workout Shoe to Update: {workoutShoeToUpdate?.ShoeId}");
             // Create appointment
             var appointment = new Appointment
             {

@@ -59,6 +59,8 @@ $transition-speed: 0.3s;
     flex-wrap: wrap;
 
     .social-btn {
+      width: auto;
+      height: auto;
       display: flex;
       align-items: center;
       gap: 0.5rem;

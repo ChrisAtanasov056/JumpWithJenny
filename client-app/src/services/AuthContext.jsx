@@ -84,6 +84,7 @@ export const AuthProvider = ({ children }) => {
             axios.defaults.headers.common['Authorization'] = `Bearer ${userData.token}`;
             setIsAuthenticated(true);
             setUser(userData);
+            console.log("Saving JWT to localStorage:", userData.token);
             localStorage.setItem('jwtToken', userData.token);
             localStorage.setItem('user', JSON.stringify(userData));
             if (userData.refreshToken) {
@@ -111,7 +112,21 @@ export const AuthProvider = ({ children }) => {
         }
     }, []);
     
-
+    const facebookLogin = useCallback((userData) => {
+      try {
+          axios.defaults.headers.common['Authorization'] = `Bearer ${userData.token}`;
+          setIsAuthenticated(true);
+          setUser(userData);
+          localStorage.setItem('jwtToken', userData.token);
+          localStorage.setItem('user', JSON.stringify(userData));
+          if (userData.refreshToken) {
+              localStorage.setItem('refreshToken', userData.refreshToken);
+          }
+      } catch (error) {
+          console.error('Facebook login error:', error);
+          setError(error);
+      }
+    }, []);
     
     const logout = useCallback(() => {
         try {
@@ -157,6 +172,7 @@ export const AuthProvider = ({ children }) => {
             login,
             logout,
             googleLogin,
+            facebookLogin, 
             updateUser,
             error
         }}>

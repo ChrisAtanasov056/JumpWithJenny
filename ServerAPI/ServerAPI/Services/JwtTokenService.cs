@@ -11,8 +11,11 @@ namespace ServerAPI.Services
     {
         private readonly JwtSettings _jwtSettings;
 
-        public JwtTokenService(IOptions<JwtSettings> jwtSettings)   
+        private readonly ILogger<JwtTokenService> _logger;
+
+        public JwtTokenService(IOptions<JwtSettings> jwtSettings, ILogger<JwtTokenService> logger)
         {
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _jwtSettings = jwtSettings.Value;
         }
         public string GenerateJwtToken(User user, IEnumerable<string> roles)
@@ -32,6 +35,7 @@ namespace ServerAPI.Services
 
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtSettings.Secret));
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+            _logger.LogInformation("Generating JWT token for user: {UserId}", _jwtSettings.Secret);
 
             var token = new JwtSecurityToken(
                 issuer: _jwtSettings.Issuer,
