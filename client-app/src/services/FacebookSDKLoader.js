@@ -14,6 +14,7 @@ export default function FacebookSDKLoader() {
         version: "v23.0",
       });
       console.log("Facebook SDK initialized");
+      window.fbInitialized = true;
     };
 
     const script = document.createElement("script");
