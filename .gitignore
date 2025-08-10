@@ -21,3 +21,15 @@ obj/
 ServerAPI/ServerAPI/appsetting.json
 ServerAPI/ServerAPI/appsettings.json
 .DS_Store
+
+# C# build/publish files and logs (Missing from your list)
+# ========================
+ServerAPI/bin/
+ServerAPI/obj/
+ServerAPI/publish/
+ServerAPI/ServerAPI/bin/
+ServerAPI/ServerAPI/obj/
+ServerAPI/ServerAPI/publish/
+ServerAPI/ServerAPI/*.dll
+ServerAPI/ServerAPI/*.pdb
+ServerAPI/ServerAPI/web.config.bak
