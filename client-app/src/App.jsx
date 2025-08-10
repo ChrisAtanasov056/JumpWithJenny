@@ -18,6 +18,8 @@ import WorkoutView from './components/Admin/Workouts/WorkoutView';
 import './i18n';
 import { GoogleOAuthProvider } from '@react-oauth/google';
 
+import FacebookSDKLoader from './services/FacebookSDKLoader';  
+
 // Admin imports
 import AdminLayout from './components/Admin/AdminLayout';
 import AdminUsersList from './components/Admin/Users/AdminUsersList';
@@ -32,7 +34,7 @@ function App() {
   }, []);
 
   return (
-    <GoogleOAuthProvider clientId="964806187908-jh2rbhu76tb1uos1q9v57gevlfmigioq.apps.googleusercontent.com">
+    <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>
       <AuthProvider>
         <Router>
           <AppContent />
@@ -57,6 +59,7 @@ const AppContent = () => {
 
   return (
     <>
+      <FacebookSDKLoader />   
       {!isAdminRoute && <Navbar user={user} />}
       <Routes>
         {/* Public routes */}

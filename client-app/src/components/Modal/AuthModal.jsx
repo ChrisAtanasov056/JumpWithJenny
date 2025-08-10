@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import './AuthModal.scss';
 import Login from '../Login/Login';
 import Register from '../Register/Register';
@@ -20,28 +20,7 @@ const AuthModal = ({ onClose, onLoginSuccess, setModalOpen }) => {
   const [successMessage, setSuccessMessage] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
   const { googleLogin: authLogin } = useAuth();
-
   const [isAnimating, setIsAnimating] = useState(false);
-
-  useEffect(() => {
-    window.fbAsyncInit = function() {
-      window.FB.init({
-        appId: '24361503363512956', 
-        cookie: true,
-        xfbml: true,
-        version: 'v18.0',
-      });
-    };
-
-    (function(d, s, id) {
-      var js, fjs = d.getElementsByTagName(s)[0];
-      if (d.getElementById(id)) return;
-      js = d.createElement(s);
-      js.id = id;
-      js.src = "https://connect.facebook.net/en_US/sdk.js";
-      fjs.parentNode.insertBefore(js, fjs);
-    }(document, 'script', 'facebook-jssdk'));
-  }, []);
 
   const socialPlatforms = [
     { platform: 'Google', className: 'google-btn' },
@@ -53,18 +32,13 @@ const AuthModal = ({ onClose, onLoginSuccess, setModalOpen }) => {
     setErrorMessage('');
     try {
       const authCode = credentialResponse.code;
-      console.log('Google authorization code:', authCode);
-
       if (!authCode) {
         setErrorMessage(t('login.googleLoginFailed'));
-        console.error('Google login error: Authorization code is null.');
         return;
       }
-
       const response = await googleLogin(authCode);
 
       if (response?.Success) {
-        console.log('Google login response:', response);
         const { Token: token, RefreshToken: refreshToken, User: user } = response;
         if (user && token && refreshToken) {
           authLogin({ ...user, token, refreshToken });
@@ -79,11 +53,10 @@ const AuthModal = ({ onClose, onLoginSuccess, setModalOpen }) => {
         setErrorMessage(t('login.noDataError'));
       }
     } catch (error) {
-      console.error('Google login error:', error);
       setErrorMessage(t('login.credentialsError'));
     }
   };
-  
+
   const handleFacebookLoginSuccess = async (accessToken) => {
     setErrorMessage('');
     try {
@@ -104,7 +77,6 @@ const AuthModal = ({ onClose, onLoginSuccess, setModalOpen }) => {
         setErrorMessage(t('login.noDataError'));
       }
     } catch (error) {
-      console.error('Facebook login error:', error);
       setErrorMessage(t('login.credentialsError'));
     }
   };
@@ -145,23 +117,21 @@ const AuthModal = ({ onClose, onLoginSuccess, setModalOpen }) => {
     } else if (platform === 'Facebook') {
       if (window.FB) {
         window.FB.login(
-          function(response) {
+          function (response) {
             if (response.authResponse) {
               const accessToken = response.authResponse.accessToken;
               handleFacebookLoginSuccess(accessToken);
             } else {
-              console.log('User cancelled login or did not fully authorize.');
               setErrorMessage(t('login.facebookLoginFailed'));
             }
           },
           { scope: 'public_profile,email' }
         );
       } else {
-        console.error('Facebook SDK not loaded.');
         setErrorMessage(t('login.facebookLoginFailed'));
       }
     } else if (platform === 'Instagram') {
-      console.log(`Log in with ${platform} is not implemented yet.`);
+      // Instagram login not implemented yet
     }
   };
 
@@ -180,10 +150,7 @@ const AuthModal = ({ onClose, onLoginSuccess, setModalOpen }) => {
       {socialPlatforms.map(({ platform, icon, className }) => (
         <React.Fragment key={platform}>
           {platform === 'Google' ? (
-            <button
-              onClick={() => handleSocialLogin('Google')}
-              className={`social-btn ${className}`}
-            >
+            <button onClick={() => handleSocialLogin('Google')} className={`social-btn ${className}`}>
               <div className="gsi-material-button-icon">
                 <svg
                   version="1.1"
@@ -191,31 +158,16 @@ const AuthModal = ({ onClose, onLoginSuccess, setModalOpen }) => {
                   viewBox="0 0 48 48"
                   xmlnsXlink="http://www.w3.org/1999/xlink"
                 >
-                  <path
-                    fill="#EA4335"
-                    d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"
-                  ></path>
-                  <path
-                    fill="#4285F4"
-                    d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"
-                  ></path>
-                  <path
-                    fill="#FBBC05"
-                    d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"
-                  ></path>
-                  <path
-                    fill="#34A853"
-                    d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"
-                  ></path>
+                  <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"></path>
+                  <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"></path>
+                  <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"></path>
+                  <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"></path>
                   <path fill="none" d="M0 0h48v48H0z"></path>
                 </svg>
               </div>
             </button>
           ) : (
-            <button
-              onClick={() => handleSocialLogin(platform)}
-              className={`social-btn ${className}`}
-            >
+            <button onClick={() => handleSocialLogin(platform)} className={`social-btn ${className}`}>
               <FontAwesomeIcon icon={icon} />
             </button>
           )}
@@ -242,48 +194,47 @@ const AuthModal = ({ onClose, onLoginSuccess, setModalOpen }) => {
                 {isLogin ? (
                   <>
                     <Login onClose={onClose} onLoginSuccess={onLoginSuccess} />
-                    <button
-                      className="forgot-password-btn"
-                      onClick={() => setShowForgotModal(true)}
-                    >
+                    <button className="forgot-password-btn" onClick={() => setShowForgotModal(true)}>
                       {t('auth.forgotPassword')}
                     </button>
                   </>
                 ) : (
-                  <Register
-                    onClose={onClose}
-                    onLoginSuccess={onLoginSuccess}
-                    setModalOpen={setModalOpen}
-                    onRegisterSuccess={handleRegisterSuccess}
-                  />
+                  <Register onRegisterSuccess={handleRegisterSuccess} />
                 )}
               </div>
 
-              <div className="auth-footer">
-                {errorMessage && <div className="auth-error-msg">{errorMessage}</div>}
-                <div className="switch-text">
-                  {isLogin ? t('auth.dontHaveAccount') : t('auth.alreadyHaveAccount')}{' '}
-                  <button onClick={toggleForm} className="switch-mode-btn">
-                    {isLogin ? t('auth.register') : t('auth.login')}
-                  </button>
-                </div>
-                <div className="social-text">{t('auth.orContinueWith')}</div>
-                {renderSocialButtons()}
+              {renderSocialButtons()}
+
+              <div className="toggle-form">
+                {isLogin ? (
+                  <>
+                    <p>
+                      {t('auth.noAccount')} <button onClick={toggleForm}>{t('auth.register')}</button>
+                    </p>
+                  </>
+                ) : (
+                  <>
+                    <p>
+                      {t('auth.haveAccount')} <button onClick={toggleForm}>{t('auth.login')}</button>
+                    </p>
+                  </>
+                )}
               </div>
+
+              {errorMessage && <div className="error-message">{errorMessage}</div>}
             </div>
           </div>
         </div>
-
-        {showForgotModal && (
-          <ForgotPasswordModal
-            onClose={() => setShowForgotModal(false)}
-            onSubmit={handleForgotPassword}
-          />
-        )}
-        {showSuccessModal && (
-          <SuccessModal message={successMessage} onClose={handleCloseSuccessModal} />
-        )}
       </div>
+
+      {showSuccessModal && <SuccessModal message={successMessage} onClose={handleCloseSuccessModal} />}
+
+      {showForgotModal && (
+        <ForgotPasswordModal
+          onClose={() => setShowForgotModal(false)}
+          onForgotPassword={handleForgotPassword}
+        />
+      )}
     </>
   );
 };
