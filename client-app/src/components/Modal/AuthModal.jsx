@@ -115,7 +115,7 @@ const AuthModal = ({ onClose, onLoginSuccess, setModalOpen }) => {
     if (platform === 'Google') {
       googleSignIn();
     } else if (platform === 'Facebook') {
-      if (window.fbInitialized) {
+      if (window.FB) {
         window.FB.login(
           function (response) {
             if (response.authResponse) {
