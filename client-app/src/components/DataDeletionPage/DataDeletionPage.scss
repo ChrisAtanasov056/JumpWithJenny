@@ -1,0 +1,65 @@
+// src/components/DataDeletion/DataDeletionPage.scss
+
+$background-color: #f3f4f6; // gray-100
+$card-background: #ffffff; // white
+$text-color-primary: #1f2937; // gray-800
+$text-color-secondary: #4b5563; // gray-600
+$text-color-list: #374151; // gray-700
+$link-color: #3b82f6; // blue-500
+$border-radius: 0.75rem; // rounded-xl
+$shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); // shadow-lg
+
+.data-deletion-page {
+  min-height: 100vh;
+  background-color: $background-color;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem; // p-4
+
+  .deletion-card {
+    background-color: $card-background;
+    padding: 2rem; // p-8
+    border-radius: $border-radius;
+    box-shadow: $shadow;
+    max-width: 42rem; // max-w-2xl
+    width: 100%;
+
+    h1 {
+      font-size: 2rem; // text-3xl
+      font-weight: bold;
+      text-align: center;
+      color: $text-color-primary;
+      margin-bottom: 1.5rem; // mb-6
+    }
+
+    p {
+      color: $text-color-secondary;
+      margin-bottom: 1rem; // mb-4
+    }
+
+    .info-list {
+      list-style-type: decimal;
+      list-style-position: inside;
+      color: $text-color-list;
+      margin-bottom: 1.5rem; // mb-6
+      
+      li {
+        margin-bottom: 1rem; // space-y-4
+        
+        a {
+          color: $link-color;
+          text-decoration: none;
+          
+          &:hover {
+            text-decoration: underline;
+          }
+          
+          &.email-link {
+            font-weight: 600; // font-semibold
+          }
+        }
+      }
+    }
+  }
+}

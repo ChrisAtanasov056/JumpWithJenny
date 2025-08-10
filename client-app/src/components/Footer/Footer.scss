@@ -4,15 +4,13 @@ $text-color: #2C3E50;
 $white: #FFFFFF;
 $transition-speed: 0.3s;
 
-
 .footer-animated {
   background: $text-color;
   color: $white;
-  padding: 1.2rem;
+  padding: 2rem 1.2rem;
   text-align: center;
   position: relative;
   overflow: hidden;
-  max-height: 31vh;
 
   .footer-container {
     max-width: 1200px;
@@ -25,29 +23,25 @@ $transition-speed: 0.3s;
     width: 80px;
     height: 80px;
     position: relative;
-    justify-content: center; 
-
-    .kangoo-shoe {
-      font-size: 3rem;
-      position: absolute;
-      top: 0;
-      left: 50%;
-      transform: translateX(-50%);
+    
+    .kangoo-shoe-img {
+      width: 60px;
+      height: auto;
       animation: jump 1.5s infinite alternate;
-      z-index: 2;
-      display: inline-block;
+      filter: drop-shadow(0 4px 8px rgba(0,0,0,0.3));
     }
 
     .shadow {
       width: 40px;
       height: 10px;
-      background: rgba($accent-color, 0.3);
+      background: rgba($white, 0.2);
       border-radius: 50%;
       position: absolute;
       left: 50%;
       transform: translateX(-50%);
       animation: shadow 1.5s infinite alternate;
       filter: blur(2px);
+      bottom: 0;
     }
   }
 
@@ -73,58 +67,58 @@ $transition-speed: 0.3s;
 
       &:hover {
         background: $accent-color;
-        transform: translateY(-3px);
+        transform: translateY(-5px);
+        box-shadow: 0 5px 15px rgba($accent-color, 0.4);
 
         .icon {
-          transform: scale(1.2);
+          transform: scale(1.1);
         }
       }
 
       .icon {
-        font-size: 1.3rem;
+        font-size: 1.5rem;
         transition: transform $transition-speed ease;
-        
-        /* Platform-specific colors */
-        &.fa-facebook { color: #1877F2; }
-        &.fa-tiktok { color: #69C9D0; }
-        &.fa-instagram { 
-          background: radial-gradient(circle at 30% 107%, #fdf497 0%, #fdf497 5%, #fd5949 45%, #d6249f 60%, #285AEB 90%);
-          -webkit-background-clip: text;
-          background-clip: text;
-          color: transparent;
-        }
       }
-
-      &:hover .icon {
-        color: $white !important;
-        background: none !important;
-      }
-
+      
       .label {
-        font-size: 0.9rem;
+        font-size: 1rem;
+        font-weight: 500;
+      }
+    }
+  }
+
+  .footer-links-container {
+    display: flex;
+    flex-direction: row; /* Променено от column на row */
+    gap: 20px; /* Увеличено разстоянието между линковете */
+    justify-content: center; /* Центриране на линковете */
+    margin-bottom: 1.5rem;
+    
+    .link {
+      color: rgba($white, 0.7);
+      text-decoration: none;
+      font-size: 0.9rem;
+      transition: color $transition-speed ease;
+      
+      &:hover {
+        color: $white;
+        text-decoration: underline;
       }
     }
   }
 
   .copyright {
-    font-size: 0.9rem;
-    color: rgba($white, 0.7);
+    font-size: 0.8rem;
+    color: rgba($white, 0.5);
   }
 }
 
-.kangoo-shoe-img {
-  width: 60px;
-  height: auto;
-  animation: jump 1.5s infinite alternate;
-  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));
-}
-
 @keyframes jump {
-  0% { transform: translate(-0%, 0) scale(1); }
-  100% { transform: translate(-0%, -20px) scale(1.2); }
+  0% { transform: translateY(0); }
+  100% { transform: translateY(-15px); }
 }
 
 @keyframes shadow {
-  0% { width: 40px; opacity: 0.7; }
-  100% { width: 30px; opacity: 0.4; }
+  0% { transform: scale(1) translateX(-50%); opacity: 0.7; }
+  100% { transform: scale(0.8) translateX(-50%); opacity: 0.4; }
 }

@@ -17,17 +17,17 @@ import ResetPassword from './components/ForgotPassword/ResetPassword';
 import WorkoutView from './components/Admin/Workouts/WorkoutView';
 import './i18n';
 import { GoogleOAuthProvider } from '@react-oauth/google';
-
-// ВАЖНО: Уверете се, че файлът във вашата система е кръстен FacebookSDKContext.jsx
 import { FacebookSDKProvider } from './services/FacebookSDKContext.jsx';
-
-// Admin imports
 import AdminLayout from './components/Admin/AdminLayout';
 import AdminUsersList from './components/Admin/Users/AdminUsersList';
 import AdminUserProfile from './components/Admin/Users/AdminUserProfile';
 import AdminWorkoutsList from './components/Admin/Workouts/AdminWorkoutList';
 import WorkoutForm from './components/Admin/Workouts/WorkoutForm';
 import HappyCustomers from './components/HappyCustomers/HappyCustomers';
+import Footer from './components/Footer/Footer';
+
+// Добавен импорт за новия компонент
+import DataDeletion from './components/DataDeletionPage/DataDeletionPage.jsx';
 
 function App() {
   useEffect(() => {
@@ -77,6 +77,7 @@ const AppContent = () => {
         <Route path="/profile" element={user ? <Profile user={user} /> : <Login />} />
         <Route path="/verify-email" element={<VerifyEmail />} />
         <Route path="/reset-password" element={<ResetPassword />} />
+        <Route path="/data-deletion" element={<DataDeletion />} />
 
         {/* Admin routes */}
         <Route

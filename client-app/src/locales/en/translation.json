@@ -186,6 +186,23 @@
                 "not_matching": "New passwords do not match.",
                 "failed": "Password change failed. Please try again."
               }
-            }
+            },
+              "footer": {
+              "copyright": "Jump With Jenny",
+              "dataDeletion": "Data Deletion",
+              "cookiePolicy": "Privacy Policy",
+              "privacyPolicy": "Terms of Service"
+            },
+            "dataDeletion": {
+                "title": "User Data Deletion",
+                "intro": "If you would like to delete your data that we have received from your Facebook login, please follow one of the steps below:",
+                "step1_text1": "You can remove our app from your Facebook profile by going to",
+                "step1_linkText": "Settings & Privacy > Settings > Apps and Websites",
+                "step1_text2": "Find our app and remove it.",
+                "step2_text": "You can send an email to our support team to request your data to be deleted. Please include your name and your Facebook user ID (if possible) in the email.",
+                "footer": "Once we receive your request, we will delete all your data from our servers."
+
+              } 
+          
           
 }
