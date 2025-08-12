@@ -97,7 +97,6 @@ $shadow: 0 4px 20px rgba(44, 62, 80, 0.1);
 }
 
 .dynamic-form {
-  // Container for the active form
   animation: fadeIn 0.5s ease-in-out;
 }
 
@@ -149,6 +148,10 @@ $shadow: 0 4px 20px rgba(44, 62, 80, 0.1);
     font-size: 0.9rem;
     margin: 1rem 0;
 
+    @media (max-width: 768px) {
+      font-size: 0.5rem
+    }
+
     &::before, &::after {
       content: '';
       position: absolute;
@@ -156,8 +159,7 @@ $shadow: 0 4px 20px rgba(44, 62, 80, 0.1);
       width: 40%;
       height: 1px;
       background-color: $primary-color;
-    }
-
+      }
     &::before {
       left: 0;
     }
@@ -223,10 +225,6 @@ $shadow: 0 4px 20px rgba(44, 62, 80, 0.1);
     }
   }
 }
-
-// src/components/AuthModal/AuthModal.scss
-
-/* Унифицирани стилове за бутоните */
 .social-btn {
   width: 40px;
   height: 40px;

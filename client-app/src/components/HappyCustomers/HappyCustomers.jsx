@@ -67,8 +67,8 @@ const testimonials = [
 
 const HappyCustomers = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [touchStartX, setTouchStartX] = useState(null); // Състояние за начална позиция на докосване
 
-  // Функции за превъртане напред и назад
   const nextSlide = () => {
     setCurrentIndex((prev) => (prev + 1) % testimonials.length);
   };
@@ -77,25 +77,60 @@ const HappyCustomers = () => {
     setCurrentIndex((prev) => (prev - 1 + testimonials.length) % testimonials.length);
   };
 
-  // Автоматично превъртане на всеки 5 секунди
+  // Функции за обработка на плъзгането (swipe)
+  const handleTouchStart = (e) => {
+    setTouchStartX(e.touches[0].clientX);
+  };
+
+  const handleTouchMove = (e) => {
+    // Предотвратява скролването, докато плъзгате в карусела
+    e.preventDefault(); 
+  };
+
+  const handleTouchEnd = (e) => {
+    if (touchStartX === null) {
+      return;
+    }
+
+    const touchEndX = e.changedTouches[0].clientX;
+    const difference = touchStartX - touchEndX;
+
+    // Задаваме праг (50px), за да регистрираме плъзгането
+    const swipeThreshold = 50; 
+
+    if (difference > swipeThreshold) {
+      nextSlide(); // Плъзване наляво -> следващ слайд
+    } else if (difference < -swipeThreshold) {
+      prevSlide(); // Плъзване надясно -> предишен слайд
+    }
+
+    // Нулираме състоянието за следващо докосване
+    setTouchStartX(null);
+  };
+
+  // Автоматично превъртане на слайдовете на всеки 5 секунди
   useEffect(() => {
     const timer = setInterval(nextSlide, 5000);
     return () => clearInterval(timer);
   }, [currentIndex]);
 
-  // Изчислява кои три отзива да се покажат
   const visibleTestimonials = [
-    testimonials[(currentIndex + testimonials.length - 1) % testimonials.length], // Предишен
-    testimonials[currentIndex], // Текущ (централен)
-    testimonials[(currentIndex + 1) % testimonials.length] // Следващ
+    testimonials[(currentIndex + testimonials.length - 1) % testimonials.length], 
+    testimonials[currentIndex], 
+    testimonials[(currentIndex + 1) % testimonials.length] 
   ];
 
   return (
     <div className="happy-customers">
       <h2 className="section-title">Какво казват клиентите?</h2>
       
-      <div className="carousel-container">
-        {/* Бутони за навигация */}
+      {/* Добавяме слушателите за събития за докосване тук */}
+      <div 
+        className="carousel-container"
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
+      >
         <button className="arrow-btn left" onClick={prevSlide}>
           <FaChevronLeft />
         </button>

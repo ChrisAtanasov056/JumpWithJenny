@@ -14,7 +14,6 @@ $hover-color: #E74C3C; // Coral Accent for hover effects
 $transition-speed: 0.3s; // Transition speed
 $border-radius: 8px; // Rounded corners
 
-// Общи стилове за секцията с графика
 .schedule-section {
   background-color: $background-color; 
   padding: 4rem 0; 
@@ -22,7 +21,6 @@ $border-radius: 8px; // Rounded corners
   display: flex;
   justify-content: center; 
   align-items: center; 
-  min-height: 100vh; 
   overflow-x: hidden; 
 }
 
@@ -174,10 +172,6 @@ $border-radius: 8px; // Rounded corners
     &.available {
       background-color: $available-color;
       color: $white;
-
-      &::before {
-        background-color: $available-color;
-      }
 
       &:hover, &:focus {
         transform: scale(1.05);

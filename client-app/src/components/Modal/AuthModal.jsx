@@ -119,6 +119,11 @@ const AuthModal = ({ onClose, onLoginSuccess, setModalOpen }) => {
     if (platform === 'Google') {
       googleSignIn();
     } else if (platform === 'Facebook') {
+      if (!isFbSdkReady) {
+        console.error('Facebook SDK not loaded or initialized.');
+        setErrorMessage(t('login.facebookLoginFailed'));
+        return;
+      }
       window.FB.login(
         function (response) {
           if (response.authResponse) {
@@ -168,19 +173,14 @@ const AuthModal = ({ onClose, onLoginSuccess, setModalOpen }) => {
             </button>
           );
         } else if (platform === 'Facebook') {
-          return (
-            <button
-              onClick={isFbSdkReady ? () => handleSocialLogin(platform) : null}
-              className={`social-btn ${className} ${!isFbSdkReady ? 'loading-btn' : ''}`}
-              key={platform}
-              disabled={!isFbSdkReady}
-            >
-              {isFbSdkReady ? (
-                <FontAwesomeIcon icon={icon} />
-              ) : (
-                <FontAwesomeIcon icon={faSpinner} spin />
-              )}
+          return isFbSdkReady ? (
+            <button onClick={() => handleSocialLogin(platform)} className={`social-btn ${className}`} key={platform}>
+              <FontAwesomeIcon icon={icon} />
             </button>
+          ) : (
+            <div className={`social-btn loading-btn`} key={platform}>
+              <FontAwesomeIcon icon={faSpinner} spin />
+            </div>
           );
         } else {
           return (
