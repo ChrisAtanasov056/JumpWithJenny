@@ -28,8 +28,8 @@ const DataDeletionPage = () => {
           <li>
             {t('dataDeletion.step2_text')}
             <br />
-            <a href="mailto:jumpwithjenny@example.com" className="email-link">
-              jumpwithjenny@example.com
+            <a href="mailto:jumpwithjenny.kj@gmail.com" className="email-link">
+               jumpwithjenny.kj@gmail.com
             </a>
           </li>
         </ol>

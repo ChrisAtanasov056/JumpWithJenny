@@ -18,14 +18,14 @@ const GallerySection = () => {
 
   const [currentIndex, setCurrentIndex] = useState(0);
 
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      ([entry]) => entry.isIntersecting && controls.start("visible"),
-      { threshold: 0.4 }
-    );
-    if (ref.current) observer.observe(ref.current);
-    return () => observer.disconnect();
-  }, [controls]);
+    useEffect(() => {
+      const observer = new IntersectionObserver(
+        ([entry]) => entry.isIntersecting && controls.start("visible"),
+        { threshold: 0.4 }
+      );
+      if (ref.current) observer.observe(ref.current);
+      return () => observer.disconnect();
+    }, [controls]);
 
   useEffect(() => {
     axios
@@ -75,7 +75,7 @@ const GallerySection = () => {
       animate={controls}
       variants={{
         hidden: { opacity: 0, y: 50 },
-        visible: { opacity: 1, y: 0, transition: { duration: 0.8 } },
+        visible: { opacity: 1, y: 0, transition: { duration: 1.3 } },
       }}
     >
       <h2 className="gallery-title" style={{ textAlign: "center" }}>
@@ -87,7 +87,7 @@ const GallerySection = () => {
             className="gallery-card"
             key={i}
             whileHover={{ scale: 1.03  }}
-            transition={{ duration: 0.1 }}
+            transition={{ duration: 0.2 }}
             style={{ scale: getScale(i), transition: "scale 0.4s ease" }}
           >
             <div

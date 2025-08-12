@@ -6,7 +6,7 @@ const AboutMe = () => {
   const { t } = useTranslation();
   const textRef = useRef(null);
   const imageRef = useRef(null);
-  const shoeRef = useRef(null);  // Create a reference for the kangoo shoe
+  const shoeRef = useRef(null);  
   const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
@@ -24,16 +24,16 @@ const AboutMe = () => {
 
     const textNode = textRef.current;
     const imageNode = imageRef.current;
-    const shoeNode = shoeRef.current; // Reference for shoe
+    const shoeNode = shoeRef.current; 
 
     if (textNode) observer.observe(textNode);
     if (imageNode) observer.observe(imageNode);
-    if (shoeNode) observer.observe(shoeNode); // Observe the shoe as well
+    if (shoeNode) observer.observe(shoeNode); 
 
     return () => {
       if (textNode) observer.unobserve(textNode);
       if (imageNode) observer.unobserve(imageNode);
-      if (shoeNode) observer.unobserve(shoeNode); // Clean up observer for shoe
+      if (shoeNode) observer.unobserve(shoeNode); 
     };
   }, []);
 

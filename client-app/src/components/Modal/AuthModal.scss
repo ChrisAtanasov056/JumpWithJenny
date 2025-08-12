@@ -154,9 +154,9 @@ $shadow: 0 4px 20px rgba(44, 62, 80, 0.1);
 
     &::before, &::after {
       content: '';
-      position: absolute;
+      position: absolute; 
       top: 50%;
-      width: 40%;
+      width: 38%;
       height: 1px;
       background-color: $primary-color;
       }
