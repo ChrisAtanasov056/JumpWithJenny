@@ -25,9 +25,9 @@ import AdminWorkoutsList from './components/Admin/Workouts/AdminWorkoutList';
 import WorkoutForm from './components/Admin/Workouts/WorkoutForm';
 import HappyCustomers from './components/HappyCustomers/HappyCustomers';
 import Footer from './components/Footer/Footer';
-
-// Добавен импорт за новия компонент
 import DataDeletion from './components/DataDeletionPage/DataDeletionPage.jsx';
+
+import { HelmetProvider, Helmet } from 'react-helmet-async';
 
 function App() {
   useEffect(() => {
@@ -38,9 +38,11 @@ function App() {
     <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>
       <AuthProvider>
         <FacebookSDKProvider>
-          <Router>
-            <AppContent />
-          </Router>
+          <HelmetProvider>
+            <Router>
+              <AppContent />
+            </Router>
+          </HelmetProvider>
         </FacebookSDKProvider>
       </AuthProvider>
     </GoogleOAuthProvider>
@@ -55,6 +57,16 @@ const ProtectedAdminRoute = ({ children }) => {
   return children;
 };
 
+const CanonicalLink = () => {
+  const location = useLocation();
+  const canonicalUrl = `https://jumpwithjenny.com${location.pathname}`;
+  return (
+    <Helmet>
+      <link rel="canonical" href={canonicalUrl} />
+    </Helmet>
+  );
+};
+
 const AppContent = () => {
   const { user } = useAuth();
   const location = useLocation();
@@ -62,6 +74,9 @@ const AppContent = () => {
 
   return (
     <>
+      {/* ✅ Слагаме каноничен линк глобално */}
+      <CanonicalLink />
+
       {!isAdminRoute && <Navbar user={user} />}
       <Routes>
         {/* Public routes */}
