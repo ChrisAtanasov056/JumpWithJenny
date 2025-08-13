@@ -26,7 +26,6 @@ import WorkoutForm from './components/Admin/Workouts/WorkoutForm';
 import HappyCustomers from './components/HappyCustomers/HappyCustomers';
 import Footer from './components/Footer/Footer';
 import DataDeletion from './components/DataDeletionPage/DataDeletionPage.jsx';
-
 import { HelmetProvider, Helmet } from 'react-helmet-async';
 
 function App() {
@@ -49,6 +48,7 @@ function App() {
   );
 }
 
+// За admin защита
 const ProtectedAdminRoute = ({ children }) => {
   const { user } = useAuth();
 
@@ -59,7 +59,19 @@ const ProtectedAdminRoute = ({ children }) => {
 
 const CanonicalLink = () => {
   const location = useLocation();
-  const canonicalUrl = `https://jumpwithjenny.com${location.pathname}`;
+  let path = location.pathname;
+
+  if (path !== '/' && path.endsWith('/')) path = path.slice(0, -1);
+
+  if (path.startsWith('/admin')) {
+    return (
+      <Helmet>
+        <meta name="robots" content="noindex, nofollow" />
+      </Helmet>
+    );
+  }
+
+  const canonicalUrl = `https://jumpwithjenny.com${path}`;
   return (
     <Helmet>
       <link rel="canonical" href={canonicalUrl} />
@@ -74,7 +86,6 @@ const AppContent = () => {
 
   return (
     <>
-      {/* ✅ Слагаме каноничен линк глобално */}
       <CanonicalLink />
 
       {!isAdminRoute && <Navbar user={user} />}
@@ -112,6 +123,8 @@ const AppContent = () => {
           <Route path="workouts/:id/view" element={<WorkoutView />} />
         </Route>
       </Routes>
+
+      {!isAdminRoute && <Footer />}
     </>
   );
 };
