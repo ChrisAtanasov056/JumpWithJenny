@@ -55,7 +55,7 @@ $shadow-color: rgba(0, 0, 0, 0.1);
   &.inactive {
     transform: scale(0.85); 
     opacity: 0.5; 
-    pointer-events: none; 
+    default-events: none; 
     box-shadow: none;
   }
   
@@ -103,7 +103,7 @@ $shadow-color: rgba(0, 0, 0, 0.1);
   border: none;
   font-size: 2rem;
   color: $primary-color;
-  cursor: pointer;
+  cursor: default;
   transition: transform 0.3s ease, color 0.3s ease;
   position: absolute;
   top: 50%;
@@ -135,7 +135,7 @@ $shadow-color: rgba(0, 0, 0, 0.1);
   height: 12px;
   background-color: #ccc;
   border-radius: 50%;
-  cursor: pointer;
+  cursor: default;
   transition: background-color 0.3s ease, transform 0.3s ease;
 
   &.active {

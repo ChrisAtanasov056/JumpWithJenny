@@ -48,7 +48,6 @@ function App() {
   );
 }
 
-// За admin защита
 const ProtectedAdminRoute = ({ children }) => {
   const { user } = useAuth();
 
@@ -90,7 +89,6 @@ const AppContent = () => {
 
       {!isAdminRoute && <Navbar user={user} />}
       <Routes>
-        {/* Public routes */}
         <Route path="/" element={<Home />} />
         <Route path="/about" element={<AboutMe />} />
         <Route path="/gallery" element={<Gallery />} />
@@ -124,7 +122,6 @@ const AppContent = () => {
         </Route>
       </Routes>
 
-      {!isAdminRoute && <Footer />}
     </>
   );
 };

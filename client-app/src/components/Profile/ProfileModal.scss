@@ -64,7 +64,7 @@ $border-radius: 8px;
     border: none;
     color: $primary-color;
     font-size: 1.5rem;
-    cursor: pointer;
+    cursor: default;
     transition: color $transition-speed;
 
     &:hover {
@@ -167,7 +167,7 @@ $border-radius: 8px;
     padding: 12px 20px;
     border: none;
     border-radius: $border-radius;
-    cursor: pointer;
+    cursor: default;
     font-size: 1rem;
     font-weight: 600;
     transition: all $transition-speed ease;

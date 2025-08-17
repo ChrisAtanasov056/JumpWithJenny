@@ -26,7 +26,7 @@ $border-radius: 12px;
     left: 12px;
     color: $primary-color;
     font-size: 1rem;
-    pointer-events: none;
+    default-events: none;
     transition: all $transition-speed ease;
   }
   
@@ -88,7 +88,7 @@ $border-radius: 12px;
   border-radius: 25px;
   font-size: 1.1rem;
   font-weight: bold;
-  cursor: pointer;
+  cursor: default;
   overflow: hidden;
   transition: all $transition-speed ease;
   

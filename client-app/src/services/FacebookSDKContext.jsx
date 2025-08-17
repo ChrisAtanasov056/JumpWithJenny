@@ -23,12 +23,10 @@ export const FacebookSDKProvider = ({ children }) => {
         xfbml: true,
         version: "v23.0",
       });
-      console.log("Facebook SDK initialized");
       window.fbInitialized = true;
       setIsFbSdkReady(true);
     };
 
-    // Създаваме и добавяме script tag-а на Facebook
     const script = document.createElement("script");
     script.id = "facebook-jssdk";
     script.src = "https://connect.facebook.net/en_US/sdk.js";
@@ -36,13 +34,9 @@ export const FacebookSDKProvider = ({ children }) => {
     script.defer = true;
     document.body.appendChild(script);
 
-    script.onload = () => {
-      console.log("Facebook SDK script loaded");
-    };
 
     script.onerror = () => {
       console.error("Facebook SDK failed to load");
-      // Може да добавите логика за съобщение за грешка
     };
   }, []);
 

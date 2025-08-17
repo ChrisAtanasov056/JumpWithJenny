@@ -34,6 +34,8 @@
         "loginRequired": "You need to be logged in to register for a workout.",
         "registerFailed": "Failed to register. Please try again."
     },
+    "shoesTitle": "Kangoo Jumps Shoes",
+    "selectCardTitle": "Select Workout Card",
     "days": {
         "monday": "Monday",
         "tuesday": "Tuesday",

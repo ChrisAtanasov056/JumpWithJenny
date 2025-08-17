@@ -10,11 +10,9 @@ const api = axios.create({
   },
 });
 
-// Add request interceptor to include auth token if available
 api.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('jwtToken');
-    // Check if the token is available in local storage   
+    const token = localStorage.getItem('jwtToken'); 
     if (token?.trim()) {
       config.headers.Authorization = `Bearer ${token.trim()}`;
     }

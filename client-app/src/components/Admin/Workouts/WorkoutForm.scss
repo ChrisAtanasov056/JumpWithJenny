@@ -112,7 +112,7 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      cursor: pointer;
+      cursor: default;
       transition: all 0.2s ease;
 
       &:hover {
@@ -131,7 +131,7 @@
     border: none;
     padding: 0.5rem 1rem;
     border-radius: 4px;
-    cursor: pointer;
+    cursor: default;
     font-size: 0.9rem;
     transition: background-color 0.2s ease;
 
@@ -157,7 +157,7 @@
     border: none;
     padding: 0.75rem 1.5rem;
     border-radius: 4px;
-    cursor: pointer;
+    cursor: default;
     font-size: 1rem;
     transition: background-color 0.2s ease;
 
@@ -177,7 +177,7 @@
     border: none;
     padding: 0.75rem 1.5rem;
     border-radius: 4px;
-    cursor: pointer;
+    cursor: default;
     font-size: 1rem;
     transition: background-color 0.2s ease;
 

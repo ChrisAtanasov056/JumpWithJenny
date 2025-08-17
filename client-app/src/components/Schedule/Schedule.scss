@@ -82,7 +82,7 @@ $border-radius: 8px; // Rounded corners
   }
 
   .schedule-cell {
-    cursor: pointer;
+    cursor: default;
     transition: transform $transition-speed ease, box-shadow $transition-speed ease;
 
     &.available {

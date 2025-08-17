@@ -70,7 +70,7 @@
           padding: 8px 16px;
           border-radius: 4px;
           border: none;
-          cursor: pointer;
+          cursor: default;
           transition: background 0.3s;
   
           &:hover {
@@ -145,7 +145,7 @@
             border-radius: 4px;
             font-size: 13px;
             text-decoration: none;
-            cursor: pointer;
+            cursor: default;
           }
   
           .btn-view {
@@ -236,7 +236,7 @@
   
       .slider {
         position: absolute;
-        cursor: pointer;
+        cursor: default;
         top: 0;
         left: 0;
         right: 0;

@@ -59,7 +59,7 @@ $border-radius: 12px;
     border: none;
     font-size: 24px;
     color: $light-text-color;
-    cursor: pointer;
+    cursor: default;
     transition: color $transition-speed;
     &:hover {
       color: $primary-color;
@@ -136,7 +136,7 @@ $border-radius: 12px;
     border: none;
     padding: 10px 20px;
     border-radius: 50px;
-    cursor: pointer;
+    cursor: default;
     font-weight: 600;
     margin-top: 15px;
     transition: transform $transition-speed;
@@ -169,7 +169,7 @@ $border-radius: 12px;
       padding: 12px 25px;
       border-radius: 50px;
       font-weight: 600;
-      cursor: pointer;
+      cursor: default;
       transition: background $transition-speed;
       &:hover {
         background: darken($primary-color, 10%);
@@ -229,7 +229,7 @@ $border-radius: 12px;
     position: relative;
     padding-left: 30px;
     margin-bottom: 12px;
-    cursor: pointer;
+    cursor: default;
     font-size: 1rem;
     -webkit-user-select: none;
     -moz-user-select: none;
@@ -239,7 +239,7 @@ $border-radius: 12px;
     input {
       position: absolute;
       opacity: 0;
-      cursor: pointer;
+      cursor: default;
       height: 0;
       width: 0;
       
@@ -288,7 +288,7 @@ $border-radius: 12px;
       border: none;
       border-radius: $border-radius / 2;
       padding: 10px 5px;
-      cursor: pointer;
+      cursor: default;
       font-weight: 600;
       font-size: 1rem;
       transition: all $transition-speed;
@@ -325,7 +325,7 @@ $border-radius: 12px;
       transform: translateY(-50%);
       font-size: 1rem;
       color: $light-text-color;
-      pointer-events: none;
+      default-events: none;
     }
 
     .styled-select {
@@ -338,7 +338,7 @@ $border-radius: 12px;
       -webkit-appearance: none;
       -moz-appearance: none;
       appearance: none;
-      cursor: pointer;
+      cursor: default;
       color: $secondary-color;
       transition: border-color $transition-speed;
       
@@ -365,7 +365,7 @@ $border-radius: 12px;
     border-radius: 50px;
     font-size: 1.1rem;
     font-weight: 700;
-    cursor: pointer;
+    cursor: default;
     transition: all $transition-speed;
     
     &:hover {

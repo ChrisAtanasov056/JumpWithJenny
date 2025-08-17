@@ -87,7 +87,7 @@ $border-radius: 12px;
           left: 12px;
           color: $primary-color;
           font-size: 1rem;
-          pointer-events: none;
+          default-events: none;
           transition: all $transition-speed ease;
         }
         
@@ -150,7 +150,7 @@ $border-radius: 12px;
           border-left: 5px solid transparent;
           border-right: 5px solid transparent;
           border-top: 5px solid $primary-color;
-          pointer-events: none;
+          default-events: none;
           transform: translateY(-50%);
         }
       }
@@ -180,7 +180,7 @@ $border-radius: 12px;
       border-radius: 50px;
       font-size: 1rem;
       font-weight: 600;
-      cursor: pointer;
+      cursor: default;
       overflow: hidden;
       transition: all $transition-speed ease;
       box-shadow: 0 4px 15px rgba($accent-color, 0.3);

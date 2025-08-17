@@ -22,7 +22,7 @@ const Welcome = () => {
         <p>{t('welcomeText')}</p>
         <p>{t('startPrompt')}</p>
         <button className="get-started-btn">
-          <Link to="schedule" smooth={true} duration={1500}>{t('startText')}</Link>
+          <Link to="schedule" smooth={true} duration={500}>{t('startText')}</Link>
         </button>
       </div>
     </section>

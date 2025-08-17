@@ -10,7 +10,7 @@ import { API_BASE_URL } from "../../api/axius";
 
 const baseUrl = API_BASE_URL;
 
-const GallerySection = () => {
+const Gallery = () => {
   const { t } = useTranslation();
   const [images, setImages] = useState([]);
   const controls = useAnimation();
@@ -69,6 +69,7 @@ const GallerySection = () => {
 
   return (
     <motion.section
+      id="gallery"
       className="modern-gallery"
       ref={ref}
       initial="hidden"
@@ -103,4 +104,4 @@ const GallerySection = () => {
   );
 };
 
-export default GallerySection;
+export default Gallery;

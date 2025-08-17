@@ -61,7 +61,7 @@ $shadow: 0 4px 20px rgba(44, 62, 80, 0.1);
   border: none;
   font-size: 1.5rem;
   color: $primary-color;
-  cursor: pointer;
+  cursor: default;
   transition: color 0.2s;
 
   &:hover {
@@ -105,7 +105,7 @@ $shadow: 0 4px 20px rgba(44, 62, 80, 0.1);
   border: none;
   color: $primary-color;
   font-size: 0.9rem;
-  cursor: pointer;
+  cursor: default;
   margin-top: 1rem;
   transition: color 0.2s;
 
@@ -134,7 +134,7 @@ $shadow: 0 4px 20px rgba(44, 62, 80, 0.1);
     border: none;
     color: $accent-color;
     font-weight: bold;
-    cursor: pointer;
+    cursor: default;
     transition: color 0.2s;
 
     &:hover {
@@ -183,7 +183,7 @@ $shadow: 0 4px 20px rgba(44, 62, 80, 0.1);
     justify-content: center;
     align-items: center;
     font-size: 1.2rem;
-    cursor: pointer;
+    cursor: default;
     transition: transform 0.2s;
     border: 1px solid $primary-color;
     color: $text-color;
@@ -233,7 +233,7 @@ $shadow: 0 4px 20px rgba(44, 62, 80, 0.1);
   align-items: center;
   justify-content: center;
   border: 1px solid #ccc;
-  cursor: pointer;
+  cursor: default;
   transition: all 0.3s ease;
 
   &:hover {

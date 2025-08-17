@@ -96,7 +96,7 @@ $box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
   border: none;
   padding: 4px 10px;
   border-radius: 4px;
-  cursor: pointer;
+  cursor: default;
   font-size: 0.9rem;
   transition: background 0.2s;
 }
@@ -141,7 +141,7 @@ $box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
   border: none;
   border-radius: 6px;
   font-size: 0.9rem;
-  cursor: pointer;
+  cursor: default;
   transition: background 0.2s;
 }
 
@@ -168,7 +168,7 @@ $box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
   align-items: center;
   font-size: 0.95rem;
   color: #444;
-  cursor: pointer;
+  cursor: default;
   gap: 8px;
 }
 
@@ -176,7 +176,7 @@ $box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
   width: 16px;
   height: 16px;
   accent-color: #007bff; // модерен син цвят за отметката
-  cursor: pointer;
+  cursor: default;
 }
 
 .close-icon {
@@ -184,7 +184,7 @@ $box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
   border: none;
   font-size: 1.8rem;
   font-weight: bold;
-  cursor: pointer;
+  cursor: default;
   color: $text-color;
   padding: 0.25rem 0.5rem;
   position: absolute;

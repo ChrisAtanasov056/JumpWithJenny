@@ -113,7 +113,7 @@ $transition-speed: 0.4s;
       color: $light-color !important;
       border: 2px solid rgba($light-color, 0.3);
       border-radius: $border-radius * 2;
-      cursor: pointer;
+      cursor: default;
       transition: all $transition-speed ease;
       box-shadow: 0 4px 15px rgba($accent-color, 0.3);
       letter-spacing: 0.5px;

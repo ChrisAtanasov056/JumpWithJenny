@@ -7,7 +7,7 @@ import { useAuth } from '../../services/AuthContext';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faUser } from '@fortawesome/free-solid-svg-icons';
 import { Link as RouterLink } from 'react-router-dom';
-import { useTranslation } from 'react-i18next'; // Import useTranslation
+import { useTranslation } from 'react-i18next';
 import LanguageDropdown from '../lang/LanguageDropdown.tsx';
 
 const Navbar = () => {
@@ -16,59 +16,38 @@ const Navbar = () => {
   const [isNavActive, setNavActive] = useState(false);
   const [menuActive, setMenuActive] = useState(false);
 
-  const { isAuthenticated, user, logout } = useAuth(); // Use authentication context
-  const { t, i18n } = useTranslation(); // Use useTranslation hook
+  const { isAuthenticated, user, logout } = useAuth();
+  const { t, i18n } = useTranslation();
 
   const toggleMenu = () => {
     setMenuActive(!menuActive);
     setNavActive(!isNavActive);
   };
 
-  const toggleModal = () => {
-    setModalOpen(!isModalOpen);
-  };
-
-  const toggleProfileModal = () => {
-    setProfileOpen(!isProfileOpen);
-  };
-
-  const handleLoginSuccess = () => {
-    setModalOpen(false); // Close the login modal on success
-  };
+  const toggleModal = () => setModalOpen(!isModalOpen);
+  const toggleProfileModal = () => setProfileOpen(!isProfileOpen);
+  const handleLoginSuccess = () => setModalOpen(false);
 
   const handleLogout = () => {
-    logout(); // Call logout function from auth context
-    setProfileOpen(false); // Close profile modal
+    logout();
+    setProfileOpen(false);
   };
 
-  const handleLogoClick = (e) => {
-    e.preventDefault();
-    // Force full page reload while maintaining proper navigation
-    window.location.href = '/';
-  };
-
-  // Function to handle language change
   const changeLanguage = (language) => {
     i18n.changeLanguage(language);
   };
 
-  const [menuOpen, setMenuOpen] = useState(false);
-;
-
   return (
     <>
-      {/* Navbar */}
       <nav className={`navbar navbar-expand-lg fixed-top ${menuActive ? 'menu-open' : ''}`}>
         <div className="container">
-          <Link to="/">
-            <a href="/" onClick={handleLogoClick}>
-              <img
-                src="/images/brand_logo_2.png"
-                alt="Jump With Jenny Logo"
-                className="navbar-logo"
-              />
-            </a>
-          </Link>
+          <a href="/" className="navbar-logo-link">
+            <img
+              src="/images/brand_logo_2.png"
+              alt="Jump With Jenny Logo"
+              className="navbar-logo"
+            />
+          </a>
 
           <button
             className={`navbar-toggler ${menuActive ? 'active' : ''}`}
@@ -82,26 +61,38 @@ const Navbar = () => {
             </div>
           </button>
 
-          
           <div className={`navbar-nav ${isNavActive ? 'active' : ''}`}>
             <li className="nav-item">
-              <Link to="welcome" className="nav-link" smooth={true} duration={500} onClick={toggleMenu}>{t('navbar.home')}</Link>
+              <Link to="welcome" className="nav-link" smooth duration={500} onClick={toggleMenu}>
+                {t('navbar.home')}
+              </Link>
             </li>
             <li className="nav-item">
-              <Link to="about" className="nav-link" smooth={true} duration={500} onClick={toggleMenu}>{t('navbar.about')}</Link>
+              <Link to="about" className="nav-link" smooth duration={500} onClick={toggleMenu}>
+                {t('navbar.about')}
+              </Link>
             </li>
             <li className="nav-item">
-              <Link to="gallery" className="nav-link" smooth={true} duration={500} onClick={toggleMenu}>{t('navbar.gallery')}</Link>
-            </li>  
-            <li className="nav-item">
-              <Link to="schedule" className="nav-link" smooth={true} duration={500} onClick={toggleMenu}>{t('navbar.schedule')}</Link>
+              <Link to="gallery" className="nav-link" smooth duration={500} onClick={toggleMenu}>
+                {t('navbar.gallery')}
+              </Link>
             </li>
             <li className="nav-item">
-              <Link to="faq" className="nav-link" smooth={true} duration={500} onClick={toggleMenu}>{t('navbar.faq')}</Link>
+              <Link to="schedule" className="nav-link" smooth duration={500} onClick={toggleMenu}>
+                {t('navbar.schedule')}
+              </Link>
             </li>
             <li className="nav-item">
-              <Link to="contacts" className="nav-link" smooth={true} duration={500} onClick={toggleMenu}>{t('navbar.contact')}</Link>
+              <Link to="faq" className="nav-link" smooth duration={500} onClick={toggleMenu}>
+                {t('navbar.faq')}
+              </Link>
             </li>
+            <li className="nav-item">
+              <Link to="contacts" className="nav-link" smooth duration={500} onClick={toggleMenu}>
+                {t('navbar.contact')}
+              </Link>
+            </li>
+
             {isAuthenticated ? (
               <>
                 {user?.role === 'Administrator' && (
@@ -119,28 +110,30 @@ const Navbar = () => {
               </>
             ) : (
               <li className="nav-item">
-                <button onClick={toggleModal} className="login-btn">{t('navbar.login_register')}</button>
+                <button onClick={toggleModal} className="login-btn">
+                  {t('navbar.login_register')}
+                </button>
               </li>
             )}
           </div>
+
           <LanguageDropdown changeLanguage={changeLanguage} />
         </div>
       </nav>
 
       {isModalOpen && (
-        <AuthModal 
-          onClose={toggleModal} 
-          onLoginSuccess={handleLoginSuccess} 
-          setModalOpen={setModalOpen} 
-          
+        <AuthModal
+          onClose={toggleModal}
+          onLoginSuccess={handleLoginSuccess}
+          setModalOpen={setModalOpen}
         />
       )}
 
       {isProfileOpen && (
-        <ProfileModal 
-          onClose={toggleProfileModal} 
-          user={user} 
-          onLogout={handleLogout} 
+        <ProfileModal
+          onClose={toggleProfileModal}
+          user={user}
+          onLogout={handleLogout}
         />
       )}
     </>
