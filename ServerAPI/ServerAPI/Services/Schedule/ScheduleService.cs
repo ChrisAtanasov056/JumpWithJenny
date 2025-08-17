@@ -29,7 +29,7 @@ namespace ServerAPI.Services.Schedule
             _logger = logger;
         }
 
-        public async Task<Workout> ApplyForWorkoutAsync(string workoutId, ShoesSize shoeSize, CardType cardType, string userId, bool usesOwnShoes)
+        public async Task<Workout> ApplyForWorkoutAsync(string workoutId, ShoesSize? shoeSize, CardType cardType, string userId, bool usesOwnShoes)
         {
             // First get the workout with all necessary includes
             var workout = await _workoutRepository.All()
@@ -68,7 +68,6 @@ namespace ServerAPI.Services.Schedule
                 // Explicitly update the WorkoutShoes entity
                 _workoutRepository.Update(workout);
             }
-            _logger.LogInformation($"Assigned shoe: {assignedShoe?.Id}, Workout Shoe to Update: {workoutShoeToUpdate?.ShoeId}");
             // Create appointment
             var appointment = new Appointment
             {
