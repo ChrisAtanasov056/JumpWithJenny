@@ -109,8 +109,14 @@
           "register": "Sign Up",
           "login": "Log In",
           "orContinueWith": "Or continue with:",
-          "forgotPasswordSuccess": "Password recovery instructions have been sent to your email.",
-          "forgotPasswordError": "An error occurred while sending the instructions. Please try again."
+          "forgotPasswordTitle": "Forgot Password",
+          "forgotPasswordInstructions": "Please enter your email to receive a password reset link.",
+          "emailLabel": "Email",
+          "emailPlaceholder": "Enter your email",
+          "sendResetLink": "Send Reset Link",
+          "sending": "Sending...",
+          "forgotPasswordSuccessMessage": "Check your email for the reset link!",
+          "forgotPasswordGenericError": "An error occurred. Please try again."
         },
         "login": {
           "emailLabel": "Email",
@@ -164,7 +170,19 @@
         "close": "Close",
         "loginPromptTitle": "Please Log In",
         "loginPromptText": "You need to be logged in to register for this workout.",
-
+        
+         "resetPassword": {
+            "title": "Reset Password",
+            "newPasswordLabel": "New Password",
+            "confirmPasswordLabel": "Confirm New Password",
+            "passwordsMismatch": "Passwords do not match.",
+            "invalidLink": "Invalid or expired password reset link.",
+            "genericError": "An error occurred. Please try again.",
+            "resetting": "Resetting...",
+            "resetPassword": "Reset Password",
+            "successMessage": "Password reset successfully!",
+            "goHome": "Go to Home Page"
+          },
         
         "Email Verification": "Email Verification",
         "Your email has been successfully verified!": "Your email has been successfully verified!",

@@ -40,6 +40,7 @@ namespace ServerAPI.Services.Schedule
 
             if (workout == null)
             {
+                
                 return null; // Workout not found
             }
 

@@ -1,3 +1,4 @@
+import e from 'cors';
 import axios from '../api/axius';
 
 // Register a new user
@@ -51,6 +52,20 @@ export const changePassword = async (userData) => {
   }
 };
 
+export const forgotPasswordEmail = async (userData) => {
+  try {
+    const response = await axios.post('/Account/forgot-password', {
+      email: userData.email,
+      language: userData.language,
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Forgot password error:', error);
+    throw error;
+  }
+};
+
+
 // Verify Email
 export const verifyEmail = async (userId, token, language) => {
   try {
@@ -73,9 +88,9 @@ export const verifyEmail = async (userId, token, language) => {
 export const forgotPassword = async ({ email, token, newPassword }) => {
   try {
     const response = await axios.post('/Account/reset-password-token', {
-      email: email.trim(),
-      token: token.trim(),
-      newPassword: newPassword.trim()
+      email: email,
+      token: token,
+      newPassword: newPassword
     }, {
       headers: {
         'Content-Type': 'application/json',

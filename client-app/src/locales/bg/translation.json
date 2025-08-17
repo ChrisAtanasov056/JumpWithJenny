@@ -110,8 +110,26 @@
           "register": "Регистрирай се",
           "login": "Влез",
           "orContinueWith": "Или влез чрез:",
-          "forgotPasswordSuccess": "Инструкции за възстановяване на паролата бяха изпратени на твоя имейл.",
-          "forgotPasswordError": "Възникна грешка при изпращането на инструкциите. Моля, опитай отново."
+          "forgotPasswordTitle": "Забравена парола",
+          "forgotPasswordInstructions": "Моля, въведете вашия имейл, за да получите линк за възстановяване на паролата.",
+          "emailLabel": "Имейл",
+          "emailPlaceholder": "Въведете вашия имейл",
+          "sendResetLink": "Изпрати линк за възстановяване",
+          "sending": "Изпращане...",
+          "forgotPasswordSuccessMessage": "Проверете имейла си за линка за възстановяване!",
+          "forgotPasswordGenericError": "Възникна грешка. Моля, опитайте отново."
+        },
+        "resetPassword": {
+            "title": "Възстановяване на парола",
+            "newPasswordLabel": "Нова парола",
+            "confirmPasswordLabel": "Потвърди нова парола",
+            "passwordsMismatch": "Паролите не съвпадат.",
+            "invalidLink": "Невалиден или изтекъл линк за възстановяване на парола.",
+            "genericError": "Възникна грешка. Моля, опитайте отново.",
+            "resetting": "Възстановяване...",
+            "resetPassword": "Възстанови паролата",
+            "successMessage": "Паролата беше успешно възстановена!",
+            "goHome": "Към началната страница"
         },
         "login": {
           "emailLabel": "Имейл",

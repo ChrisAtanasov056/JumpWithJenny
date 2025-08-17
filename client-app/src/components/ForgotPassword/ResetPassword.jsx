@@ -1,47 +1,63 @@
 // src/components/ResetPassword/ResetPassword.jsx
 import React, { useState } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
-import SuccessModal from '../Register/SuccessModal';
+import i18n from '../../i18n';
 import './ResetPassword.scss';
 import { forgotPassword } from '../../services/authService';
+import PropTypes from 'prop-types';
+import SuccessModal from '../Register/SuccessModal';
 
 const ResetPassword = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+
   const [passwords, setPasswords] = useState({
     newPassword: '',
     confirmPassword: ''
   });
-  const [errorMessage, setErrorMessage] = useState('');
+  const [feedback, setFeedback] = useState({ message: '', isError: false });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
 
-  // Get token and email from URL parameters
   const token = searchParams.get('token');
   const email = searchParams.get('email');
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+    setFeedback({ message: '', isError: false });
+
     if (passwords.newPassword !== passwords.confirmPassword) {
-      setErrorMessage('Passwords do not match');
+      setFeedback({ 
+        message: i18n.t('resetPassword.passwordsMismatch'), 
+        isError: true 
+      });
       return;
     }
-    console.log("Token: " , token) 
+
+    if (!token || !email) {
+      setFeedback({ 
+        message: i18n.t('resetPassword.invalidLink'), 
+        isError: true 
+      });
+      return;
+    }
+
     try {
       setIsSubmitting(true);
-      setErrorMessage('');
-
-      const response = await forgotPassword({ 
-        token: token,
-        email: email,
+      await forgotPassword({ 
+        token,
+        email,
         newPassword: passwords.newPassword
-      })
-      console.log("Resposnse: ", response)
+      });
+      
       setShowSuccess(true);
       setTimeout(() => navigate('/'), 2000);
     } catch (error) {
-      setErrorMessage(error.response?.data?.message || 'Password reset failed');
+      const errorMessage = error.response?.data?.message || i18n.t('resetPassword.genericError');
+      setFeedback({ 
+        message: errorMessage, 
+        isError: true 
+      });
     } finally {
       setIsSubmitting(false);
     }
@@ -52,56 +68,68 @@ const ResetPassword = () => {
     setPasswords(prev => ({ ...prev, [name]: value }));
   };
 
-
-
+  if (!token || !email) {
+    return (
+      <div className="reset-password-container">
+        <p className="feedback-message error">{i18n.t('resetPassword.invalidLink')}</p>
+        <button onClick={() => navigate('/')} className="back-button">
+          {i18n.t('resetPassword.goHome')}
+        </button>
+      </div>
+    );
+  }
 
   return (
-    <div className="modal-overlay">
-      <div className="modal-content">
-        <div className="form-container">
-          {!showSuccess ? (
-            <form onSubmit={handleSubmit} className="auth-form">
-              <h2>Reset Password</h2>
-              
-              <div className="form-group">
-                <label>New Password</label>
-                <input
-                  type="password"
-                  name="newPassword"
-                  value={passwords.newPassword}
-                  onChange={handleChange}
-                  required
-                />
-              </div>
+    <div className="reset-password-container">
+      <div className="reset-password-form-box">
+        {!showSuccess ? (
+          <form onSubmit={handleSubmit} className="auth-form">
+            <h2>{i18n.t('resetPassword.title')}</h2>
+            
+            <div className="form-group">
+              <label htmlFor="newPassword">{i18n.t('resetPassword.newPasswordLabel')}</label>
+              <input
+                id="newPassword"
+                type="password"
+                name="newPassword"
+                value={passwords.newPassword}
+                onChange={handleChange}
+                required
+              />
+            </div>
 
-              <div className="form-group">
-                <label>Confirm New Password</label>
-                <input
-                  type="password"
-                  name="confirmPassword"
-                  value={passwords.confirmPassword}
-                  onChange={handleChange}
-                  required
-                />
-              </div>
+            <div className="form-group">
+              <label htmlFor="confirmPassword">{i18n.t('resetPassword.confirmPasswordLabel')}</label>
+              <input
+                id="confirmPassword"
+                type="password"
+                name="confirmPassword"
+                value={passwords.confirmPassword}
+                onChange={handleChange}
+                required
+              />
+            </div>
 
-              {errorMessage && <p className="error-message">⚠️ {errorMessage}</p>}
+            {feedback.message && (
+              <p className={`feedback-message ${feedback.isError ? 'error' : 'success'}`}>
+                {feedback.message}
+              </p>
+            )}
 
-              <button 
-                type="submit" 
-                className="auth-button"
-                disabled={isSubmitting}
-              >
-                {isSubmitting ? 'Resetting...' : 'Reset Password'}
-              </button>
-            </form>
-          ) : (
-            <SuccessModal 
-              message="Password reset successfully!" 
-              onClose={() => navigate('/')}
-            />
-          )}
-        </div>
+            <button 
+              type="submit" 
+              className="submit-button"
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? i18n.t('resetPassword.resetting') : i18n.t('resetPassword.resetPassword')}
+            </button>
+          </form>
+        ) : (
+          <SuccessModal 
+            message={i18n.t('resetPassword.successMessage')}
+            onClose={() => navigate('/')}
+          />
+        )}
       </div>
     </div>
   );
