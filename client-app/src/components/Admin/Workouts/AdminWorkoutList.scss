@@ -1,275 +1,317 @@
-@use "sass:color";
 .admin-workouts {
-    padding: 20px;
-  
-    .loading,
-    .error {
-      padding: 20px;
-      text-align: center;
-      font-size: 1.1rem;
+  padding: 2rem;
+  font-family: 'Arial', sans-serif;
+  max-width: 1200px;
+  margin: 0 auto;
+
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+
+    h2 {
+      font-size: 2rem;
+      color: #333;
+      margin: 0;
     }
-  
-    .error {
-      color: #dc3545;
-      background: #f8d7da;
-      border-radius: 4px;
-    }
-  
-    .success {
-      background: #d4edda;
-      color: #155724;
-      padding: 10px 15px;
-      border-radius: 4px;
-      margin-bottom: 20px;
-    }
-  
-    .header {
+
+    .actions {
       display: flex;
-      justify-content: space-between;
+      gap: 1rem;
       align-items: center;
-      margin-bottom: 20px;
-      flex-wrap: wrap;
-      gap: 15px;
-  
-      h2 {
-        margin: 0;
-        color: #2c3e50;
-      }
-  
-      .actions {
-        display: flex;
-        gap: 15px;
-  
-        .search-box {
-          position: relative;
-  
-          input {
-            padding: 8px 15px 8px 35px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            width: 250px;
-  
-            &:focus {
-              outline: none;
-              border-color: #3498db;
-            }
-          }
-  
-          .search-icon {
-            position: absolute;
-            left: 10px;
-            top: 50%;
-            transform: translateY(-50%);
-            font-size: 14px;
-          }
-        }
-  
-        .btn-add {
-          background: #2ecc71;
-          color: white;
-          padding: 8px 16px;
-          border-radius: 4px;
-          border: none;
-          cursor: default;
-          transition: background 0.3s;
-  
-          &:hover {
-            background: color.adjust(#2ecc71, $lightness: -10%);
-          }
-        }
-      }
-    }
-  
-    .workouts-table {
-      overflow-x: auto;
-      margin-top: 20px;
-  
-      table {
-        width: 100%;
-        border-collapse: collapse;
-        background: white;
-        border-radius: 8px;
-        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-  
-        th,
-        td {
-          padding: 12px 15px;
-          text-align: left;
-          border-bottom: 1px solid #ecf0f1;
-        }
-  
-        th {
-          background: #f8f9fa;
-          font-weight: 600;
-          color: #2c3e50;
-        }
-  
-        tr:hover {
-          background-color: #f8f9fa;
-        }
-  
-        .status-badge {
-          padding: 4px 8px;
-          border-radius: 4px;
-          font-size: 12px;
-  
-          &.available {
-            background: #d4edda;
-            color: #155724;
-          }
-  
-          &.booked {
-            background: #fff3cd;
-            color: #856404;
-          }
-  
-          &.completed {
-            background: #d1ecf1;
-            color: #0c5460;
-          }
-  
-          &.cancelled {
-            background: #f8d7da;
-            color: #721c24;
-          }
-        }
-  
-        .actions {
-          display: flex;
-          gap: 8px;
-          white-space: nowrap;
-  
-          a,
-          button {
-            padding: 6px 12px;
-            border-radius: 4px;
-            font-size: 13px;
-            text-decoration: none;
-            cursor: default;
-          }
-  
-          .btn-view {
-            background: #3498db;
-            color: white;
-          }
-  
-          .btn-edit {
-            background: #f39c12;
-            color: white;
-          }
-  
-          .btn-delete {
-            background: #e74c3c;
-            color: white;
-            border: none;
-          }
-        }
-  
-        .no-results {
-          text-align: center;
-          color: #7f8c8d;
-          padding: 20px;
-        }
-      }
     }
   }
-  
-  @media (max-width: 768px) {
-    .admin-workouts {
-      .header {
-        flex-direction: column;
-        align-items: flex-start;
-  
-        .actions {
-          width: 100%;
-          flex-direction: column;
-  
-          .search-box {
-            width: 100%;
-  
-            input {
-              width: 100%;
-            }
-          }
-  
-          .btn-add {
-            width: 100%;
-            text-align: center;
-          }
-        }
+
+  .search-box {
+    position: relative;
+    input {
+      padding: 0.5rem 0.5rem 0.5rem 2.5rem;
+      border-radius: 20px;
+      border: 1px solid #ccc;
+      width: 250px;
+      transition: all 0.3s ease;
+      
+      &:focus {
+        outline: none;
+        border-color: #007bff;
+        box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
       }
-  
-      .workouts-table {
-        table {
-          .actions {
-            flex-direction: column;
-            gap: 5px;
-  
-            button,
-            a {
-              width: 100%;
-              text-align: center;
-            }
-          }
-        }
-      }
+    }
+    .search-icon {
+      position: absolute;
+      left: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #aaa;
+    }
+  }
+
+  .btn-add {
+    padding: 0.75rem 1.5rem;
+    background-color: #28a745;
+    color: white;
+    border: none;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: background-color 0.3s ease;
+    
+    &:hover {
+      background-color: #218838;
     }
   }
 
   .view-switch {
     display: flex;
     align-items: center;
-    gap: 0.75rem;
-    margin: 1rem 0;
-  
+    gap: 10px;
+    margin-bottom: 1.5rem;
+
     .switch {
       position: relative;
       display: inline-block;
-      width: 50px;
-      height: 26px;
-  
+      width: 60px;
+      height: 34px;
+      
       input {
         opacity: 0;
         width: 0;
         height: 0;
       }
-  
+      
       .slider {
         position: absolute;
-        cursor: default;
+        cursor: pointer;
         top: 0;
         left: 0;
         right: 0;
         bottom: 0;
         background-color: #ccc;
-        transition: 0.4s;
+        transition: .4s;
         border-radius: 34px;
-  
-        &:before {
+        
+        &::before {
           position: absolute;
           content: "";
-          height: 20px;
-          width: 20px;
+          height: 26px;
+          width: 26px;
           left: 4px;
-          bottom: 3px;
+          bottom: 4px;
           background-color: white;
-          transition: 0.4s;
+          transition: .4s;
           border-radius: 50%;
         }
       }
-  
+
       input:checked + .slider {
-        background-color: #ff8000;
+        background-color: #007bff;
       }
-  
+
       input:checked + .slider:before {
-        transform: translateX(24px);
+        transform: translateX(26px);
       }
-    }
-  
-    span {
-      font-weight: bold;
-      font-size: 0.95rem;
     }
   }
-  
+
+  .success {
+    background-color: #d4edda;
+    color: #155724;
+    padding: 1rem;
+    border: 1px solid #c3e6cb;
+    border-radius: 4px;
+    margin-bottom: 1rem;
+    text-align: center;
+  }
+
+  .error {
+    background-color: #f8d7da;
+    color: #721c24;
+    padding: 1rem;
+    border: 1px solid #f5c6cb;
+    border-radius: 4px;
+    margin-bottom: 1rem;
+    text-align: center;
+  }
+
+  .workouts-table {
+    width: 100%;
+    overflow-x: auto;
+    
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background-color: #fff;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      border-radius: 8px;
+      
+      th, td {
+        padding: 1rem;
+        text-align: left;
+        border-bottom: 1px solid #ddd;
+      }
+      
+      th {
+        background-color: #f8f9fa;
+        font-weight: bold;
+      }
+      
+      tr:last-child td {
+        border-bottom: none;
+      }
+      
+      .status-badge {
+        display: inline-block;
+        padding: 0.25em 0.6em;
+        font-size: 75%;
+        font-weight: 700;
+        line-height: 1;
+        text-align: center;
+        white-space: nowrap;
+        vertical-align: baseline;
+        border-radius: 0.375rem;
+      }
+
+      .status-badge.open {
+        background-color: #28a745;
+        color: white;
+      }
+      .status-badge.full {
+        background-color: #dc3545;
+        color: white;
+      }
+    }
+  }
+
+  .no-results {
+    text-align: center;
+    padding: 2rem;
+    color: #6c757d;
+  }
+
+  .actions {
+    display: flex;
+    gap: 0.5rem;
+    
+    .btn-view, .btn-edit, .btn-delete {
+      padding: 0.5rem 1rem;
+      text-decoration: none;
+      border-radius: 4px;
+      font-size: 0.9rem;
+      color: white;
+      cursor: pointer;
+      border: none;
+      transition: background-color 0.3s ease;
+    }
+    
+    .btn-view {
+      background-color: #007bff;
+      &:hover { background-color: #0056b3; }
+    }
+    
+    .btn-edit {
+      background-color: #ffc107;
+      &:hover { background-color: #e0a800; }
+    }
+    
+    .btn-delete {
+      background-color: #dc3545;
+      &:hover { background-color: #c82333; }
+    }
+  }
+
+  /* --- Медийни заявки за мобилен дизайн --- */
+  @media (max-width: 768px) {
+    .admin-workouts {
+      padding: 1rem;
+    }
+
+    .header {
+      flex-direction: column;
+      align-items: stretch;
+      gap: 10px;
+    }
+
+    .header h2 {
+      text-align: center;
+    }
+
+    .header .actions {
+      flex-direction: column;
+      align-items: stretch;
+      width: 100%;
+    }
+
+    .search-box {
+      width: 100%;
+      input {
+        width: 100%;
+      }
+    }
+
+    .btn-add {
+      width: 100%;
+    }
+
+    /* Скриване на стандартната таблица на мобилни устройства */
+    .workouts-table table {
+      display: none;
+    }
+
+    /* Стилове за картовидното оформление */
+    .workouts-card-list {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+      padding: 10px 0;
+    }
+
+    .workout-card {
+      background-color: #fff;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      padding: 15px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .workout-card .info-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid #eee;
+      padding-bottom: 5px;
+    }
+
+    .workout-card .info-row:last-child {
+      border-bottom: none;
+      padding-bottom: 0;
+    }
+
+    .workout-card .info-label {
+      font-weight: bold;
+      color: #555;
+      font-size: 14px;
+    }
+
+    .workout-card .actions {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .workout-card .actions .btn-view,
+    .workout-card .actions .btn-edit,
+    .workout-card .actions .btn-delete {
+      width: 100%;
+      text-align: center;
+    }
+
+    .no-results {
+      padding: 1rem;
+    }
+  }
+}

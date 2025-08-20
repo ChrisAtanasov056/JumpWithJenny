@@ -27,6 +27,12 @@ import HappyCustomers from './components/HappyCustomers/HappyCustomers';
 import Footer from './components/Footer/Footer';
 import DataDeletion from './components/DataDeletionPage/DataDeletionPage.jsx';
 import { HelmetProvider, Helmet } from 'react-helmet-async';
+import PhotosManagement from './components/Admin/PhotosManagement/PhotosManagement';
+import { ToastContainer } from 'react-toastify';
+import AdminNewUser from './components/Admin/Users/AdminNewUser.jsx';
+import AdminShoesList from './components/Admin/Shoes/AdminShoesList'; 
+import AdminShoeForm from './components/Admin/Shoes/AdminShoeForm';
+import ShoeDetailsView from './components/Admin/Shoes/ShoeDetailsView';
 
 function App() {
   useEffect(() => {
@@ -38,6 +44,7 @@ function App() {
       <AuthProvider>
         <FacebookSDKProvider>
           <HelmetProvider>
+           <ToastContainer />
             <Router>
               <AppContent />
             </Router>
@@ -86,7 +93,7 @@ const AppContent = () => {
   return (
     <>
       <CanonicalLink />
-
+      
       {!isAdminRoute && <Navbar user={user} />}
       <Routes>
         <Route path="/" element={<Home />} />
@@ -114,11 +121,17 @@ const AppContent = () => {
         >
           <Route index element={<Navigate to="users" replace />} />
           <Route path="users" element={<AdminUsersList />} />
+          <Route path="users/new" element={<AdminNewUser />} />
           <Route path="users/:userId" element={<AdminUserProfile />} />
           <Route path="workouts" element={<AdminWorkoutsList />} />
           <Route path="workouts/new" element={<WorkoutForm />} />
           <Route path="workouts/:id" element={<WorkoutForm />} />
           <Route path="workouts/:id/view" element={<WorkoutView />} />
+          <Route path="photos" element={<PhotosManagement />} />
+          <Route path="shoes" element={<AdminShoesList />} />
+          <Route path="shoes/new" element={<AdminShoeForm />} />
+          <Route path="shoes/:id" element={<AdminShoeForm />} />
+          <Route path="/admin/shoes/details/:id" element={<ShoeDetailsView />} />
         </Route>
       </Routes>
 

@@ -10,6 +10,7 @@ const AdminWorkoutsList = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
   const [showPast, setShowPast] = useState(false);
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
 
   const navigate = useNavigate();
 
@@ -37,6 +38,15 @@ const AdminWorkoutsList = () => {
 
     fetchWorkouts();
   }, [showPast]);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   const handleDelete = async (id) => {
     if (!window.confirm('Are you sure you want to delete this workout?')) return;
@@ -94,54 +104,102 @@ const AdminWorkoutsList = () => {
       {successMessage && <div className="success">{successMessage}</div>}
       {error && <div className="error">{error}</div>}
 
-      <div className="workouts-table">
-        <table>
-          <thead>
-            <tr>
-              <th>Date</th>
-              <th>Day</th>
-              <th>Time</th>
-              <th>Status</th>
-              <th>Available Spots</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filteredWorkouts.length > 0 ? (
-              filteredWorkouts.map(workout => (
-                <tr key={workout.Id}>
-                  <td>{new Date(workout.Date).toLocaleDateString('bg-BG')}</td>
-                  <td>{workout.Day}</td>
-                  <td>{workout.Time}</td>
-                  <td>
+      {isMobile ? (
+        <div className="workouts-card-list">
+          {filteredWorkouts.length > 0 ? (
+            filteredWorkouts.map(workout => (
+              <div key={workout.Id} className="workout-card">
+                <div className="info-row">
+                  <span className="info-label">Дата:</span>
+                  <span>{new Date(workout.Date).toLocaleDateString('bg-BG')}</span>
+                </div>
+                <div className="info-row">
+                  <span className="info-label">Ден:</span>
+                  <span>{workout.Day}</span>
+                </div>
+                <div className="info-row">
+                  <span className="info-label">Час:</span>
+                  <span>{workout.Time}</span>
+                </div>
+                <div className="info-row">
+                  <span className="info-label">Статус:</span>
+                  <span>
                     <span className={`status-badge ${workout.Status.toLowerCase()}`}>
                       {workout.Status}
                     </span>
-                  </td>
-                  <td>{workout.AvailableSpots}</td>
-                  <td className="actions">
-                    <Link to={`/admin/workouts/${workout.Id}/view`} className="btn-view">
-                      View
-                    </Link>
-                    <Link to={`/admin/workouts/${workout.Id}`} className="btn-edit">
-                      Edit
-                    </Link>
-                    <button className="btn-delete" onClick={() => handleDelete(workout.Id)}>
-                      Delete
-                    </button>
+                  </span>
+                </div>
+                <div className="info-row">
+                  <span className="info-label">Свободни места:</span>
+                  <span>{workout.AvailableSpots}</span>
+                </div>
+                <div className="actions">
+                  <Link to={`/admin/workouts/${workout.Id}/view`} className="btn-view">
+                    View
+                  </Link>
+                  <Link to={`/admin/workouts/${workout.Id}`} className="btn-edit">
+                    Edit
+                  </Link>
+                  <button className="btn-delete" onClick={() => handleDelete(workout.Id)}>
+                    Delete
+                  </button>
+                </div>
+              </div>
+            ))
+          ) : (
+            <div className="no-results">No workouts found</div>
+          )}
+        </div>
+      ) : (
+        <div className="workouts-table">
+          <table>
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Day</th>
+                <th>Time</th>
+                <th>Status</th>
+                <th>Available Spots</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filteredWorkouts.length > 0 ? (
+                filteredWorkouts.map(workout => (
+                  <tr key={workout.Id}>
+                    <td>{new Date(workout.Date).toLocaleDateString('bg-BG')}</td>
+                    <td>{workout.Day}</td>
+                    <td>{workout.Time}</td>
+                    <td>
+                      <span className={`status-badge ${workout.Status.toLowerCase()}`}>
+                        {workout.Status}
+                      </span>
+                    </td>
+                    <td>{workout.AvailableSpots}</td>
+                    <td className="actions">
+                      <Link to={`/admin/workouts/${workout.Id}/view`} className="btn-view">
+                        View
+                      </Link>
+                      <Link to={`/admin/workouts/${workout.Id}`} className="btn-edit">
+                        Edit
+                      </Link>
+                      <button className="btn-delete" onClick={() => handleDelete(workout.Id)}>
+                        Delete
+                      </button>
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan="6" className="no-results">
+                    No workouts found
                   </td>
                 </tr>
-              ))
-            ) : (
-              <tr>
-                <td colSpan="6" className="no-results">
-                  No workouts found
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </div>
+              )}
+            </tbody>
+          </table>
+        </div>
+      )}
     </div>
   );
 };

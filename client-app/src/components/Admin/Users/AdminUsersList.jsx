@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import UserService from '../../../services/UserServices';
 import AdminUserModal from './AdminUserModal';
 import './AdminUsers.scss';
+import { FaEdit, FaTrashAlt, FaSearch, FaPlus, FaSpinner } from 'react-icons/fa';
 
 const AdminUsersList = () => {
   const [users, setUsers] = useState([]);
@@ -17,18 +18,9 @@ const AdminUsersList = () => {
     const fetchUsers = async () => {
       try {
         const response = await UserService.getAllUsers();
-        
-        // Handle different response formats
-        let usersData = [];
-        if (Array.isArray(response)) {
-          usersData = response;
-        } else if (response && Array.isArray(response.Users)) {
-          usersData = response.Users;
-        } else if (response && response.data && Array.isArray(response.data.Users)) {
-          usersData = response.data.Users;
-        }
-        
-        setUsers(usersData || []);
+        let usersData = Array.isArray(response) ? response : (response?.Users || response?.data?.Users || []);
+        // Make sure the backend response includes a 'Role' property for each user
+        setUsers(usersData);
       } catch (err) {
         console.error('Error fetching users:', err);
         setError(err.message || 'Failed to load users. Please try again.');
@@ -37,7 +29,6 @@ const AdminUsersList = () => {
         setLoading(false);
       }
     };
-
     fetchUsers();
   }, []);
 
@@ -54,44 +45,45 @@ const AdminUsersList = () => {
   const handleSaveUser = async (updatedUser) => {
     try {
       await UserService.updateUser(updatedUser.Id, updatedUser);
-      setUsers(users.map(user => 
-        user.Id === updatedUser.Id ? updatedUser : user
-      ));
-      setSuccessMessage('User updated successfully');
+      setUsers(users.map(user => user.Id === updatedUser.Id ? updatedUser : user));
+      setSuccessMessage('User updated successfully!');
       setTimeout(() => setSuccessMessage(''), 3000);
     } catch (error) {
-      setError(error.message || 'Failed to update user');
+      setError(error.message || 'Failed to update user.');
       setTimeout(() => setError(''), 5000);
     }
   };
 
   const handleDeleteUser = async (userId) => {
+    if (!window.confirm("Are you sure you want to delete this user?")) {
+      return;
+    }
     try {
       await UserService.deleteUser(userId);
       setUsers(users.filter(user => user.Id !== userId));
-      setSuccessMessage('User deleted successfully');
+      setSuccessMessage('User deleted successfully!');
       setTimeout(() => setSuccessMessage(''), 3000);
     } catch (error) {
-      setError(error.message || 'Failed to delete user');
+      setError(error.message || 'Failed to delete user.');
       setTimeout(() => setError(''), 5000);
     }
   };
 
-  // Safe filtering with null checks
-  const filteredUsers = Array.isArray(users) ? users.filter(user => {
+  const filteredUsers = users.filter(user => {
     const search = searchTerm.toLowerCase();
     return (
       (user?.Username?.toLowerCase() || '').includes(search) ||
       (user?.Email?.toLowerCase() || '').includes(search) ||
       (user?.FirstName?.toLowerCase() || '').includes(search) ||
-      (user?.LastName?.toLowerCase() || '').includes(search)
+      (user?.LastName?.toLowerCase() || '').includes(search) ||
+      (user?.Role?.toLowerCase() || '').includes(search) // Added filtering by role
     );
-  }) : [];
+  });
 
   if (loading) {
     return (
-      <div className="loading-state">
-        <div className="spinner"></div>
+      <div className="state-message loading-state">
+        <FaSpinner className="spinner-icon" />
         <p>Loading users...</p>
       </div>
     );
@@ -99,79 +91,82 @@ const AdminUsersList = () => {
 
   if (error) {
     return (
-      <div className="error-state">
+      <div className="state-message error-state">
         <p>Error: {error}</p>
-        <button onClick={() => window.location.reload()}>Try Again</button>
+        <button className="btn-reload" onClick={() => window.location.reload()}>Try Again</button>
       </div>
     );
   }
 
   return (
-    <div className="admin-users">
-      <div className="users-header">
-        <h2>User Management</h2>
-        <div className="users-actions">
-          <div className="search-box">
+    <div className="admin-users-container">
+      <header className="page-header">
+        <h2 className="page-title">User Management</h2>
+        <div className="actions-bar">
+          <div className="search-group">
+            <FaSearch className="search-icon" />
             <input
               type="text"
-              placeholder="Search users..."
+              placeholder="Search by name, email, or role..." // Updated placeholder
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
+              className="search-input"
               aria-label="Search users"
             />
-            <i className="search-icon">🔍</i>
           </div>
-          <Link to="/admin/users/new" className="btn-add">
-            + Add New User
+          <Link to="/admin/users/new" className="btn-primary">
+            <FaPlus className="btn-icon" /> Add New User
           </Link>
         </div>
-      </div>
+      </header>
 
       {successMessage && (
-        <div className="success-message">
+        <div className="message-alert success-alert">
           {successMessage}
         </div>
       )}
 
-      <div className="users-table-container">
+      <div className="users-table-wrapper">
         <table className="users-table">
           <thead>
             <tr>
               <th>Username</th>
               <th>Email</th>
-              <th>First Name</th>
-              <th>Last Name</th>
+              <th>Full Name</th>
+              <th>Role</th>
               <th>Actions</th>
             </tr>
           </thead>
           <tbody>
             {filteredUsers.length > 0 ? (
               filteredUsers.map(user => (
-                <tr key={user.Id}>
-                  <td>{user.Username || '-'}</td>
-                  <td>{user.Email || '-'}</td>
-                  <td>{user.FirstName || '-'}</td>
-                  <td>{user.LastName || '-'}</td>
-                  <td className="actions">
+                <tr key={user.Id} className="user-row">
+                  <td data-label="Username">{user.Username || '-'}</td>
+                  <td data-label="Email">{user.Email || '-'}</td>
+                  <td data-label="Full Name">{`${user.FirstName || ''} ${user.LastName || ''}`.trim() || '-'}</td>
+                  <td data-label="Role">{user.Role || '-'}</td>
+                  <td className="actions" data-label="Actions">
                     <button 
-                      className="btn-view"
+                      className="action-btn btn-edit"
                       onClick={() => handleViewUser(user)}
+                      aria-label="Edit user"
                     >
-                      View
+                      <FaEdit />
                     </button>
                     <button 
-                      className="btn-delete"
+                      className="action-btn btn-delete"
                       onClick={() => handleDeleteUser(user.Id)}
+                      aria-label="Delete user"
                     >
-                      Delete
+                      <FaTrashAlt />
                     </button>
                   </td>
                 </tr>
               ))
             ) : (
               <tr>
-                <td colSpan="6" className="no-results">
-                  {users.length === 0 ? 'No users found' : 'No users match your search'}
+                <td colSpan="5" className="no-results-cell">
+                  {users.length === 0 ? 'No users found.' : 'No users match your search criteria.'}
                 </td>
               </tr>
             )}

@@ -189,12 +189,15 @@ const Contacts = () => {
               <ul className="details-list">
                 <li className="detail-item">
                   <span className="detail-icon">📧</span>
-                  <span>jumpwithjenny.kj@gmail.com
+                  <span > 
+                    <a href="mailto:jumpwithjenny.kj@gmail.com">jumpwithjenny.kj@gmail.com</a>
                   </span>
                 </li>
                 <li className="detail-item">
                   <span className="detail-icon">📱</span>
-                  <span>+359 88 4984167</span>
+                  <span>
+                    <a href="tel:+359 88 4984167">+359 88 4984167</a>
+                   </span>
                 </li>
                 <li className="detail-item">
                   <span className="detail-icon">🏢</span>

@@ -1,0 +1,223 @@
+// AdminShoes.scss
+
+// Define a simple color palette
+$primary-color: #5d5d81;
+$secondary-color: #8c8cd9;
+$success-color: #4CAF50;
+$danger-color: #e57373;
+$cancel-color: #6c757d; // Added cancel color
+$background-color: #f7f9fc;
+$card-background: #ffffff;
+$border-color: #e0e0e0;
+$text-color: #333;
+
+body {
+  background-color: $background-color;
+  font-family: 'Arial', sans-serif;
+  color: $text-color;
+}
+
+.admin-shoes {
+  max-width: 900px;
+  margin: 40px auto;
+  padding: 20px;
+  background: $card-background;
+  border-radius: 12px;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.05);
+
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+    border-bottom: 2px solid $border-color;
+    padding-bottom: 15px;
+
+    h2 {
+      font-size: 2em;
+      font-weight: 600;
+      color: $primary-color;
+    }
+  }
+
+  .btn-add {
+    padding: 12px 25px;
+    background: linear-gradient(45deg, $success-color, darken($success-color, 10%));
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+
+    &:hover {
+      background: linear-gradient(45deg, darken($success-color, 5%), darken($success-color, 15%));
+      transform: translateY(-2px);
+      box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
+    }
+  }
+
+  .shoes-table {
+    width: 100%;
+    background-color: $card-background;
+    border-radius: 8px;
+    overflow: hidden;
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+
+      thead {
+        background-color: $primary-color;
+        color: white;
+        th {
+          padding: 15px;
+          text-align: left;
+          font-weight: 600;
+        }
+      }
+
+      tbody {
+        tr {
+          transition: background-color 0.3s ease;
+          td {
+            padding: 15px;
+            border-bottom: 1px solid $border-color;
+          }
+          &:nth-child(even) {
+            background-color: lighten($background-color, 2%);
+          }
+          &:hover {
+            background-color: lighten($secondary-color, 30%);
+          }
+        }
+      }
+
+      .actions {
+        display: flex;
+        gap: 12px;
+
+        .btn-edit, .btn-delete {
+          padding: 10px 15px;
+          border: none;
+          border-radius: 6px;
+          cursor: pointer;
+          font-size: 14px;
+          font-weight: 500;
+          transition: all 0.3s ease;
+          box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+
+          &:hover {
+            transform: translateY(-1px);
+          }
+        }
+
+        .btn-edit {
+          background-color: $secondary-color;
+          color: white;
+
+          &:hover {
+            background-color: darken($secondary-color, 10%);
+          }
+        }
+
+        .btn-delete {
+          background-color: $danger-color;
+          color: white;
+
+          &:hover {
+            background-color: darken($danger-color, 10%);
+          }
+        }
+      }
+    }
+  }
+
+  .admin-shoe-form {
+    padding: 30px;
+    background: $card-background;
+    border-radius: 12px;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.05);
+
+    h2 {
+      text-align: center;
+      margin-bottom: 30px;
+      color: $primary-color;
+      font-weight: 600;
+    }
+
+    .form-group {
+      margin-bottom: 25px;
+      label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: 600;
+        color: $text-color;
+      }
+      select {
+        width: 100%;
+        padding: 12px;
+        border: 1px solid $border-color;
+        border-radius: 6px;
+        font-size: 16px;
+        transition: border-color 0.3s ease;
+
+        &:focus {
+          border-color: $secondary-color;
+          outline: none;
+          box-shadow: 0 0 0 3px lighten($secondary-color, 20%);
+        }
+      }
+    }
+
+    .form-actions { // New container for form buttons
+        display: flex;
+        justify-content: flex-end;
+        gap: 15px;
+        margin-top: 30px;
+    }
+
+    .btn-save, .btn-cancel-form {
+        padding: 12px 20px;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 16px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .btn-save {
+      background: linear-gradient(45deg, $secondary-color, darken($secondary-color, 10%));
+      color: white;
+
+      &:hover {
+        background: linear-gradient(45deg, darken($secondary-color, 5%), darken($secondary-color, 15%));
+        transform: translateY(-2px);
+      }
+    }
+
+    .btn-cancel-form {
+      background-color: $cancel-color;
+      color: rgb(236, 11, 11);
+      
+      &:hover {
+        background-color: darken($cancel-color, 10%);
+        transform: translateY(-1px);
+      }
+    }
+  }
+
+  .no-results {
+    text-align: center;
+    padding: 25px;
+    font-size: 1.1em;
+    color: #888;
+    background-color: lighten($background-color, 1%);
+    border-radius: 8px;
+    margin-top: 20px;
+  }
+}

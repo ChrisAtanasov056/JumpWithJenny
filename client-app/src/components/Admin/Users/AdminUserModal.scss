@@ -1,5 +1,18 @@
 @use "sass:color";
+
 // AdminUserModal.scss
+$primary-color: #3498db; // Акцентен цвят
+$text-color-dark: #2c3e50;
+$text-color-light: #666;
+$border-color-light: #ddd;
+$modal-bg: white;
+$modal-overlay: rgba(0, 0, 0, 0.5);
+$shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+$delete-color: #e74c3c;
+$save-color: #2ecc71;
+$cancel-color: #f1f1f1;
+
+$mobile-breakpoint: 600px;
 
 .admin-user-modal {
     position: fixed;
@@ -17,18 +30,18 @@
       position: absolute;
       width: 100%;
       height: 100%;
-      background: rgba(0, 0, 0, 0.5);
+      background: $modal-overlay;
       cursor: default;
       transition: opacity 0.3s ease;
   
       &:focus {
-        outline: 2px solid var(--primary-color);
+        outline: 2px solid $primary-color;
       }
     }
   
     .modal-content {
       position: relative;
-      background: white;
+      background: $modal-bg;
       padding: 2rem;
       border-radius: 8px;
       width: 90%;
@@ -36,7 +49,7 @@
       max-height: 90vh;
       overflow-y: auto;
       z-index: 1001;
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+      box-shadow: $shadow;
       animation: modalFadeIn 0.3s ease-out;
   
       .close-button {
@@ -47,7 +60,7 @@
         border: none;
         font-size: 1.5rem;
         cursor: default;
-        color: #666;
+        color: $text-color-light;
         transition: color 0.2s;
         padding: 0.5rem;
         line-height: 1;
@@ -60,7 +73,7 @@
   
       h3 {
         margin-top: 0;
-        color: #2c3e50;
+        color: $text-color-dark;
         border-bottom: 1px solid #eee;
         padding-bottom: 1rem;
       }
@@ -69,7 +82,7 @@
         text-align: center;
   
         h3 {
-          color: #e74c3c;
+          color: $delete-color;
           border-bottom: none;
         }
   
@@ -78,7 +91,7 @@
         }
   
         .warning-text {
-          color: #e74c3c;
+          color: $delete-color;
           font-weight: bold;
         }
   
@@ -97,26 +110,26 @@
             transition: all 0.2s;
   
             &.btn-cancel {
-              background: #f1f1f1;
-              border: 1px solid #ddd;
+              background: $cancel-color;
+              border: 1px solid $border-color-light;
   
               &:hover, &:focus {
-                background: color.adjust(#f1f1f1, $lightness: -10%);
+                background: color.adjust($cancel-color, $lightness: -10%);
               }
             }
   
             &.btn-delete-confirm {
-              background: #e74c3c;
+              background: $delete-color;
               color: white;
   
               &:hover, &:focus {
-                background: color.adjust(#e74c3c, $lightness: -10%);
+                background: color.adjust($delete-color, $lightness: -10%);
               }
             }
   
             &:focus {
               outline: none;
-              box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.5);
+              box-shadow: 0 0 0 2px rgba($primary-color, 0.5);
             }
           }
         }
@@ -146,7 +159,7 @@
             margin-bottom: 0.5rem;
   
             a {
-              color: #3498db;
+              color: $primary-color;
               text-decoration: none;
   
               &:hover {
@@ -163,19 +176,19 @@
             input, select {
               width: 100%;
               padding: 0.5rem;
-              border: 1px solid #ddd;
+              border: 1px solid $border-color-light;
               border-radius: 4px;
               font-size: 1rem;
               transition: border-color 0.2s;
   
               &:focus {
                 outline: none;
-                border-color: #3498db;
-                box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
+                border-color: $primary-color;
+                box-shadow: 0 0 0 2px rgba($primary-color, 0.2);
               }
   
               &.error {
-                border-color: #e74c3c;
+                border-color: $delete-color;
               }
             }
   
@@ -188,7 +201,7 @@
             }
   
             .error-message {
-              color: #e74c3c;
+              color: $delete-color;
               font-size: 0.8rem;
               margin-top: 0.25rem;
             }
@@ -205,11 +218,11 @@
                 height: 0;
   
                 &:checked + .slider {
-                  background-color: #2ecc71;
+                  background-color: $save-color;
                 }
   
                 &:focus + .slider {
-                  box-shadow: 0 0 0 2px rgba(46, 204, 113, 0.3);
+                  box-shadow: 0 0 0 2px rgba($save-color, 0.3);
                 }
               }
   
@@ -217,7 +230,7 @@
                 position: relative;
                 width: 2.5rem;
                 height: 1.25rem;
-                background-color: #e74c3c;
+                background-color: $delete-color;
                 transition: .4s;
                 border-radius: 1.25rem;
                 margin-right: 0.5rem;
@@ -305,52 +318,52 @@
   
           &:focus {
             outline: none;
-            box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.5);
+            box-shadow: 0 0 0 2px rgba($primary-color, 0.5);
           }
   
           &.btn-edit {
-            background: #3498db;
+            background: $primary-color;
             color: white;
   
             &:hover, &:focus {
-              background: color.adjust(#3498db, $lightness: -10%);
+              background: color.adjust($primary-color, $lightness: -10%);
             }
           }
   
           &.btn-save {
-            background: #2ecc71;
+            background: $save-color;
             color: white;
   
             &:hover, &:focus {
-              background: color.adjust(#2ecc71, $lightness: -10%);
+              background: color.adjust($save-color, $lightness: -10%);
             }
           }
   
           &.btn-delete {
-            background: #e74c3c;
+            background: $delete-color;
             color: white;
             margin-right: auto;
   
             &:hover, &:focus {
-              background: color.adjust(#e74c3c, $lightness: -10%);
+              background: color.adjust($delete-color, $lightness: -10%);
             }
           }
   
           &.btn-cancel {
-            background: #f1f1f1;
-            border: 1px solid #ddd;
+            background: $cancel-color;
+            border: 1px solid $border-color-light;
   
             &:hover, &:focus {
-              background: color.adjust(#f1f1f1, $lightness: -10%);
+              background: color.adjust($cancel-color, $lightness: -10%);
             }
           }
   
           &.btn-close {
-            background: #f1f1f1;
-            border: 1px solid #ddd;
+            background: $cancel-color;
+            border: 1px solid $border-color-light;
   
             &:hover, &:focus {
-              background: color.adjust(#f1f1f1, $lightness: -10%);
+              background: color.adjust($cancel-color, $lightness: -10%);
             }
           }
         }
@@ -370,7 +383,7 @@
   }
   
   // Responsive adjustments
-  @media (max-width: 600px) {
+  @media (max-width: $mobile-breakpoint) {
     .admin-user-modal {
       .modal-content {
         padding: 1.5rem;
@@ -400,7 +413,7 @@
             
             &.btn-delete {
               margin-right: 0;
-              order: -1;
+              order: -1; // Позиционира бутона "Delete" най-отгоре
             }
           }
         }

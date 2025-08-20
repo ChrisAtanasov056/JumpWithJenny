@@ -35,6 +35,16 @@ const UserService = {
     }
   },
 
+  createUserAdmin: async (userData) => {
+    try {
+      const response = await api.post('/api/Admin/users/create', userData);
+      return response.data;
+    } catch (error) {
+      console.error('Error creating user:', error);
+      throw error;
+    }
+  },
+
   // Update user
   updateUser: async (userId, userData) => {
     try {

@@ -158,7 +158,8 @@ public partial class Program
         services.AddScoped<IEmailTemplateService, EmailTemplateService>();
         services.AddScoped<IContactService, ContactService>();
         services.AddScoped<IFacebookAuthService, FacebookAuthService>();
-        
+        services.AddScoped<IShoesService, ShoesService>();
+
         // Logging and Swagger
         services.AddLogging();
         services.AddEndpointsApiExplorer();

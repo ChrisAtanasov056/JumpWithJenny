@@ -6,11 +6,11 @@ using ServerAPI.ViewModels.Users;
 using ServerAPI.Services.Workouts;
 using ServerAPI.Services.Schedule;
 using ServerAPI.Models.Schedule;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 
 namespace ServerAPI.Controllers
 {
-    
-
     [Authorize(Roles = "Administrator")]            
     [Route("api/[controller]")]
     [ApiController]
@@ -18,10 +18,8 @@ namespace ServerAPI.Controllers
     {
         private readonly JumpWithJennyDbContext _context;
         private readonly IUserService _userService;
-
         private readonly IWorkoutServices _workoutService;
         private readonly ILogger<WorkoutController> _logger;
-
         private readonly IScheduleService _scheduleService;
         
         public AdminController(JumpWithJennyDbContext context, 
@@ -36,6 +34,37 @@ namespace ServerAPI.Controllers
             _logger = logger;
             _scheduleService = scheduleService;
         }
+
+        // POST: api/admin/users
+        [HttpPost("users/create")]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+        public async Task<IActionResult> CreateUser([FromBody] UserCreateViewModel userModel)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            try
+            {
+                var result = await _userService.CreateUserAsync(userModel);
+                if (result.Succeeded)
+                {
+                    return Ok(new { Message = "User created successfully." });
+                }
+                
+                return BadRequest(new { Message = "User creation failed.", Errors = result.Errors });
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(new { Message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { Message = "An error occurred while creating the user.", Error = ex.Message });
+            }
+        }
+
         // GET: api/admin/users
         [HttpGet("users")]
         public async Task<IActionResult> All()
@@ -51,7 +80,6 @@ namespace ServerAPI.Controllers
         [HttpDelete("users/{id}")]
         public async Task<IActionResult> DeleteUser(string id)
         {
-
             if (string.IsNullOrEmpty(id))
             {
                 return BadRequest(new { Message = "User ID cannot be null or empty" });

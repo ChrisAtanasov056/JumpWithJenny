@@ -208,7 +208,7 @@ namespace ServerAPI.Services.AuthService
                 RefreshToken = refreshToken.Token,
                 User = MapToUserDto(user, roles.FirstOrDefault())
             };
-}
+        }
 
         public async Task<AuthResult> ConfirmEmailAsync(ConfirmEmailRequest request)
         {

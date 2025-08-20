@@ -1,0 +1,112 @@
+.shoe-details-container {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding: 2rem;
+    background-color: #f5f7fa;
+    min-height: 100vh;
+  }
+  
+  .shoe-details-card {
+    background: #ffffff;
+    border-radius: 12px;
+    padding: 2rem;
+    width: 100%;
+    max-width: 600px;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.1);
+  
+    h2 {
+      margin-bottom: 1rem;
+      font-size: 1.6rem;
+      color: #2c3e50;
+    }
+  
+    .details-section {
+      margin-bottom: 1.5rem;
+  
+      h3 {
+        margin-bottom: 0.5rem;
+        font-size: 1.2rem;
+        color: #34495e;
+      }
+  
+      p {
+        color: #555;
+        margin: 0.2rem 0;
+      }
+  
+      ul {
+        list-style: none;
+        padding: 0;
+  
+        li {
+          background: #ecf0f1;
+          padding: 0.6rem 1rem;
+          margin-bottom: 0.5rem;
+          border-radius: 6px;
+          color: #2c3e50;
+          font-size: 0.95rem;
+        }
+      }
+    }
+  
+    .add-user {
+      display: flex;
+      gap: 0.5rem;
+      margin-top: 0.8rem;
+  
+      input {
+        flex: 1;
+        padding: 0.5rem 0.8rem;
+        border: 1px solid #bdc3c7;
+        border-radius: 6px;
+        font-size: 0.95rem;
+        outline: none;
+        transition: border 0.3s ease;
+  
+        &:focus {
+          border-color: #3498db;
+        }
+      }
+  
+      button {
+        background: #3498db;
+        color: #fff;
+        border: none;
+        border-radius: 6px;
+        padding: 0.5rem 1rem;
+        cursor: pointer;
+        font-size: 0.95rem;
+        transition: background 0.3s ease;
+  
+        &:hover {
+          background: #2980b9;
+        }
+      }
+    }
+  
+    .btn-back {
+      margin-top: 1rem;
+      background: #e74c3c;
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      padding: 0.6rem 1.2rem;
+      cursor: pointer;
+      font-size: 0.95rem;
+      transition: background 0.3s ease;
+  
+      &:hover {
+        background: #c0392b;
+      }
+    }
+  }
+  
+  .loading,
+  .error,
+  .not-found {
+    text-align: center;
+    margin-top: 2rem;
+    font-size: 1.1rem;
+  }
+  

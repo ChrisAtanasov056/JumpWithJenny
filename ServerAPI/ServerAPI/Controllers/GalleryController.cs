@@ -1,10 +1,15 @@
 namespace ServerAPI.Controllers
 {
+    using Microsoft.AspNetCore.Authentication.JwtBearer;
+    using Microsoft.AspNetCore.Authorization;
     using Microsoft.AspNetCore.Cors;
+    using Microsoft.AspNetCore.Http;
     using Microsoft.AspNetCore.Mvc;
     using Microsoft.EntityFrameworkCore;
     using ServerAPI.Data;
     using ServerAPI.Models;
+    using System.IO;
+    using System.Threading.Tasks;
 
     [Route("/[controller]")]
     [EnableCors("AllowOrigin")]
@@ -12,10 +17,12 @@ namespace ServerAPI.Controllers
     public class GalleryController : ControllerBase
     {
         private readonly JumpWithJennyDbContext _context;
+        private readonly IWebHostEnvironment _env;
 
-        public GalleryController(JumpWithJennyDbContext context)
+        public GalleryController(JumpWithJennyDbContext context, IWebHostEnvironment env)
         {
             _context = context;
+            _env = env;
         }
 
         // GET: /gallery?page=1
@@ -27,7 +34,6 @@ namespace ServerAPI.Controllers
                 return BadRequest("Invalid page number or page size.");
             }
 
-            // Fetch the images from the database, adjusting based on page number and size
             var images = await _context.Images
                 .OrderByDescending(i => i.Id)
                 .Skip((page - 1) * pageSize)
@@ -35,6 +41,77 @@ namespace ServerAPI.Controllers
                 .ToListAsync();
 
             return Ok(images);
+        }
+
+        // GET: /gallery/all
+        [HttpGet("all")]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+        public async Task<ActionResult<IEnumerable<ImageModel>>> GetAllImages()
+        {
+            var images = await _context.Images
+                .OrderByDescending(i => i.Id)
+                .ToListAsync();
+
+            return Ok(images);
+        }
+
+        // POST: /gallery/upload
+        [HttpPost("upload")]
+        [Consumes("multipart/form-data")]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+        public async Task<ActionResult<ImageModel>> UploadImage([FromForm] IFormFile file)
+        {
+            if (file == null || file.Length == 0)
+                return BadRequest("Не е качен файл.");
+
+            var uploadsFolder = Path.Combine(_env.WebRootPath ?? "wwwroot", "uploads");
+            if (!Directory.Exists(uploadsFolder))
+            {
+                Directory.CreateDirectory(uploadsFolder);
+            }
+
+            var fileName = Guid.NewGuid().ToString() + Path.GetExtension(file.FileName);
+            var filePath = Path.Combine(uploadsFolder, fileName);
+
+            using (var stream = new FileStream(filePath, FileMode.Create))
+            {
+                await file.CopyToAsync(stream);
+            }
+
+            var image = new ImageModel
+            {
+                Name = file.FileName,
+                Url = $"/uploads/{fileName}",
+                CreatedAt = DateTime.UtcNow
+            };
+
+            _context.Images.Add(image);
+            await _context.SaveChangesAsync();
+
+            return Ok(image);
+        }
+
+        // DELETE: /gallery/{id}
+        [HttpDelete("{id}")]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+        public async Task<IActionResult> DeleteImage(int id)
+        {
+            var image = await _context.Images.FindAsync(id);
+            if (image == null)
+            {
+                return NotFound("Снимката не е намерена.");
+            }
+
+            var filePath = Path.Combine(_env.WebRootPath ?? "wwwroot", image.Url.TrimStart('/'));
+            if (System.IO.File.Exists(filePath))
+            {
+                System.IO.File.Delete(filePath);
+            }
+
+            _context.Images.Remove(image);
+            await _context.SaveChangesAsync();
+
+            return NoContent();
         }
     }
 }

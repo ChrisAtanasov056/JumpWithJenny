@@ -1,3 +1,4 @@
+// AdminLayout.jsx
 import React from 'react';
 import { Outlet, Link } from "react-router-dom";
 import './AdminLayout.scss';
@@ -21,7 +22,18 @@ const AdminLayout = () => {
               <Link to="/admin/workouts" className="nav-link">Workouts</Link>
             </li>
             <li className="nav-item">
+              <Link to="/admin/shoes" className="nav-link">Shoes</Link>
+            </li>
+            <li className="nav-item">
+              <Link to="/admin/photos" className="nav-link">Photos</Link>
+            </li>
+            <li className="nav-item">
               <Link to="/admin/analytics" className="nav-link">Analytics</Link>
+            </li>
+            <li className="nav-item">
+              <Link to="/" className="nav-link">
+                <span role="img" aria-label="home">🏠</span> Back to Main Site
+              </Link>
             </li>
           </ul>
         </nav>

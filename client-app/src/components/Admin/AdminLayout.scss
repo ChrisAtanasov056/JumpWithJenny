@@ -1,76 +1,148 @@
 // Variables
-$primary-color: #BDC3C7;
-$secondary-color: #FFFFFF;
-$background-color: #ECF0F1;
-$accent-color: #E74C3C;
+$primary-color: #34495E; // Dark color for text and icons
+$secondary-color: #F8F9FA; // Light background
+$background-color: #FFFFFF; // White background for main panels
+$accent-color: #3498DB; // Blue for accents and active elements
 $white: #FFFFFF;
 $text-color: #2C3E50;
-$hover-color: #E74C3C;
+$hover-color: #E7E9EC; // Light gray for hover effect
 $mobile-breakpoint: 768px;
 $transition-speed: 0.3s;
 $border-radius: 8px;
 
 // Base styles
 .admin-layout {
-    display: flex;
-    min-height: 100vh;
-  
-    .admin-sidebar {
-      width: 250px;
-      background: #2c3e50;
-      color: white;
-      padding: 20px 0;
-  
-      .sidebar-header {
-        padding: 0 20px 20px;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-  
-        h2 {
-          margin: 0;
-          font-size: 20px;
+  display: flex;
+  min-height: 100vh;
+  background-color: $secondary-color;
+  flex-direction: row; // Default for desktop
+}
+
+// ----------------------------------------------------
+// Desktop Styles (Default)
+// ----------------------------------------------------
+
+.admin-sidebar {
+  width: 250px;
+  background: $background-color;
+  color: $primary-color;
+  padding: 20px;
+  box-shadow: 2px 0 10px rgba(0, 0, 0, 0.05);
+
+  .sidebar-header {
+    padding: 0 0 20px;
+    border-bottom: 1px solid #EAECEF;
+
+    h2 {
+      margin: 0;
+      font-size: 24px;
+      color: $accent-color;
+      font-weight: 700;
+      text-align: center;
+    }
+  }
+
+  .admin-nav {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+
+    .nav-item {
+      margin-bottom: 8px;
+      
+      .nav-link {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 12px 15px;
+        color: $primary-color;
+        text-decoration: none;
+        transition: background-color $transition-speed, color $transition-speed;
+        border-radius: $border-radius;
+
+        &:hover {
+          background-color: $hover-color;
+          color: $text-color;
+        }
+
+        &.active {
+          background-color: $accent-color;
+          color: $white;
+          font-weight: 600;
+          box-shadow: 0 4px 10px rgba(52, 152, 219, 0.2);
         }
       }
+    }
+  }
+}
+
+.admin-main {
+  flex: 1;
+  background: $secondary-color;
+  padding: 30px;
   
+  .admin-container {
+    background: $background-color;
+    border-radius: 12px;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+    padding: 30px;
+    min-height: calc(100vh - 60px);
+  }
+}
+
+// ----------------------------------------------------
+// Mobile Styles (@media query)
+// ----------------------------------------------------
+
+@media (max-width: $mobile-breakpoint) {
+  .admin-layout {
+    flex-direction: column;
+    
+    // ----------------------------------------------------
+    // Mobile Sidebar
+    // ----------------------------------------------------
+    .admin-sidebar {
+      width: 100%;
+      height: auto;
+      padding: 15px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05); // Shadow at the bottom
+      
+      .sidebar-header {
+        display: none; // Hide header on mobile for a cleaner look
+      }
+
       .admin-nav {
-        list-style: none;
-        padding: 0;
-        margin: 0;
-  
+        display: flex;
+        justify-content: space-around; // Distribute navigation items evenly
+        flex-wrap: wrap; // Allow items to wrap on smaller screens
+
         .nav-item {
-          border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-  
+          margin: 0 5px; // Add some horizontal spacing
+
           .nav-link {
-            display: block;
-            padding: 15px 20px;
-            color: rgba(255, 255, 255, 0.8);
-            text-decoration: none;
-            transition: all 0.3s;
-  
-            &:hover {
-              background: rgba(255, 255, 255, 0.1);
-              color: white;
-            }
-  
-            &.active {
-              background: rgba(255, 255, 255, 0.2);
-              color: white;
+            padding: 10px 15px;
+            font-size: 14px;
+            gap: 8px;
+            
+            // Adjust the icon and text visibility
+            .nav-link-text {
+              display: none; // Hide text on mobile nav links
             }
           }
         }
       }
     }
-  
+    
+    // ----------------------------------------------------
+    // Mobile Main Content
+    // ----------------------------------------------------
     .admin-main {
-      flex: 1;
-      background: #f5f7fa;
-      padding: 20px;
-  
+      padding: 15px; // Reduced padding for mobile
+      
       .admin-container {
-        background: white;
-        border-radius: 8px;
-        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-        padding: 25px;
-        min-height: calc(100vh - 40px);
+        padding: 15px;
+        min-height: auto; // Allow content to dictate height
       }
     }
   }
+}

@@ -1,11 +1,12 @@
 ﻿namespace ServerAPI.Services.Users
 {
+    using Microsoft.AspNetCore.Identity;
     using ServerAPI.Models;
     using ServerAPI.ViewModels.Users;
 
     public interface IUserService
     {
-        Task<List<T>> GetAllUsersAsync<T>(int? count = null);
+        Task<List<T>> GetAllUsersAsync<T>(int? count = null) where T : class, new();
         public Task<string> GetFirstNameAsync(string id);
 
         public Task<string> GetLastNameAsync(string id);
@@ -26,5 +27,7 @@
         public  Task<bool> DeleteUserAsync(string Id); 
 
         Task<IEnumerable<UserSearchResultModel>> SearchUsersAsync(string query);
+
+        Task<IdentityResult> CreateUserAsync(UserCreateViewModel userModel);
     }
 }
