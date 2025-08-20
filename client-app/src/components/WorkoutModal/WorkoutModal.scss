@@ -1,3 +1,5 @@
+@use "sass:math";
+@use "sass:color";
 /* Нов SCSS файл за WorkoutModal */
 $primary-color: #f73665;
 $secondary-color: #2c3e50;
@@ -172,7 +174,7 @@ $border-radius: 12px;
       cursor: default;
       transition: background $transition-speed;
       &:hover {
-        background: darken($primary-color, 10%);
+        background: color.adjust($primary-color, $lightness: -10%);
       }
     }
   }
@@ -194,7 +196,7 @@ $border-radius: 12px;
     }
     .progress-bar {
       height: 100%;
-      background: linear-gradient(to right, $primary-color, darken($primary-color, 10%));
+      background: linear-gradient(to right, $primary-color, color.adjust($primary-color, $lightness: -10%));
       border-radius: 50px;
       transition: width 0.5s ease;
     }
@@ -286,7 +288,7 @@ $border-radius: 12px;
       background: $border-color;
       color: $secondary-color;
       border: none;
-      border-radius: $border-radius / 2;
+      border-radius: math.div($border-radius, 2);
       padding: 10px 5px;
       cursor: default;
       font-weight: 600;
@@ -294,7 +296,7 @@ $border-radius: 12px;
       transition: all $transition-speed;
       
       &:hover {
-        background: darken($border-color, 5%);
+        background: color.adjust($border-color, $lightness: -5%);
       }
       
       &.active {
@@ -334,7 +336,7 @@ $border-radius: 12px;
       font-size: 1rem;
       background: $border-color;
       border: 1px solid transparent;
-      border-radius: $border-radius / 2;
+      border-radius: math.div($border-radius, 2);
       -webkit-appearance: none;
       -moz-appearance: none;
       appearance: none;
@@ -369,7 +371,7 @@ $border-radius: 12px;
     transition: all $transition-speed;
     
     &:hover {
-      background: darken($primary-color, 10%);
+      background: color.adjust($primary-color, $lightness: -10%);
       transform: translateY(-2px);
     }
     

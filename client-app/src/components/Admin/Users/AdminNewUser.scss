@@ -1,3 +1,4 @@
+@use "sass:color";
 /* Color Palette & Fonts */
 $primary-color: #007bff;
 $secondary-color: #6c757d;
@@ -83,7 +84,7 @@ button[type="submit"] {
   transition: background-color 0.3s ease, transform 0.2s ease;
 
   &:hover:not(:disabled) {
-    background-color: darken($primary-color, 10%);
+    background-color: color.adjust($primary-color, $lightness: -10%);
     transform: translateY(-2px);
   }
 
@@ -97,9 +98,9 @@ button[type="submit"] {
 /* State Messages */
 .error-message {
   padding: 1rem;
-  background-color: lighten($danger-color, 40%);
+  background-color: color.adjust($danger-color, $lightness: 40%);
   color: $danger-color;
-  border: 1px solid lighten($danger-color, 30%);
+  border: 1px solid color.adjust($danger-color, $lightness: 30%);
   border-radius: 8px;
   text-align: center;
 }

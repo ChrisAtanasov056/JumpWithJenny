@@ -1,3 +1,4 @@
+@use "sass:color";
 // AdminShoes.scss
 
 // Define a simple color palette
@@ -42,7 +43,7 @@ body {
 
   .btn-add {
     padding: 12px 25px;
-    background: linear-gradient(45deg, $success-color, darken($success-color, 10%));
+    background: linear-gradient(45deg, $success-color, color.adjust($success-color, $lightness: -10%));
     color: white;
     border: none;
     border-radius: 8px;
@@ -53,7 +54,7 @@ body {
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 
     &:hover {
-      background: linear-gradient(45deg, darken($success-color, 5%), darken($success-color, 15%));
+      background: linear-gradient(45deg, color.adjust($success-color, $lightness: -5%), color.adjust($success-color, $lightness: -15%));
       transform: translateY(-2px);
       box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
     }
@@ -87,10 +88,10 @@ body {
             border-bottom: 1px solid $border-color;
           }
           &:nth-child(even) {
-            background-color: lighten($background-color, 2%);
+            background-color: color.adjust($background-color, $lightness: 2%);
           }
           &:hover {
-            background-color: lighten($secondary-color, 30%);
+            background-color: color.adjust($secondary-color, $lightness: 30%);
           }
         }
       }
@@ -119,7 +120,7 @@ body {
           color: white;
 
           &:hover {
-            background-color: darken($secondary-color, 10%);
+            background-color: color.adjust($secondary-color, $lightness: -10%);
           }
         }
 
@@ -128,7 +129,7 @@ body {
           color: white;
 
           &:hover {
-            background-color: darken($danger-color, 10%);
+            background-color: color.adjust($danger-color, $lightness: -10%);
           }
         }
       }
@@ -167,7 +168,7 @@ body {
         &:focus {
           border-color: $secondary-color;
           outline: none;
-          box-shadow: 0 0 0 3px lighten($secondary-color, 20%);
+          box-shadow: 0 0 0 3px color.adjust($secondary-color, $lightness: 20%);
         }
       }
     }
@@ -191,11 +192,11 @@ body {
     }
 
     .btn-save {
-      background: linear-gradient(45deg, $secondary-color, darken($secondary-color, 10%));
+      background: linear-gradient(45deg, $secondary-color, color.adjust($secondary-color, $lightness: -10%));
       color: white;
 
       &:hover {
-        background: linear-gradient(45deg, darken($secondary-color, 5%), darken($secondary-color, 15%));
+        background: linear-gradient(45deg, color.adjust($secondary-color, $lightness: -5%), color.adjust($secondary-color, $lightness: -15%));
         transform: translateY(-2px);
       }
     }
@@ -205,7 +206,7 @@ body {
       color: rgb(236, 11, 11);
       
       &:hover {
-        background-color: darken($cancel-color, 10%);
+        background-color: color.adjust($cancel-color, $lightness: -10%);
         transform: translateY(-1px);
       }
     }
@@ -216,7 +217,7 @@ body {
     padding: 25px;
     font-size: 1.1em;
     color: #888;
-    background-color: lighten($background-color, 1%);
+    background-color: color.adjust($background-color, $lightness: 1%);
     border-radius: 8px;
     margin-top: 20px;
   }

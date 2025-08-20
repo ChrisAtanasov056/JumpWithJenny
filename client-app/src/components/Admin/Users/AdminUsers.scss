@@ -1,3 +1,4 @@
+@use "sass:color";
 /* Color Palette & Fonts */
 $primary-color: #007bff;
 $secondary-color: #6c757d;
@@ -86,7 +87,7 @@ body {
   transition: background-color 0.3s ease, transform 0.2s ease;
 
   &:hover {
-    background-color: darken($primary-color, 10%);
+    background-color: color.adjust($primary-color, $lightness: -10%);
     transform: translateY(-2px);
   }
   
@@ -152,14 +153,14 @@ body {
   &.btn-edit {
     color: $primary-color;
     &:hover {
-      color: darken($primary-color, 10%);
+      color: color.adjust($primary-color, $lightness: -10%);
     }
   }
 
   &.btn-delete {
     color: $danger-color;
     &:hover {
-      color: darken($danger-color, 10%);
+      color: color.adjust($danger-color, $lightness: -10%);
     }
   }
 }
@@ -173,7 +174,7 @@ body {
   text-align: center;
   
   &.success-alert {
-    background-color: lighten($success-color, 40%);
+    background-color: color.adjust($success-color, $lightness: 40%);
     color: $success-color;
   }
 }
