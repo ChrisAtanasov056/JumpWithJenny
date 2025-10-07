@@ -84,8 +84,8 @@ namespace ServerAPI.Controllers
             {
                 return BadRequest(new { Message = "User ID cannot be null or empty" });
             }
-            var results = _userService.DeleteUserAsync(id);
-            if (!results.Result)
+            var result = await _userService.DeleteUserAsync(id);
+            if (!result)
             {
                 return BadRequest(new { Message = "User deletion failed" });
             }

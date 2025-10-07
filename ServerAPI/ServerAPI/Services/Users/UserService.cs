@@ -50,39 +50,26 @@
             try
             {
                 var user = await this.userManager.FindByIdAsync(id);
-                if (user == null)
-                {
-                    return false;
-                }
+                if (user == null) return false;
 
-                // Check if user has any important relations before deleting
-                var hasDependencies = await CheckUserDependenciesAsync(id);
-                
-                if (hasDependencies)
-                {
-                    // Soft delete (since you're using IDeletableEntityRepository)
-                    this.usersRepository.Delete(user);
-                }
-                else
-                {
-                    // Hard delete
-                    var result = await this.userManager.DeleteAsync(user);
-                    if (!result.Succeeded)
-                    {
-                        return false;
-                    }
-                }
+                var tokens = _context.RefreshTokens.Where(t => t.UserId == user.Id);
+                _context.RefreshTokens.RemoveRange(tokens);
+                await _context.SaveChangesAsync();
+
+
+                var result = await this.userManager.DeleteAsync(user);
+                if (!result.Succeeded) return false;
 
                 await this.usersRepository.SaveChangesAsync();
                 return true;
             }
             catch (Exception ex)
             {
-                // Log the error
                 Console.WriteLine($"Error deleting user: {ex.Message}");
                 return false;
             }
         }
+
 
         private async Task<bool> CheckUserDependenciesAsync(string userId)
         {
