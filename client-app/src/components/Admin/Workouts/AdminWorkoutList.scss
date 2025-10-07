@@ -105,9 +105,6 @@
         }
       }
 
-      input:checked + .slider {
-        background-color: #007bff;
-      }
 
       input:checked + .slider:before {
         transform: translateX(26px);
@@ -206,7 +203,6 @@
     }
     
     .btn-view {
-      background-color: #007bff;
       &:hover { background-color: #0056b3; }
     }
     

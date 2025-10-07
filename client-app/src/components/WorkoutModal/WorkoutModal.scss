@@ -289,7 +289,6 @@ $border-radius: 12px;
       color: $secondary-color;
       border: none;
       border-radius: math.div($border-radius, 2);
-      padding: 10px 5px;
       cursor: default;
       font-weight: 600;
       font-size: 1rem;
@@ -383,6 +382,18 @@ $border-radius: 12px;
   }
 }
 
+.size-btn.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  background-color: #ccc;
+  border: 1px solid #aaa;
+}
+
+.size-btn .availability {
+  font-size: 0.75rem;
+  color: #666;
+}
+
 @media (max-width: 600px) {
   .modal-content {
     padding: 20px;
@@ -392,5 +403,90 @@ $border-radius: 12px;
   }
   .size-selection-grid {
     grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .modal-content {
+    width: 95%;
+    max-width: none;
+    padding: 20px;
+  }
+
+  .modal-content .modal-header h2 {
+    font-size: 1.5rem;
+    word-break: break-word;
+  }
+
+  .modal-header h3 {
+    font-size: 1rem;
+  }
+
+  .size-selection-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+  }
+
+  .form-section .option-group {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .spot-progress .spots-text {
+    font-size: 0.9rem;
+  }
+
+  .btn-submit {
+    padding: 12px;
+    font-size: 1rem;
+  }
+
+  .login-prompt-card {
+    padding: 20px 15px;
+
+    h3 {
+      font-size: 1.2rem;
+    }
+
+    p {
+      font-size: 0.9rem;
+    }
+
+    .btn-close-prompt {
+      padding: 10px 20px;
+      font-size: 1rem;
+    }
+  }
+
+  .card-select-wrapper .styled-select {
+    font-size: 0.95rem;
+    padding: 10px;
+  }
+}
+
+@media (max-width: 480px) {
+  .modal-header .header-icon {
+    font-size: 1.2rem;
+  }
+
+  .modal-body {
+    padding-top: 5px;
+  }
+
+  .size-selection-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .form-section .section-title {
+    font-size: 0.95rem;
+  }
+
+  .spot-progress .spots-text {
+    font-size: 0.85rem;
+  }
+
+  .btn-submit {
+    padding: 10px;
+    font-size: 0.95rem;
   }
 }

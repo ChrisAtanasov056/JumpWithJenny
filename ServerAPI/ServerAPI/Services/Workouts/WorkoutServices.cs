@@ -47,7 +47,6 @@ namespace ServerAPI.Services.Workouts
             await _workoutRepository.AddAsync(workout);
             await _workoutRepository.SaveChangesAsync();
 
-            // Връзки с обувки
             var existingShoes = await _shoesRepository.All().ToListAsync();
             var workoutShoes = existingShoes.Select(shoe => new WorkoutShoes
             {
@@ -128,7 +127,6 @@ namespace ServerAPI.Services.Workouts
                     _logger.LogDebug($"Workout lookup result: {(workout != null ? "Found" : "Not Found")}");
                 throw new KeyNotFoundException("Workout not found");
                 }
-            // Delete related appointments
             var appointments = await _appointmentRepository.All()
                 .Where(a => a.WorkoutId == id)
                 .ToListAsync();
@@ -137,7 +135,6 @@ namespace ServerAPI.Services.Workouts
                 _appointmentRepository.Delete(appointment);
             }
 
-            // Delete workout-shoe relationships
             foreach (var workoutShoe in workout.WorkoutShoes)
             {
                 _workoutShoesRepository.Delete(workoutShoe);
@@ -153,7 +150,7 @@ namespace ServerAPI.Services.Workouts
             var appointments = await _appointmentRepository.All()
                 .Where(a => a.WorkoutId == workoutId)
                 .Include(a => a.User)
-                .Include(a => a.Shoe)// .Include(a => a.Shoes) // Removed as 'Shoes' is not defined in 'Appointment'
+                .Include(a => a.Shoe)
                 .ToListAsync();
 
             return appointments.Select(a => new GetParticipantsModel
@@ -190,6 +187,42 @@ namespace ServerAPI.Services.Workouts
                 AvailableSpots = workout.AvailableSpots
             };
         }
+
+        public async Task<IEnumerable<AdminWorkoutViewModel>> GetAllWorkoutsAsync()
+        {
+            var workouts = await _workoutRepository
+                .All()
+                .Include(w => w.WorkoutShoes)
+                .ThenInclude(ws => ws.Shoe)
+                .Include(w => w.Appointments)
+                .ThenInclude(a => a.User)
+                .Include(w => w.Appointments)
+                .ThenInclude(a => a.Shoe)
+                .Select(w => new AdminWorkoutViewModel
+                {
+                    Id = w.Id,
+                    Day = w.Day,
+                    Time = w.Time,
+                    Date = w.Date,
+                    Status = w.Status,
+                    AvailableSpots = w.AvailableSpots,
+                    WorkoutShoes = w.WorkoutShoes.ToList(),
+                    Appointments = w.Appointments.Select(a => new AppointmentViewModel
+                    {
+                        Id = a.Id,
+                        UserId = a.UserId,
+                        UserFullName = a.User.FirstName + " " + a.User.LastName,
+                        UserEmail = a.User.Email,
+                        ShoeId = a.ShoeId,
+                        ShoeSize = a.Shoe != null ? a.Shoe.Size : 0,
+                        UsesOwnShoes = a.UsesOwnShoes,
+                    }).ToList()
+                })
+                .ToListAsync();
+
+            return workouts;
+        }
+
 
     }
 }

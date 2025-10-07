@@ -194,5 +194,13 @@ namespace ServerAPI.Controllers
             var results = await _userService.SearchUsersAsync(query);
             return Ok(results);
         }
+
+        [HttpGet("/api/workouts/all")]
+        [AllowAnonymous]
+        public async Task<ActionResult<IEnumerable<AdminWorkoutViewModel>>> GetAllWorkouts()
+        {
+            var workouts = await _workoutService.GetAllWorkoutsAsync();
+            return Ok(workouts);
+        }
     }
 }

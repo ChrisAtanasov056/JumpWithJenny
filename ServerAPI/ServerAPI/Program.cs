@@ -167,7 +167,6 @@ public partial class Program
         {
             c.SwaggerDoc("v1", new OpenApiInfo { Title = "My API", Version = "v1" });
         });
-
         AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
 
         // Email Service Configuration
@@ -196,14 +195,21 @@ public partial class Program
         // Middleware configuration
         app.UseHttpsRedirection();
         app.UseStaticFiles();
-        app.UseMiddleware<CspNonceMiddleware>();
+
+        // Добавяме CSP само в Production, за да не пречи на Swagger
+        if (!app.Environment.IsDevelopment())
+        {
+            app.UseMiddleware<CspNonceMiddleware>();
+        }
+
         app.UseRouting();
         app.UseCors("AllowOrigin");
+
         app.Use(async (context, next) =>
-            {
-                context.Response.Headers.Append("Cross-Origin-Opener-Policy", "same-origin-allow-popups");
-                await next();
-            });
+        {
+            context.Response.Headers.Append("Cross-Origin-Opener-Policy", "same-origin-allow-popups");
+            await next();
+        });
 
         app.UseAuthentication();
         app.UseAuthorization();
@@ -211,6 +217,17 @@ public partial class Program
         if (app.Environment.IsDevelopment())
         {
             app.UseDeveloperExceptionPage();
+
+            // 🔓 Премахваме CSP за Swagger, ако все пак middleware е включен
+            app.Use(async (context, next) =>
+            {
+                if (context.Request.Path.StartsWithSegments("/swagger"))
+                {
+                    context.Response.Headers.Remove("Content-Security-Policy");
+                }
+                await next();
+            });
+
             app.UseSwagger();
             app.UseSwaggerUI(c =>
             {
@@ -222,6 +239,7 @@ public partial class Program
         {
             app.UseStatusCodePagesWithReExecute("/Home/Error/{0}");
             app.UseHsts();
+
             app.UseExceptionHandler(errorApp =>
             {
                 errorApp.Run(async context =>
@@ -239,7 +257,6 @@ public partial class Program
                     await context.Response.WriteAsync(result);
                 });
             });
-
         }
 
         app.MapControllers();
@@ -248,12 +265,17 @@ public partial class Program
         using (var serviceScope = app.Services.CreateScope())
         {
             var dbContext = serviceScope.ServiceProvider.GetRequiredService<JumpWithJennyDbContext>();
+
             if (app.Environment.IsDevelopment())
             {
                 dbContext.Database.Migrate();
             }
 
-            new JumpWithJennyDbSeeder().SeedAsync(dbContext, serviceScope.ServiceProvider).GetAwaiter().GetResult();
+            new JumpWithJennyDbSeeder()
+                .SeedAsync(dbContext, serviceScope.ServiceProvider)
+                .GetAwaiter()
+                .GetResult();
         }
     }
+
 }

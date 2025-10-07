@@ -170,7 +170,7 @@
         "close": "Close",
         "loginPromptTitle": "Please Log In",
         "loginPromptText": "You need to be logged in to register for this workout.",
-        
+
          "resetPassword": {
             "title": "Reset Password",
             "newPasswordLabel": "New Password",
@@ -222,7 +222,9 @@
                 "step2_text": "You can send an email to our support team to request your data to be deleted. Please include your name and your Facebook user ID (if possible) in the email.",
                 "footer": "Once we receive your request, we will delete all your data from our servers."
 
-              } 
+              },
+              "noShoes": "No shoes available",
+              "available": "available"
           
           
 }

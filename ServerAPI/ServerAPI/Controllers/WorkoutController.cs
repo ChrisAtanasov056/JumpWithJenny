@@ -116,7 +116,8 @@ namespace ServerAPI.Controllers
         {
             try
             {
-                var workouts = await _scheduleService.GetAllWorkoutsAsync<WorkoutViewModels>();
+                var workouts = await _workoutService.GetAllWorkoutsAsync();
+                _logger.LogInformation($"Retrieved {workouts.Count()} workouts");
                 return Ok(workouts);
             }
             catch (Exception ex)

@@ -20,18 +20,18 @@ const WorkoutModal = ({ isOpen, onClose, selectedWorkout, onRegister, isLoggedIn
   const [isRegistrationSuccess, setIsRegistrationSuccess] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  const [shoeAvailability, setShoeAvailability] = useState({});
+
+  // Проверка дали потребителят вече е записан
   const checkUserRegistration = useCallback(async () => {
     setIsCheckingRegistration(true);
     try {
       if (selectedWorkout && user?.id) {
-        const response = await axios.get(
-          `/api/Schedule/is-registered/${selectedWorkout.Id}`
-        );
+        const response = await axios.get(`/api/Schedule/is-registered/${selectedWorkout.Id}`);
         setIsAlreadyRegistered(response.data);
       }
     } catch (error) {
       console.error('Error checking registration:', error);
-      
       if (error.response && error.response.status === 401) {
         setIsAlreadyRegistered(false);
       } else {
@@ -53,6 +53,27 @@ const WorkoutModal = ({ isOpen, onClose, selectedWorkout, onRegister, isLoggedIn
     setIsRegistrationSuccess(false);
   };
 
+  // 🟢 Изчисляване на налични обувки
+  useEffect(() => {
+    if (isOpen && selectedWorkout?.WorkoutShoes) {
+      const counts = { S: 0, M: 0, L: 0, XL: 0 };
+
+      selectedWorkout.WorkoutShoes.forEach(ws => {
+        if (!ws.IsTaken && ws.Shoe) {
+          switch (ws.Shoe.Size) {
+            case 1: counts.S++; break;  // S
+            case 2: counts.M++; break;  // M
+            case 3: counts.L++; break;  // L
+            case 4: counts.XL++; break; // XL
+            default: break;
+          }
+        }
+      });
+
+      setShoeAvailability(counts);
+    }
+  }, [isOpen, selectedWorkout]);
+
   useEffect(() => {
     if (isOpen && isLoggedIn && selectedWorkout) {
       resetFormStates();
@@ -63,7 +84,6 @@ const WorkoutModal = ({ isOpen, onClose, selectedWorkout, onRegister, isLoggedIn
   const handleCancelRegistration = async () => {
     try {
       await axios.delete(`/api/Schedule/cancel-registration/${selectedWorkout.Id}`);
-      
       setCancelSuccess(true);
       setTimeout(() => {
         setIsAlreadyRegistered(false);
@@ -121,11 +141,7 @@ const WorkoutModal = ({ isOpen, onClose, selectedWorkout, onRegister, isLoggedIn
       );
 
       setIsRegistrationSuccess(true);
-      
-      setTimeout(() => {
-        onClose();
-      }, 2000);
-
+      setTimeout(() => onClose(), 2000);
     } catch (err) {
       console.error('Registration failed:', err);
       setIsRegistrationSuccess(false);
@@ -221,23 +237,37 @@ const WorkoutModal = ({ isOpen, onClose, selectedWorkout, onRegister, isLoggedIn
 
                             {!usesOwnShoes && (
                               <div className="size-selection-grid">
-                                {['S', 'M', 'L', 'XL'].map((size) => (
-                                  <button
-                                    key={size}
-                                    type="button"
-                                    className={`size-btn ${selectedSize === size ? 'active' : ''}`}
-                                    onClick={() => handleSizeClick(size)}
-                                  >
-                                    {size}
-                                    <br />
-                                    <small>
-                                      {size === 'S' && '(34-35)'}
-                                      {size === 'M' && '(36-38)'}
-                                      {size === 'L' && '(39-41)'}
-                                      {size === 'XL' && '(42-44)'}
-                                    </small>
-                                  </button>
-                                ))}
+                                {['S', 'M', 'L', 'XL'].map((size) => {
+                                  const available = shoeAvailability[size] ?? 0;
+                                  const isDisabled = available <= 0;
+
+                                  return (
+                                    <button
+                                      key={size}
+                                      type="button"
+                                      className={`size-btn ${selectedSize === size ? 'active' : ''} ${isDisabled ? 'disabled' : ''}`}
+                                      onClick={() => !isDisabled && handleSizeClick(size)}
+                                      disabled={isDisabled}
+                                    >
+                                      {size}
+                                      <br />
+                                      <small>
+                                        {size === 'S' && '(34-35)'}
+                                        {size === 'M' && '(36-38)'}
+                                        {size === 'L' && '(39-41)'}
+                                        {size === 'XL' && '(42-44)'}
+                                      </small>
+                                      <br />
+                                      <span className="availability">
+                                      <p>
+                                        {isDisabled
+                                          ? t('noShoes')
+                                          : `${available} ${available === 1 ? t('availableSingular') : t('available')}`}
+                                      </p>
+                                      </span>
+                                    </button>
+                                  );
+                                })}
                               </div>
                             )}
                           </div>
