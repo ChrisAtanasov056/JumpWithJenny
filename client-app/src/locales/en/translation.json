@@ -224,7 +224,8 @@
 
               },
               "noShoes": "No shoes available",
-              "available": "available"
+              "available": "available",
+              "availableSingular": "available"
           
           
 }
