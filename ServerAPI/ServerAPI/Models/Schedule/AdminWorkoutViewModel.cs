@@ -1,5 +1,6 @@
 
 using AutoMapper;
+using ServerAPI.Models.Enums;
 using ServerAPI.Services.Mapper;
 
 namespace ServerAPI.Models.Schedule
@@ -10,6 +11,8 @@ namespace ServerAPI.Models.Schedule
     public string Day { get; set; }
     public string Time { get; set; }
     public string Status { get; set; }
+
+    public CardType ?CardType { get; set; } 
     public int AvailableSpots { get; set; }
 
     public DateTime Date { get; set; }

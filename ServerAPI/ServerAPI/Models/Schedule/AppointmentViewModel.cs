@@ -11,6 +11,8 @@ namespace ServerAPI.Models.Schedule
         public string UserFullName { get; set; }
         public string UserEmail { get; set; }
 
+        public CardType ?CardType { get; set; } 
+        
         public string ShoeId { get; set; } 
         public ShoesSize? ShoeSize { get; set; } 
         public bool UsesOwnShoes { get; set; } 
@@ -25,7 +27,9 @@ namespace ServerAPI.Models.Schedule
                 .ForMember(dest => dest.ShoeSize,
                     opt => opt.MapFrom(src => src.Shoe.Size))
                 .ForMember(dest => dest.UsesOwnShoes,
-                    opt => opt.MapFrom(src => src.UsesOwnShoes));
+                    opt => opt.MapFrom(src => src.UsesOwnShoes))
+                .ForMember(dest => dest.CardType,
+                    opt => opt.MapFrom(src => src.CardType));
         }
     }
 }

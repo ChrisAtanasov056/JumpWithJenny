@@ -53,7 +53,6 @@ const WorkoutModal = ({ isOpen, onClose, selectedWorkout, onRegister, isLoggedIn
     setIsRegistrationSuccess(false);
   };
 
-  // Изчисляване на налични обувки
   useEffect(() => {
     if (isOpen && selectedWorkout?.WorkoutShoes) {
       const counts = { S: 0, M: 0, L: 0, XL: 0 };
@@ -269,11 +268,7 @@ const WorkoutModal = ({ isOpen, onClose, selectedWorkout, onRegister, isLoggedIn
                                         </small>
                                         <br />
                                         <span className="availability">
-                                          <p>
-                                            {isDisabled
-                                              ? t('noShoes')
-                                              : `${available} ${available === 1 ? t('availableSingular') : t('available')}`}
-                                          </p>
+                                          
                                         </span>
                                       </button>
                                     );

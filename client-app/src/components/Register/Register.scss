@@ -148,7 +148,7 @@ $border-radius: 12px;
   position: relative;
   width: 100%;
   height: 50px;
-  background-color: $accent-color;
+  background-color: $accent-color !important;
   color: $white;
   border: none;
   border-radius: 25px;

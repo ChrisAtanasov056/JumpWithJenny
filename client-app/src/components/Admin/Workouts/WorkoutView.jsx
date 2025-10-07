@@ -3,12 +3,18 @@ import { useParams, Link } from 'react-router-dom';
 import WorkoutService from '../../../services/WorkoutSevices';
 import './WorkoutView.scss';
 
-// A static map for shoe size labels
+// Static label maps
 const shoeSizeLabels = {
   1: 'S',
   2: 'M',
   3: 'L',
   4: 'XL',
+};
+
+const cardTypeLabels = {
+  1: 'CoolFit ',
+  2: 'Pulse',
+  3: 'Individual Workout',
 };
 
 const WorkoutView = () => {
@@ -23,6 +29,7 @@ const WorkoutView = () => {
     const fetchWorkout = async () => {
       try {
         const workoutData = await WorkoutService.getWorkoutById(id);
+        console.log('Fetched workout data:', workoutData);
         setData({ workout: workoutData, loading: false, error: null });
       } catch (err) {
         setData({
@@ -50,7 +57,6 @@ const WorkoutView = () => {
     return <div className="error">Workout not found.</div>;
   }
 
-  // Sort shoes by size once before rendering
   const sortedShoes = [...(workout.WorkoutShoes || [])].sort(
     (a, b) => (Number(a.Shoe?.Size) || 0) - (Number(b.Shoe?.Size) || 0)
   );
@@ -67,7 +73,6 @@ const WorkoutView = () => {
       </div>
 
       <div className="workout-details">
-        {/* Workout Information Section */}
         <div className="details-section">
           <h3>Workout Information</h3>
           <div className="detail-item">
@@ -121,6 +126,12 @@ const WorkoutView = () => {
                         {shoeSizeLabels[Number(appointment.ShoeSize)] || 'Not assigned'}
                       </span>
                     )}
+                  </div>
+                  <div className="shoe-info">
+                    <span className="label">Card:</span>
+                    <span>
+                      {cardTypeLabels[appointment.CardType] || 'Not specified'}
+                    </span>
                   </div>
                 </div>
               ))}

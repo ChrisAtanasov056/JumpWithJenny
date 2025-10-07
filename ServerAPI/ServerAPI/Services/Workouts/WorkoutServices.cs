@@ -2,6 +2,7 @@ using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using ServerAPI.Data.Common.Repositories;
 using ServerAPI.Models;
+using ServerAPI.Models.Enums;
 using ServerAPI.Models.Schedule;
 using ServerAPI.ViewModels;
 using ServerAPI.ViewModels.Workout;
@@ -101,6 +102,7 @@ namespace ServerAPI.Services.Workouts
                         UserFullName = a.User.FirstName + " " + a.User.LastName,
                         UserEmail = a.User.Email,
                         ShoeId = a.ShoeId,
+                        CardType = a.CardType,
                         ShoeSize = a.Shoe != null ? a.Shoe.Size : 0,
                         UsesOwnShoes = a.UsesOwnShoes,
                     }).ToList()
@@ -190,35 +192,33 @@ namespace ServerAPI.Services.Workouts
 
         public async Task<IEnumerable<AdminWorkoutViewModel>> GetAllWorkoutsAsync()
         {
-            var workouts = await _workoutRepository
-                .All()
-                .Include(w => w.WorkoutShoes)
-                .ThenInclude(ws => ws.Shoe)
-                .Include(w => w.Appointments)
-                .ThenInclude(a => a.User)
-                .Include(w => w.Appointments)
-                .ThenInclude(a => a.Shoe)
-                .Select(w => new AdminWorkoutViewModel
-                {
-                    Id = w.Id,
-                    Day = w.Day,
-                    Time = w.Time,
-                    Date = w.Date,
-                    Status = w.Status,
-                    AvailableSpots = w.AvailableSpots,
-                    WorkoutShoes = w.WorkoutShoes.ToList(),
-                    Appointments = w.Appointments.Select(a => new AppointmentViewModel
+            var workouts = await _workoutRepository.All()
+            .Select(w => new AdminWorkoutViewModel
+            {
+                Id = w.Id,
+                Day = w.Day,
+                Time = w.Time,
+                Date = w.Date,
+                Status = w.Status,
+                AvailableSpots = w.AvailableSpots,
+                WorkoutShoes = w.WorkoutShoes
+                    .Select(ws => ws)
+                    .ToList(),
+                Appointments = w.Appointments
+                    .Select(a => new AppointmentViewModel
                     {
                         Id = a.Id,
                         UserId = a.UserId,
                         UserFullName = a.User.FirstName + " " + a.User.LastName,
                         UserEmail = a.User.Email,
+                        CardType = a.CardType,
                         ShoeId = a.ShoeId,
-                        ShoeSize = a.Shoe != null ? a.Shoe.Size : 0,
-                        UsesOwnShoes = a.UsesOwnShoes,
+                        ShoeSize = a.Shoe != null ? a.Shoe.Size : (ShoesSize?)null,
+                        UsesOwnShoes = a.UsesOwnShoes
                     }).ToList()
-                })
-                .ToListAsync();
+            })
+            .ToListAsync();
+
 
             return workouts;
         }

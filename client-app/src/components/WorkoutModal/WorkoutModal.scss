@@ -279,6 +279,7 @@ $border-radius: 12px;
       background: $border-color;
       color: $secondary-color;
       border: none;
+      padding: 10px 5px;
       border-radius: math.div($border-radius, 2);
       cursor: pointer;
       font-weight: 600;
@@ -348,7 +349,7 @@ $border-radius: 12px;
 
 @media (max-width: 600px) {
   .modal-content { padding: 20px; }
-  .modal-header h2 { font-size: 1.5rem; }
+  .modal-header h2 { font-size: 1.5rem !important; }
   .size-selection-grid { grid-template-columns: repeat(2, 1fr); }
 }
 
@@ -358,7 +359,7 @@ $border-radius: 12px;
     max-width: none;
     padding: 20px;
   }
-  .modal-header h2 { font-size: 1.5rem; word-break: break-word; }
+  .modal-header h2 { font-size: 1.5rem !important;  word-break: break-word; }
   .modal-header h3 { font-size: 1rem; }
   .size-selection-grid { grid-template-columns: repeat(2, 1fr); gap: 8px; }
   .form-section .option-group { flex-direction: column; gap: 10px; }
