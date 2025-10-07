@@ -22,10 +22,10 @@ const WorkoutModal = ({ isOpen, onClose, selectedWorkout, onRegister, isLoggedIn
 
   const [shoeAvailability, setShoeAvailability] = useState({});
 
-  // Проверка дали потребителят вече е записан
   const checkUserRegistration = useCallback(async () => {
     setIsCheckingRegistration(true);
     try {
+      console.log(user)
       if (selectedWorkout && user?.id) {
         const response = await axios.get(`/api/Schedule/is-registered/${selectedWorkout.Id}`);
         setIsAlreadyRegistered(response.data);
@@ -53,23 +53,21 @@ const WorkoutModal = ({ isOpen, onClose, selectedWorkout, onRegister, isLoggedIn
     setIsRegistrationSuccess(false);
   };
 
-  // 🟢 Изчисляване на налични обувки
+  // Изчисляване на налични обувки
   useEffect(() => {
     if (isOpen && selectedWorkout?.WorkoutShoes) {
       const counts = { S: 0, M: 0, L: 0, XL: 0 };
-
       selectedWorkout.WorkoutShoes.forEach(ws => {
         if (!ws.IsTaken && ws.Shoe) {
           switch (ws.Shoe.Size) {
-            case 1: counts.S++; break;  // S
-            case 2: counts.M++; break;  // M
-            case 3: counts.L++; break;  // L
-            case 4: counts.XL++; break; // XL
+            case 1: counts.S++; break;
+            case 2: counts.M++; break;
+            case 3: counts.L++; break;
+            case 4: counts.XL++; break;
             default: break;
           }
         }
       });
-
       setShoeAvailability(counts);
     }
   }, [isOpen, selectedWorkout]);
@@ -113,6 +111,11 @@ const WorkoutModal = ({ isOpen, onClose, selectedWorkout, onRegister, isLoggedIn
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    console.log(user)
+    if (!user.emailConfirmed) {
+      setError(t('errorAccountNotConfirmed'));
+      return;
+    }
 
     if (!usesOwnShoes && !selectedSize) {
       setError(t('errorSelectShoes'));
@@ -174,140 +177,146 @@ const WorkoutModal = ({ isOpen, onClose, selectedWorkout, onRegister, isLoggedIn
             <button className="close-btn" onClick={onClose}><FaTimes /></button>
 
             {isLoggedIn ? (
-              <>
-                <div className="modal-header">
-                  <FaCalendarAlt className="header-icon" />
-                  <h3>{t('registerFor')}</h3>
-                  <h2>{t(`days.${selectedWorkout.Day.toLowerCase()}`)} {t('at')} {selectedWorkout.Time}</h2>
+              !user.emailConfirmed ? (
+                <div className="status-message info">
+                  <FaInfoCircle className="status-icon" />
+                  <p>{t('errorAccountNotConfirmed')}</p>
+                  <button onClick={onClose} className="btn-close-prompt">{t('close')}</button>
                 </div>
+              ) : (
+                <>
+                  <div className="modal-header">
+                    <FaCalendarAlt className="header-icon" />
+                    <h3>{t('registerFor')}</h3>
+                    <h2>{t(`days.${selectedWorkout.Day.toLowerCase()}`)} {t('at')} {selectedWorkout.Time}</h2>
+                  </div>
 
-                <div className="modal-body">
-                  {isCheckingRegistration || isSubmitting ? (
-                    <div className="status-message loading">
-                      <FaInfoCircle className="status-icon" />
-                      <p>{t('checkingRegistration')}</p>
-                    </div>
-                  ) : cancelSuccess ? (
-                    <div className="status-message success">
-                      <FaCheck className="status-icon" />
-                      <p>{t('registrationCancelled')}</p>
-                    </div>
-                  ) : isAlreadyRegistered ? (
-                    <div className="status-message info">
-                      <FaInfoCircle className="status-icon" />
-                      <p>{t('alreadyRegistered')}</p>
-                      <button onClick={handleCancelRegistration} className="btn-cancel">
-                        {t('cancelRegistration')}
-                      </button>
-                    </div>
-                  ) : isRegistrationSuccess ? (
-                    <div className="status-message success">
-                      <FaCheck className="status-icon" />
-                      <p>{t('registrationSuccess')}</p>
-                    </div>
-                  ) : (
-                    <form onSubmit={handleSubmit}>
-                      {!isFull ? (
-                        <>
-                          <div className="spot-progress">
-                            <span className="spots-text">
-                              {t('spotsTaken', { taken: takenSpots, max: maxSpots })}
-                            </span>
-                            <div className="progress-bar-container">
-                              <div
-                                className="progress-bar"
-                                style={{ width: `${(takenSpots / maxSpots) * 100}%` }}
-                              ></div>
-                            </div>
-                          </div>
-
-                          <div className="form-section">
-                            <h4 className="section-title"><FaShoePrints /> {t('shoesTitle')}</h4>
-                            <div className="option-group">
-                              <label className="checkbox-container">
-                                <input
-                                  type="checkbox"
-                                  checked={usesOwnShoes}
-                                  onChange={handleOwnShoesChange}
-                                />
-                                <span className="checkmark"></span>
-                                {t('useOwnShoes')}
-                              </label>
-                            </div>
-
-                            {!usesOwnShoes && (
-                              <div className="size-selection-grid">
-                                {['S', 'M', 'L', 'XL'].map((size) => {
-                                  const available = shoeAvailability[size] ?? 0;
-                                  const isDisabled = available <= 0;
-
-                                  return (
-                                    <button
-                                      key={size}
-                                      type="button"
-                                      className={`size-btn ${selectedSize === size ? 'active' : ''} ${isDisabled ? 'disabled' : ''}`}
-                                      onClick={() => !isDisabled && handleSizeClick(size)}
-                                      disabled={isDisabled}
-                                    >
-                                      {size}
-                                      <br />
-                                      <small>
-                                        {size === 'S' && '(34-35)'}
-                                        {size === 'M' && '(36-38)'}
-                                        {size === 'L' && '(39-41)'}
-                                        {size === 'XL' && '(42-44)'}
-                                      </small>
-                                      <br />
-                                      <span className="availability">
-                                      <p>
-                                        {isDisabled
-                                          ? t('noShoes')
-                                          : `${available} ${available === 1 ? t('availableSingular') : t('available')}`}
-                                      </p>
-                                      </span>
-                                    </button>
-                                  );
-                                })}
+                  <div className="modal-body">
+                    {isCheckingRegistration || isSubmitting ? (
+                      <div className="status-message loading">
+                        <FaInfoCircle className="status-icon" />
+                        <p>{t('checkingRegistration')}</p>
+                      </div>
+                    ) : cancelSuccess ? (
+                      <div className="status-message success">
+                        <FaCheck className="status-icon" />
+                        <p>{t('registrationCancelled')}</p>
+                      </div>
+                    ) : isAlreadyRegistered ? (
+                      <div className="status-message info">
+                        <FaInfoCircle className="status-icon" />
+                        <p>{t('alreadyRegistered')}</p>
+                        <button onClick={handleCancelRegistration} className="btn-cancel">
+                          {t('cancelRegistration')}
+                        </button>
+                      </div>
+                    ) : isRegistrationSuccess ? (
+                      <div className="status-message success">
+                        <FaCheck className="status-icon" />
+                        <p>{t('registrationSuccess')}</p>
+                      </div>
+                    ) : (
+                      <form onSubmit={handleSubmit}>
+                        {!isFull ? (
+                          <>
+                            <div className="spot-progress">
+                              <span className="spots-text">
+                                {t('spotsTaken', { taken: takenSpots, max: maxSpots })}
+                              </span>
+                              <div className="progress-bar-container">
+                                <div
+                                  className="progress-bar"
+                                  style={{ width: `${(takenSpots / maxSpots) * 100}%` }}
+                                ></div>
                               </div>
-                            )}
-                          </div>
-
-                          <div className="form-section">
-                            <h4 className="section-title"><FaCreditCard /> {t('selectCardTitle')}</h4>
-                            <div className="card-select-wrapper">
-                              <select
-                                className="styled-select"
-                                value={selectedCard}
-                                onChange={handleCardChange}
-                                required
-                              >
-                                <option value="" disabled>{t('selectCardPlaceholder')}</option>
-                                <option value={t('coolfitCard')}>{t('coolfitCard')}</option>
-                                <option value={t('pulseCard')}>{t('pulseCard')}</option>
-                                <option value={t('individualWorkout')}>{t('individualWorkout')}</option>
-                              </select>
                             </div>
-                          </div>
-                          
-                          {error && <div className="error-message">{error}</div>}
 
-                          <button type="submit" className="btn-submit" disabled={isSubmitting || !selectedCard || (!usesOwnShoes && !selectedSize)}>
-                            {t('submit')}
-                          </button>
-                        </>
-                      ) : (
-                        <div className="status-message full">
-                          <FaInfoCircle className="status-icon" />
-                          <p>{t('fullNotice')}</p>
-                          <button onClick={onClose} className="btn-close-full">
-                            {t('close')}
-                          </button>
-                        </div>
-                      )}
-                    </form>
-                  )}
-                </div>
-              </>
+                            <div className="form-section">
+                              <h4 className="section-title"><FaShoePrints /> {t('shoesTitle')}</h4>
+                              <div className="option-group">
+                                <label className="checkbox-container">
+                                  <input
+                                    type="checkbox"
+                                    checked={usesOwnShoes}
+                                    onChange={handleOwnShoesChange}
+                                  />
+                                  <span className="checkmark"></span>
+                                  {t('useOwnShoes')}
+                                </label>
+                              </div>
+
+                              {!usesOwnShoes && (
+                                <div className="size-selection-grid">
+                                  {['S', 'M', 'L', 'XL'].map((size) => {
+                                    const available = shoeAvailability[size] ?? 0;
+                                    const isDisabled = available <= 0;
+
+                                    return (
+                                      <button
+                                        key={size}
+                                        type="button"
+                                        className={`size-btn ${selectedSize === size ? 'active' : ''} ${isDisabled ? 'disabled' : ''}`}
+                                        onClick={() => !isDisabled && handleSizeClick(size)}
+                                        disabled={isDisabled}
+                                      >
+                                        {size}
+                                        <br />
+                                        <small>
+                                          {size === 'S' && '(34-35)'}
+                                          {size === 'M' && '(36-38)'}
+                                          {size === 'L' && '(39-41)'}
+                                          {size === 'XL' && '(42-44)'}
+                                        </small>
+                                        <br />
+                                        <span className="availability">
+                                          <p>
+                                            {isDisabled
+                                              ? t('noShoes')
+                                              : `${available} ${available === 1 ? t('availableSingular') : t('available')}`}
+                                          </p>
+                                        </span>
+                                      </button>
+                                    );
+                                  })}
+                                </div>
+                              )}
+                            </div>
+
+                            <div className="form-section">
+                              <h4 className="section-title"><FaCreditCard /> {t('selectCardTitle')}</h4>
+                              <div className="card-select-wrapper">
+                                <select
+                                  className="styled-select"
+                                  value={selectedCard}
+                                  onChange={handleCardChange}
+                                  required
+                                >
+                                  <option value="" disabled>{t('selectCardPlaceholder')}</option>
+                                  <option value={t('coolfitCard')}>{t('coolfitCard')}</option>
+                                  <option value={t('pulseCard')}>{t('pulseCard')}</option>
+                                  <option value={t('individualWorkout')}>{t('individualWorkout')}</option>
+                                </select>
+                              </div>
+                            </div>
+
+                            {error && <div className="error-message">{error}</div>}
+
+                            <button type="submit" className="btn-submit" disabled={isSubmitting || !selectedCard || (!usesOwnShoes && !selectedSize)}>
+                              {t('submit')}
+                            </button>
+                          </>
+                        ) : (
+                          <div className="status-message full">
+                            <FaInfoCircle className="status-icon" />
+                            <p>{t('fullNotice')}</p>
+                            <button onClick={onClose} className="btn-close-full">{t('close')}</button>
+                          </div>
+                        )}
+                      </form>
+                    )}
+                  </div>
+                </>
+              )
             ) : (
               <div className="login-prompt-card">
                 <FaInfoCircle className="prompt-icon" />

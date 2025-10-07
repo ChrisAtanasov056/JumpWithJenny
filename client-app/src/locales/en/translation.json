@@ -170,7 +170,8 @@
         "close": "Close",
         "loginPromptTitle": "Please Log In",
         "loginPromptText": "You need to be logged in to register for this workout.",
-
+        "errorAccountNotConfirmed": "Your account is not confirmed. Please check your email to confirm your account before registering.",
+        
          "resetPassword": {
             "title": "Reset Password",
             "newPasswordLabel": "New Password",

@@ -183,6 +183,7 @@
         "close": "Затвори",
         "loginPromptTitle": "Влез в профила си",
         "loginPromptText": "Трябва да влезеш, за да се запишеш за тренировка.",
+        "errorAccountNotConfirmed": "Вашият акаунт не е потвърден. Моля, проверете имейла си, за да потвърдите акаунта си преди регистрация.",
     
         "Email Verification": "Потвърждение на имейл",
         "Your email has been successfully verified!": "Имейлът ти беше успешно потвърден!",

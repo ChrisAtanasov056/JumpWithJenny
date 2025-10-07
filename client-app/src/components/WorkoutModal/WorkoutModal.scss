@@ -1,6 +1,6 @@
 @use "sass:math";
 @use "sass:color";
-/* Нов SCSS файл за WorkoutModal */
+
 $primary-color: #f73665;
 $secondary-color: #2c3e50;
 $background-color: rgba(44, 62, 80, 0.8);
@@ -61,10 +61,59 @@ $border-radius: 12px;
     border: none;
     font-size: 24px;
     color: $light-text-color;
-    cursor: default;
+    cursor: pointer;
     transition: color $transition-speed;
     &:hover {
       color: $primary-color;
+    }
+  }
+
+  /* --- Унифицирани стилове за всички бутони в модала --- */
+  .btn-cancel,
+  .btn-close-prompt,
+  .btn-close-full,
+  .btn-submit {
+    border: none;
+    border-radius: 50px;
+    font-weight: 600;
+    padding: 10px 20px;
+    cursor: pointer;
+    transition: all $transition-speed;
+    text-align: center;
+    display: inline-block;
+  }
+
+  .btn-cancel {
+    background-color: $error-color;
+    color: white;
+    margin-top: 15px;
+    &:hover { transform: scale(1.05); }
+  }
+
+  .btn-close-prompt,
+  .btn-close-full {
+    background-color: $primary-color;
+    color: white;
+    &:hover {
+      background: color.adjust($primary-color, $lightness: -10%);
+    }
+  }
+
+  .btn-submit {
+    width: 100%;
+    padding: 15px;
+    background: $primary-color;
+    color: white;
+    font-size: 1.1rem;
+    font-weight: 700;
+    &:hover {
+      background: color.adjust($primary-color, $lightness: -10%);
+      transform: translateY(-2px);
+    }
+    &:disabled {
+      background: #bdc3c7;
+      cursor: not-allowed;
+      transform: none;
     }
   }
 
@@ -118,33 +167,10 @@ $border-radius: 12px;
       font-weight: 600;
     }
 
-    &.loading {
-      .status-icon { color: $info-color; }
-    }
-    &.success {
-      .status-icon { color: $success-color; }
-    }
-    &.info {
-      .status-icon { color: $info-color; }
-    }
-    &.full {
-      .status-icon { color: $error-color; }
-    }
-  }
-
-  .btn-cancel {
-    background-color: $error-color;
-    color: white;
-    border: none;
-    padding: 10px 20px;
-    border-radius: 50px;
-    cursor: default;
-    font-weight: 600;
-    margin-top: 15px;
-    transition: transform $transition-speed;
-    &:hover {
-      transform: scale(1.05);
-    }
+    &.loading { .status-icon { color: $info-color; } }
+    &.success { .status-icon { color: $success-color; } }
+    &.info { .status-icon { color: $info-color; } }
+    &.full { .status-icon { color: $error-color; } }
   }
 
   .login-prompt-card {
@@ -155,38 +181,15 @@ $border-radius: 12px;
       color: $primary-color;
       margin-bottom: 15px;
     }
-    h3 {
-      font-size: 1.5rem;
-      color: $secondary-color;
-    }
-    p {
-      font-size: 1rem;
-      color: $light-text-color;
-      margin: 10px 0 20px;
-    }
-    .btn-close-prompt {
-      background: $primary-color;
-      color: white;
-      border: none;
-      padding: 12px 25px;
-      border-radius: 50px;
-      font-weight: 600;
-      cursor: default;
-      transition: background $transition-speed;
-      &:hover {
-        background: color.adjust($primary-color, $lightness: -10%);
-      }
-    }
+    h3 { font-size: 1.5rem; color: $secondary-color; }
+    p { font-size: 1rem; color: $light-text-color; margin: 10px 0 20px; }
   }
 
   .spot-progress {
     margin-bottom: 25px;
     text-align: center;
 
-    .spots-text {
-      font-size: 1rem;
-      color: $light-text-color;
-    }
+    .spots-text { font-size: 1rem; color: $light-text-color; }
     .progress-bar-container {
       background: $border-color;
       border-radius: 50px;
@@ -201,10 +204,10 @@ $border-radius: 12px;
       transition: width 0.5s ease;
     }
   }
-  
+
   .form-section {
     margin-bottom: 25px;
-    
+
     .section-title {
       font-size: 1rem;
       font-weight: 600;
@@ -213,12 +216,8 @@ $border-radius: 12px;
       display: flex;
       align-items: center;
       gap: 10px;
-      
-      .fa-icon {
-        color: $primary-color;
-      }
     }
-    
+
     .option-group {
       display: flex;
       gap: 15px;
@@ -231,29 +230,21 @@ $border-radius: 12px;
     position: relative;
     padding-left: 30px;
     margin-bottom: 12px;
-    cursor: default;
+    cursor: pointer;
     font-size: 1rem;
-    -webkit-user-select: none;
-    -moz-user-select: none;
-    -ms-user-select: none;
     user-select: none;
-    
+
     input {
       position: absolute;
       opacity: 0;
-      cursor: default;
+      cursor: pointer;
       height: 0;
       width: 0;
-      
-      &:checked ~ .checkmark {
-        background-color: $primary-color;
-      }
-      
-      &:checked ~ .checkmark:after {
-        display: block;
-      }
+
+      &:checked ~ .checkmark { background-color: $primary-color; }
+      &:checked ~ .checkmark:after { display: block; }
     }
-    
+
     .checkmark {
       position: absolute;
       top: 0;
@@ -262,7 +253,7 @@ $border-radius: 12px;
       width: 20px;
       background-color: #eee;
       border-radius: 4px;
-      
+
       &:after {
         content: "";
         position: absolute;
@@ -289,35 +280,22 @@ $border-radius: 12px;
       color: $secondary-color;
       border: none;
       border-radius: math.div($border-radius, 2);
-      cursor: default;
+      cursor: pointer;
       font-weight: 600;
       font-size: 1rem;
       transition: all $transition-speed;
-      
-      &:hover {
-        background: color.adjust($border-color, $lightness: -5%);
-      }
-      
-      &.active {
-        background: $primary-color;
-        color: white;
-      }
-      
-      small {
-        font-size: 0.75rem;
-        color: $light-text-color;
-        transition: color $transition-speed;
-      }
 
-      &.active small {
-        color: white;
-      }
+      &:hover { background: color.adjust($border-color, $lightness: -5%); }
+      &.active { background: $primary-color; color: white; }
+
+      small { font-size: 0.75rem; color: $light-text-color; transition: color $transition-speed; }
+      &.active small { color: white; }
     }
   }
 
   .card-select-wrapper {
     position: relative;
-    
+
     &:after {
       content: '▼';
       position: absolute;
@@ -326,7 +304,7 @@ $border-radius: 12px;
       transform: translateY(-50%);
       font-size: 1rem;
       color: $light-text-color;
-      default-events: none;
+      pointer-events: none;
     }
 
     .styled-select {
@@ -336,13 +314,11 @@ $border-radius: 12px;
       background: $border-color;
       border: 1px solid transparent;
       border-radius: math.div($border-radius, 2);
-      -webkit-appearance: none;
-      -moz-appearance: none;
       appearance: none;
-      cursor: default;
+      cursor: pointer;
       color: $secondary-color;
       transition: border-color $transition-speed;
-      
+
       &:hover, &:focus {
         border-color: $primary-color;
         outline: none;
@@ -355,30 +331,6 @@ $border-radius: 12px;
     text-align: center;
     margin: 15px 0;
     font-size: 0.9rem;
-  }
-
-  .btn-submit {
-    width: 100%;
-    padding: 15px;
-    background: $primary-color;
-    color: white;
-    border: none;
-    border-radius: 50px;
-    font-size: 1.1rem;
-    font-weight: 700;
-    cursor: default;
-    transition: all $transition-speed;
-    
-    &:hover {
-      background: color.adjust($primary-color, $lightness: -10%);
-      transform: translateY(-2px);
-    }
-    
-    &:disabled {
-      background: #bdc3c7;
-      cursor: not-allowed;
-      transform: none;
-    }
   }
 }
 
@@ -395,15 +347,9 @@ $border-radius: 12px;
 }
 
 @media (max-width: 600px) {
-  .modal-content {
-    padding: 20px;
-  }
-  .modal-header h2 {
-    font-size: 1.5rem;
-  }
-  .size-selection-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
+  .modal-content { padding: 20px; }
+  .modal-header h2 { font-size: 1.5rem; }
+  .size-selection-grid { grid-template-columns: repeat(2, 1fr); }
 }
 
 @media (max-width: 768px) {
@@ -412,81 +358,25 @@ $border-radius: 12px;
     max-width: none;
     padding: 20px;
   }
-
-  .modal-content .modal-header h2 {
-    font-size: 1.5rem;
-    word-break: break-word;
+  .modal-header h2 { font-size: 1.5rem; word-break: break-word; }
+  .modal-header h3 { font-size: 1rem; }
+  .size-selection-grid { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+  .form-section .option-group { flex-direction: column; gap: 10px; }
+  .spot-progress .spots-text { font-size: 0.9rem; }
+  .btn-submit { padding: 12px; font-size: 1rem; }
+  .login-prompt-card { padding: 20px 15px;
+    h3 { font-size: 1.2rem; }
+    p { font-size: 0.9rem; }
+    .btn-close-prompt { padding: 10px 20px; font-size: 1rem; }
   }
-
-  .modal-header h3 {
-    font-size: 1rem;
-  }
-
-  .size-selection-grid {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 8px;
-  }
-
-  .form-section .option-group {
-    flex-direction: column;
-    gap: 10px;
-  }
-
-  .spot-progress .spots-text {
-    font-size: 0.9rem;
-  }
-
-  .btn-submit {
-    padding: 12px;
-    font-size: 1rem;
-  }
-
-  .login-prompt-card {
-    padding: 20px 15px;
-
-    h3 {
-      font-size: 1.2rem;
-    }
-
-    p {
-      font-size: 0.9rem;
-    }
-
-    .btn-close-prompt {
-      padding: 10px 20px;
-      font-size: 1rem;
-    }
-  }
-
-  .card-select-wrapper .styled-select {
-    font-size: 0.95rem;
-    padding: 10px;
-  }
+  .card-select-wrapper .styled-select { font-size: 0.95rem; padding: 10px; }
 }
 
 @media (max-width: 480px) {
-  .modal-header .header-icon {
-    font-size: 1.2rem;
-  }
-
-  .modal-body {
-    padding-top: 5px;
-  }
-
-  .size-selection-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .form-section .section-title {
-    font-size: 0.95rem;
-  }
-
-  .spot-progress .spots-text {
-    font-size: 0.85rem;
-  }
-
-  .btn-submit {
-    padding: 10px;
-    font-size: 0.95rem;
-  }
+  .modal-header .header-icon { font-size: 1.2rem; }
+  .modal-body { padding-top: 5px; }
+  .size-selection-grid { grid-template-columns: 1fr; }
+  .form-section .section-title { font-size: 0.95rem; }
+  .spot-progress .spots-text { font-size: 0.85rem; }
+  .btn-submit { padding: 10px; font-size: 0.95rem; }
 }
