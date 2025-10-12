@@ -1,18 +1,17 @@
 @use "sass:color";
-// Цветови променливи за статуса
-$available-color: #2ecc71; // Зелен за налични слотове
-$booked-color: #e74c3c;    // Червен за резервирани слотове
 
-// Основна цветова палитра
-$primary-color: #BDC3C7; // Deep Navy
-$secondary-color: #FFFFFF; // Soft Gray
-$background-color: #ECF0F1; // Warm Beige
-$accent-color: #E74C3C; // Coral Accent
-$white: #FFFFFF; // White
-$text-color: #2C3E50; // Deep Navy for text
-$hover-color: #E74C3C; // Coral Accent for hover effects
-$transition-speed: 0.3s; // Transition speed
-$border-radius: 8px; // Rounded corners
+$available-color: #2ecc71; 
+$booked-color: #e74c3c;    
+
+$primary-color: #BDC3C7; 
+$secondary-color: #FFFFFF; 
+$background-color: #ECF0F1; 
+$accent-color: #E74C3C;
+$white: #FFFFFF;
+$text-color: #2C3E50; 
+$hover-color: #E74C3C; 
+$transition-speed: 0.3s; 
+$border-radius: 8px; 
 
 .schedule-section {
   background-color: $background-color; 

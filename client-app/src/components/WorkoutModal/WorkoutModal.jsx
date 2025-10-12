@@ -261,10 +261,10 @@ const WorkoutModal = ({ isOpen, onClose, selectedWorkout, onRegister, isLoggedIn
                                         {size}
                                         <br />
                                         <small>
-                                          {size === 'S' && '(34-35)'}
-                                          {size === 'M' && '(36-38)'}
-                                          {size === 'L' && '(39-41)'}
-                                          {size === 'XL' && '(42-44)'}
+                                          {size === 'S' && '(36-38)'}
+                                          {size === 'M' && '(39-41)'}
+                                          {size === 'L' && '(42-44)'}
+                                          {size === 'XL' && '(44-46)'}
                                         </small>
                                         <br />
                                         <span className="availability">
