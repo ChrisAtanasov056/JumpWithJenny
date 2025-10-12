@@ -171,7 +171,10 @@ namespace ServerAPI.Services.Schedule
             }
 
             // Find the workout
-            var workout = await _workoutRepository.All().Include(w=>w.WorkoutShoes).FirstOrDefaultAsync(w => w.Id == workoutId);
+            var workout = await _workoutRepository.All()
+                .Include(w => w.WorkoutShoes)
+                .FirstOrDefaultAsync(w => w.Id == workoutId);
+
             if (workout == null)
             {
                 throw new InvalidOperationException("Workout not found.");
@@ -180,16 +183,22 @@ namespace ServerAPI.Services.Schedule
             // Update available spots only if the workout is found
             workout.AvailableSpots += 1;
 
-            // Find the matching workout shoe
-            var workoutShoe = workout.WorkoutShoes?.FirstOrDefault(ws => ws.ShoeId == appointment.ShoeId);
-            if (workoutShoe != null)
+            // Only process shoe release if user used one from the workout
+            if (appointment.ShoeId != null)
             {
-                workoutShoe.IsTaken = false;
+                var workoutShoe = workout.WorkoutShoes?.FirstOrDefault(ws => ws.ShoeId == appointment.ShoeId);
+                if (workoutShoe != null)
+                {
+                    workoutShoe.IsTaken = false;
+                }
+                else
+                {
+                    _logger.LogWarning($"No matching shoe found for appointment.ShoeId = {appointment.ShoeId}");
+                }
             }
             else
             {
-                _logger.LogWarning($"No matching shoe found. ws.ShoeId = {workoutShoe}, appointment.ShoeId = {appointment.ShoeId}");
-                throw new InvalidOperationException("Shoe not found or already available.");
+                _logger.LogInformation($"User {userId} canceled registration with own shoes — skipping shoe release.");
             }
 
             // Remove the appointment

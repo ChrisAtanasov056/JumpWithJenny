@@ -71,14 +71,13 @@ public partial class Program
 
         services.AddAuthentication(options =>
         {
-            // Задаваме JWT като основна схема за аутентикация
             options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
             options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-            options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;  // това помага понякога да няма конфликт
+            options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme; 
         })
         .AddJwtBearer(options =>
         {
-            options.RequireHttpsMetadata = false; // Винаги true за продукция, false за локално
+            options.RequireHttpsMetadata = true; // Винаги true за продукция, false за локално
             options.SaveToken = true;
             options.TokenValidationParameters = new TokenValidationParameters
             {
