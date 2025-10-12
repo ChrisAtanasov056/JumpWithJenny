@@ -63,13 +63,34 @@ const ProtectedAdminRoute = ({ children }) => {
   return children;
 };
 
+// Pages that should be explicitly excluded from indexing.
+const NO_INDEX_PAGES = [
+  '/data-deletion',
+  '/contacts',
+  '/privacy-policy', 
+  '/terms-of-service',
+  '/login',
+  '/register',
+  '/verify-email',
+  '/reset-password',
+  '/profile'
+];
+
+/**
+ * Handles the generation of the Canonical Link and NoIndex meta tag.
+ * It removes trailing slashes (except for the homepage) to enforce one canonical URL.
+ */
 const CanonicalLink = () => {
   const location = useLocation();
   let path = location.pathname;
 
-  if (path !== '/' && path.endsWith('/')) path = path.slice(0, -1);
+  // Normalize path: Remove trailing slash if it's not the homepage.
+  if (path !== '/' && path.endsWith('/')) {
+    path = path.slice(0, -1);
+  }
 
-  if (path.startsWith('/admin')) {
+  // Apply noindex/nofollow for Admin routes or specific utility pages
+  if (path.startsWith('/admin') || NO_INDEX_PAGES.includes(path)) {
     return (
       <Helmet>
         <meta name="robots" content="noindex, nofollow" />
@@ -77,15 +98,7 @@ const CanonicalLink = () => {
     );
   }
 
-  const externalPages = ['/privacy-policy', '/terms-of-service', '/data-deletion', '/contact'];
-  if (externalPages.includes(path)) {
-    return (
-      <Helmet>
-        <meta name="robots" content="noindex, nofollow" />
-      </Helmet>
-    );
-  }
-
+  // Apply Canonical link for all other pages
   const canonicalUrl = `https://jumpwithjenny.com${path}`;
   return (
     <Helmet>
