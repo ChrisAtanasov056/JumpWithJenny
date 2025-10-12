@@ -29,7 +29,7 @@ const Gallery = () => {
 
   useEffect(() => {
     axios
-      .get(`/Gallery?page=1&limit=10`)
+      .get(`/Gallery?page=1&pageSize=10`)
       .then((res) =>
         setImages(
           res.data.map((img) => ({ ...img, url: `${baseUrl}${img.Url}` }))
