@@ -77,6 +77,15 @@ const CanonicalLink = () => {
     );
   }
 
+  const externalPages = ['/privacy-policy', '/terms-of-service', '/data-deletion', '/contact'];
+  if (externalPages.includes(path)) {
+    return (
+      <Helmet>
+        <meta name="robots" content="noindex, nofollow" />
+      </Helmet>
+    );
+  }
+
   const canonicalUrl = `https://jumpwithjenny.com${path}`;
   return (
     <Helmet>
