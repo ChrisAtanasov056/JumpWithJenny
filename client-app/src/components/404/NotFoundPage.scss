@@ -16,7 +16,7 @@ $mobile-breakpoint: 768px;
     display: flex;
     align-items: center;
     justify-content: center;
-    background: linear-gradient(135deg, $primary-color 0%, darken($primary-color, 10%) 100%);
+    background: linear-gradient(135deg, $primary-color 0%, color.adjust($primary-color, $lightness: -10%) 100%);
     overflow: hidden;
     position: relative;
     font-family: 'Inter', 'Segoe UI', sans-serif;
@@ -93,7 +93,7 @@ $mobile-breakpoint: 768px;
     .zero {
         display: inline-block;
         animation: spin 3s linear infinite;
-        background: linear-gradient(45deg, $accent-color, lighten($accent-color, 10%));
+        background: linear-gradient(45deg, $accent-color, color.adjust($accent-color, $lightness: 10%));
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
         background-clip: text;
@@ -226,8 +226,10 @@ $mobile-breakpoint: 768px;
     
     @for $i from 1 through 15 {
         &:nth-child(#{$i}) {
-            animation-duration: #{5 + random(10)}s;
-            animation-delay: #{random(5)}s;
+            $random-duration: 5 + math.div(random(100), 10);
+            $random-delay: math.div(random(50), 10);
+            animation-duration: #{$random-duration}s;
+            animation-delay: #{$random-delay}s;
         }
     }
 }
