@@ -76,20 +76,15 @@ const NO_INDEX_PAGES = [
   '/profile'
 ];
 
-/**
- * Handles the generation of the Canonical Link and NoIndex meta tag.
- * It removes trailing slashes (except for the homepage) to enforce one canonical URL.
- */
 const CanonicalLink = () => {
   const location = useLocation();
   let path = location.pathname;
-
-  // Normalize path: Remove trailing slash if it's not the homepage.
   if (path !== '/' && path.endsWith('/')) {
     path = path.slice(0, -1);
   }
 
-  // Apply noindex/nofollow for Admin routes or specific utility pages
+  const domain = "https://jumpwithjenny.com"; 
+
   if (path.startsWith('/admin') || NO_INDEX_PAGES.includes(path)) {
     return (
       <Helmet>
@@ -97,9 +92,7 @@ const CanonicalLink = () => {
       </Helmet>
     );
   }
-
-  // Apply Canonical link for all other pages
-  const canonicalUrl = `https://jumpwithjenny.com${path}`;
+  const canonicalUrl = `${domain}${path}`;
   return (
     <Helmet>
       <link rel="canonical" href={canonicalUrl} />
