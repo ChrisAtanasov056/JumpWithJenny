@@ -10,7 +10,7 @@ const Welcome = () => {
 
   return (
     <section id="welcome">
-      <video autoPlay loop muted playsInline className="background-video">
+      <video autoPlay loop muted playsInline className="background-video" data-nosnippet>
         <source src={videoSource} type="video/mp4" />
         Your browser does not support the video tag.
       </video>
