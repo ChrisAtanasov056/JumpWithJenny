@@ -104,14 +104,11 @@ const Register = ({ onClose, onLoginSuccess, onRegisterSuccess }) => {
     credentials.language = language;
     
     e.preventDefault();
-    console.log("Credentials: ", credentials)
-    // Проверка на имейл формата преди изпращане
     if (!isEmailValid(credentials.email)) {
       setEmailError(t('register.invalidEmailError'));
       return;
     }
     
-    // Проверка за съвпадение на паролите
     if (!passwordsMatch) {
       setErrorMessage(t('register.passwordMismatchError'));
       return;

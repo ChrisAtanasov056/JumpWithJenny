@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import i18n from "../../i18n";
 import { resendVerificationEmail, verifyEmail } from "../../services/authService";
@@ -7,12 +7,18 @@ import "./ProfileModal.scss";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTimes, faUser, faEnvelope, faCheckCircle, faExclamationCircle, faLock, faSignOutAlt, faSpinner } from '@fortawesome/free-solid-svg-icons';
 
+import useOutsideClick from '../../services/useOutsideClick'; 
+
 const ProfileModal = ({ onClose, user, onLogout }) => {
   const { t } = useTranslation();
   const [isPasswordModalOpen, setPasswordModalOpen] = useState(false);
   const [verificationMessage, setVerificationMessage] = useState("");
   const [localUser, setLocalUser] = useState(user);
   const [isLoading, setIsLoading] = useState(false);
+
+  const modalCardRef = useRef(null);
+
+  useOutsideClick(modalCardRef, onClose);
 
   const handleResendVerification = async () => {
     setIsLoading(true);
@@ -38,8 +44,10 @@ const ProfileModal = ({ onClose, user, onLogout }) => {
   };
 
   return (
-    <div className="profile-modal-overlay">
-      <div className="profile-modal-card">
+    // ПРОВЕРКА: Премахвам onClick={onClose} от overlay-я, за да не се дублира логиката.
+    <div className="profile-modal-overlay"> 
+      {/* Прикачваме референцията и спираме разпространението на събитието! */}
+      <div className="profile-modal-card" ref={modalCardRef} onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
           <h2 className="title">{t("profile.title")}</h2>
           <button className="close-btn" onClick={onClose}>

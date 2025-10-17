@@ -33,6 +33,7 @@ import AdminNewUser from './components/Admin/Users/AdminNewUser.jsx';
 import AdminShoesList from './components/Admin/Shoes/AdminShoesList'; 
 import AdminShoeForm from './components/Admin/Shoes/AdminShoeForm';
 import ShoeDetailsView from './components/Admin/Shoes/ShoeDetailsView';
+import NotFoundPage from './components/404/NotFoundPage'; 
 
 function App() {
   useEffect(() => {
@@ -63,10 +64,9 @@ const ProtectedAdminRoute = ({ children }) => {
   return children;
 };
 
-// Pages that should be explicitly excluded from indexing.
 const NO_INDEX_PAGES = [
   '/data-deletion',
-  '/contacts',
+  '/contacts', // Връщаме '/contacts' в списъка
   '/privacy-policy', 
   '/terms-of-service',
   '/login',
@@ -78,12 +78,11 @@ const NO_INDEX_PAGES = [
 
 const CanonicalLink = () => {
   const location = useLocation();
-  let path = location.pathname;
+  let path = location.pathname; 
+
   if (path !== '/' && path.endsWith('/')) {
     path = path.slice(0, -1);
   }
-
-  const domain = "https://jumpwithjenny.com"; 
 
   if (path.startsWith('/admin') || NO_INDEX_PAGES.includes(path)) {
     return (
@@ -92,7 +91,8 @@ const CanonicalLink = () => {
       </Helmet>
     );
   }
-  const canonicalUrl = `${domain}${path}`;
+
+  const canonicalUrl = `https://jumpwithjenny.com${path}`;
   return (
     <Helmet>
       <link rel="canonical" href={canonicalUrl} />
@@ -118,7 +118,7 @@ const AppContent = () => {
         <Route path="/contacts" element={<Contacts />} />
         <Route path="/schedule" element={<Schedule />} />
         <Route path="/customers" element={<HappyCustomers />} />
-        <Route path="/login" element={user ? <Profile user={user} /> : <Login />} />
+        <Route path="/login" element={<NotFoundPage />} />
         <Route path="/register" element={<Register />} />
         <Route path="/profile" element={user ? <Profile user={user} /> : <Login />} />
         <Route path="/verify-email" element={<VerifyEmail />} />
@@ -148,8 +148,9 @@ const AppContent = () => {
           <Route path="shoes/:id" element={<AdminShoeForm />} />
           <Route path="/admin/shoes/details/:id" element={<ShoeDetailsView />} />
         </Route>
+        
+        <Route path="*" element={<NotFoundPage />} />
       </Routes>
-
     </>
   );
 };

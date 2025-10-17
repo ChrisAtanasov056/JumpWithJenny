@@ -12,7 +12,7 @@ const shoeSizeLabels = {
 };
 
 const cardTypeLabels = {
-  1: 'CoolFit ',
+  1: 'CoolFit',
   2: 'Pulse',
   3: 'Individual Workout',
 };
@@ -29,7 +29,6 @@ const WorkoutView = () => {
     const fetchWorkout = async () => {
       try {
         const workoutData = await WorkoutService.getWorkoutById(id);
-        console.log('Fetched workout data:', workoutData);
         setData({ workout: workoutData, loading: false, error: null });
       } catch (err) {
         setData({

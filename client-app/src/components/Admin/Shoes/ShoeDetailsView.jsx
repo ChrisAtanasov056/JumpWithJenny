@@ -23,7 +23,6 @@ const ShoeDetailsView = () => {
       try {
         const response = await ShoeService.getShoeById(id);
         setShoe(response);
-        console.log("Shoe response:", response);
       } catch (err) {
         setError(err.message || 'Failed to load shoe details');
       } finally {

@@ -4,7 +4,6 @@ const WorkoutService = {
    getAllWorkouts: async () => {
     try {
       const response = await api.get('/api/Schedule');
-      console.log('Fetched workouts:', response.data);
       return response.data;
     } catch (error) {
       console.error('Error fetching workouts:', error);
@@ -15,7 +14,6 @@ const WorkoutService = {
   getAllWorkouts: async () => {
     try {
       const response = await api.get('/api/workouts/all');
-      console.log('Fetched workouts:', response.data);
       return response.data;
     } catch (error) {
       console.error('Error fetching workouts:', error);

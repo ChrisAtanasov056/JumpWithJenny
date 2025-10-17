@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import './AuthModal.scss';
 import Login from '../Login/Login';
 import Register from '../Register/Register';
@@ -13,6 +13,8 @@ import { useAuth } from '../../services/AuthContext';
 import { googleLogin, facebookLogin } from '../../services/authService';
 import axios from 'axios';
 import { useFacebookSDK } from '../../services/FacebookSDKContext.jsx';
+// Импортиране на custom hook-а
+import useOutsideClick from '../../services/useOutsideClick'; 
 
 const AuthModal = ({ onClose, onLoginSuccess, setModalOpen }) => {
   const { t, i18n } = useTranslation();
@@ -25,6 +27,12 @@ const AuthModal = ({ onClose, onLoginSuccess, setModalOpen }) => {
   const [isAnimating, setIsAnimating] = useState(false);
 
   const { isFbSdkReady } = useFacebookSDK();
+
+  // Създаване на референция към модалната карта
+  const modalCardRef = useRef(null);
+
+  // Използване на custom hook-а за затваряне при клик извън референцията
+  useOutsideClick(modalCardRef, onClose);
 
   const socialPlatforms = [
     { platform: 'Google', className: 'google-btn' },
@@ -195,8 +203,10 @@ const AuthModal = ({ onClose, onLoginSuccess, setModalOpen }) => {
 
   return (
     <>
-      <div className="auth-modal-overlay">
-        <div className={`auth-modal-card`}>
+      {/* ПРОВЕРКА: Клик върху overlay-я също може да затваря модала (допълнителен начин) */}
+      <div className="auth-modal-overlay" onClick={onClose}>
+        {/* ПРОВЕРКА: Прикачваме референцията и спираме разпространението на събитието! */}
+        <div className={`auth-modal-card`} ref={modalCardRef} onClick={(e) => e.stopPropagation()}>
           <button className="auth-close-btn" onClick={onClose}>
             ✕
           </button>

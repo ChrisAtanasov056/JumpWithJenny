@@ -1,14 +1,18 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useAuth } from '../../services/AuthContext';
 import { useTranslation } from 'react-i18next';
 import axios from '../../api/axius';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FaTimes, FaCheck, FaInfoCircle, FaCalendarAlt, FaShoePrints, FaCreditCard } from 'react-icons/fa';
 import './WorkoutModal.scss';
+import useOutsideClick from '../../services/useOutsideClick'; 
 
 const WorkoutModal = ({ isOpen, onClose, selectedWorkout, onRegister, isLoggedIn }) => {
   const { t } = useTranslation();
   const { user } = useAuth();
+  
+  const modalRef = useRef(null); 
+  useOutsideClick(modalRef, onClose);
 
   const [selectedSize, setSelectedSize] = useState('');
   const [selectedCard, setSelectedCard] = useState('');
@@ -25,7 +29,6 @@ const WorkoutModal = ({ isOpen, onClose, selectedWorkout, onRegister, isLoggedIn
   const checkUserRegistration = useCallback(async () => {
     setIsCheckingRegistration(true);
     try {
-      console.log(user)
       if (selectedWorkout && user?.id) {
         const response = await axios.get(`/api/Schedule/is-registered/${selectedWorkout.Id}`);
         setIsAlreadyRegistered(response.data);
@@ -110,7 +113,6 @@ const WorkoutModal = ({ isOpen, onClose, selectedWorkout, onRegister, isLoggedIn
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log(user)
     if (!user.emailConfirmed) {
       setError(t('errorAccountNotConfirmed'));
       return;
@@ -168,6 +170,8 @@ const WorkoutModal = ({ isOpen, onClose, selectedWorkout, onRegister, isLoggedIn
         >
           <motion.div
             className="modal-content"
+            ref={modalRef}
+            onClick={(e) => e.stopPropagation()} 
             initial={{ y: "100vh", opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: "100vh", opacity: 0 }}

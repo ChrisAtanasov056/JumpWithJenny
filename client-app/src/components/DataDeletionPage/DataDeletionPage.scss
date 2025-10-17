@@ -1,95 +1,251 @@
-// src/components/DataDeletion/DataDeletionPage.scss
-
-$background-color: #f3f4f6; // gray-100
-$card-background: #ffffff; // white
-$text-color-primary: #1f2937; // gray-800
-$text-color-secondary: #4b5563; // gray-600
-$text-color-list: #374151; // gray-700
-$link-color: #3b82f6; // blue-500
-$border-radius: 0.75rem; // rounded-xl
-$shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); // shadow-lg
+// Color variables
+$primary-color: #2C3E50;
+$secondary-color: #BDC3C7;
+$background-color: #ECF0F1;
+$accent-color: #E74C3C;
+$white: #FFFFFF;
+$text-color: #2C3E50;
+$spacing-unit: 1rem;
+$border-radius: 8px;
+$box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+$transition-speed: 0.3s;
+$mobile-breakpoint: 768px;
 
 .data-deletion-page {
   min-height: 100vh;
-  background-color: $background-color;
+  background: linear-gradient(135deg, $background-color 0%, darken($background-color, 5%) 100%);
+  padding: $spacing-unit * 3;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 1rem; // p-4
+  font-family: 'Inter', 'Segoe UI', sans-serif;
 
-  .deletion-card {
-    background-color: $card-background;
-    padding: 2rem; // p-8
-    border-radius: $border-radius;
-    box-shadow: $shadow;
-    max-width: 42rem; // max-w-2xl
+  @media (max-width: $mobile-breakpoint) {
+    padding: $spacing-unit;
+  }
+}
+
+.deletion-card {
+  background: $white;
+  border-radius: $border-radius * 2;
+  box-shadow: $box-shadow;
+  padding: $spacing-unit * 3;
+  max-width: 600px;
+  width: 100%;
+  position: relative;
+  overflow: hidden;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
     width: 100%;
+    height: 4px;
+    background: linear-gradient(90deg, $accent-color, $primary-color);
+  }
 
-    h1 {
-      font-size: 2rem; // text-3xl
-      font-weight: bold;
-      text-align: center;
-      color: $text-color-primary;
-      margin-bottom: 1.5rem; // mb-6
-    }
+  h1 {
+    color: $primary-color;
+    font-size: 2.5rem;
+    margin-bottom: $spacing-unit * 1.5;
+    text-align: center;
+    font-weight: 700;
 
-    p {
-      color: $text-color-secondary;
-      margin-bottom: 1rem; // mb-4
-    }
-
-    .info-list {
-      list-style-type: decimal;
-      list-style-position: inside;
-      color: $text-color-list;
-      margin-bottom: 1.5rem; // mb-6
-      
-      li {
-        margin-bottom: 1rem; // space-y-4
-        
-        a {
-          color: $link-color;
-          text-decoration: none;
-          
-          &:hover {
-            text-decoration: underline;
-          }
-          
-          &.email-link {
-            font-weight: 600; // font-semibold
-          }
-        }
-      }
+    @media (max-width: $mobile-breakpoint) {
+      font-size: 2rem;
     }
   }
 }
 
-@media (max-width: 768px) {
-  .data-deletion-page {
-    padding: 1rem;
-    align-items: flex-start; 
+.intro-section {
+  margin-bottom: $spacing-unit * 2;
+  
+  p {
+    color: $text-color;
+    font-size: 1.1rem;
+    line-height: 1.6;
+    text-align: center;
+  }
+}
+
+.deletion-instructions {
+  margin-bottom: $spacing-unit * 2;
+
+  h2 {
+    color: $primary-color;
+    font-size: 1.5rem;
+    margin-bottom: $spacing-unit * 1.5;
+    text-align: center;
+    font-weight: 600;
+  }
+}
+
+.instruction-step {
+  display: flex;
+  align-items: flex-start;
+  margin-bottom: $spacing-unit * 2;
+  padding: $spacing-unit * 1.5;
+  background: lighten($background-color, 2%);
+  border-radius: $border-radius;
+  border-left: 4px solid $accent-color;
+  transition: all $transition-speed ease;
+
+  &:hover {
+    transform: translateX(5px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   }
 
-  .deletion-card {
-    padding: 1.5rem;
+  .step-number {
+    background: $accent-color;
+    color: $white;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    margin-right: $spacing-unit;
+    flex-shrink: 0;
+    font-size: 0.9rem;
+  }
 
-    h1 {
-      font-size: 1.5rem; 
-      margin-bottom: 1rem;
-    }
+  .step-content {
+    flex: 1;
 
     p {
-      font-size: 0.875rem; 
-    }
-
-    .info-list {
-      font-size: 0.875rem; 
+      color: $text-color;
+      line-height: 1.6;
+      margin: 0;
     }
   }
 }
 
-@media (max-width: 480px) {
+.email-section {
+  margin-top: $spacing-unit;
+  text-align: center;
+}
+
+.email-link {
+  display: inline-block;
+  background: $primary-color;
+  color: $white;
+  padding: $spacing-unit * 0.75 $spacing-unit * 1.5;
+  border-radius: $border-radius;
+  text-decoration: none;
+  font-weight: 600;
+  transition: all $transition-speed ease;
+  border: 2px solid $primary-color;
+
+  &:hover {
+    background: $white;
+    color: $primary-color;
+    transform: translateY(-2px);
+    box-shadow: $box-shadow;
+  }
+}
+
+.alternative-option {
+  background: lighten($accent-color, 45%);
+  border: 1px solid lighten($accent-color, 30%);
+  border-radius: $border-radius;
+  padding: $spacing-unit * 1.5;
+  margin-bottom: $spacing-unit * 2;
+  text-align: center;
+
+  p {
+    color: darken($accent-color, 20%);
+    margin: 0;
+    line-height: 1.6;
+  }
+}
+
+.contact-link {
+  color: $accent-color;
+  font-weight: 600;
+  text-decoration: none;
+  transition: color $transition-speed ease;
+
+  &:hover {
+    color: darken($accent-color, 10%);
+    text-decoration: underline;
+  }
+}
+
+.confirmation-section {
+  background: lighten($primary-color, 60%);
+  border: 1px solid lighten($primary-color, 40%);
+  border-radius: $border-radius;
+  padding: $spacing-unit * 1.5;
+  text-align: center;
+
+  p {
+    color: $primary-color;
+    margin: 0;
+    line-height: 1.6;
+    font-weight: 500;
+  }
+}
+
+.back-button-container {
+  text-align: center;
+  margin-top: $spacing-unit * 2;
+  padding-top: $spacing-unit * 2;
+  border-top: 1px solid lighten($secondary-color, 20%);
+}
+
+.back-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: $spacing-unit * 0.75 $spacing-unit * 1.5;
+  background: $secondary-color;
+  color: $primary-color;
+  text-decoration: none;
+  border-radius: $border-radius;
+  font-weight: 600;
+  transition: all $transition-speed ease;
+  border: 2px solid $secondary-color;
+
+  &:hover {
+    background: $white;
+    border-color: $primary-color;
+    transform: translateY(-2px);
+    box-shadow: $box-shadow;
+  }
+}
+
+// Animation for the card entrance
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.deletion-card {
+  animation: slideInUp 0.6s ease-out;
+}
+
+// Responsive adjustments
+@media (max-width: $mobile-breakpoint) {
   .deletion-card {
-    padding: 1rem; 
+    padding: $spacing-unit * 2;
+  }
+
+  .instruction-step {
+    flex-direction: column;
+    text-align: center;
+    padding: $spacing-unit;
+
+    .step-number {
+      margin-right: 0;
+      margin-bottom: $spacing-unit;
+    }
   }
 }

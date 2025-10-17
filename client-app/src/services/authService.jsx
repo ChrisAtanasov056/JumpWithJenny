@@ -124,7 +124,6 @@ export const resendVerificationEmail = async (email, language) => {
       Email: email,
       language,
     });
-    console.log('Resend verification response:', response);
     return response.data;
   } catch (error) {
     console.error('Resend verification email error:', error);
@@ -135,7 +134,6 @@ export const resendVerificationEmail = async (email, language) => {
 // Google Login
 export const googleLogin = async (googleToken) => {
   try {
-    console.log("Google login token:", googleToken);
     const response = await axios.post('api/Auth/google-login', {
       code: googleToken,
     });
@@ -159,7 +157,6 @@ export const googleLogin = async (googleToken) => {
 
 export const facebookLogin = async (accessToken) => {
   try {
-    console.log("Facebook access token:", accessToken); 
     const response = await axios.post('api/Auth/facebook-login', {
       accessToken: accessToken,
     });

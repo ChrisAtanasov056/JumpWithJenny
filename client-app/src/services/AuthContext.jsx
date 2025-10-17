@@ -84,7 +84,6 @@ export const AuthProvider = ({ children }) => {
             axios.defaults.headers.common['Authorization'] = `Bearer ${userData.token}`;
             setIsAuthenticated(true);
             setUser(userData);
-            console.log("Saving JWT to localStorage:", userData.token);
             localStorage.setItem('jwtToken', userData.token);
             localStorage.setItem('user', JSON.stringify(userData));
             if (userData.refreshToken) {
