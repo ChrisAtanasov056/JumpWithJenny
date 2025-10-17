@@ -66,7 +66,7 @@ const ProtectedAdminRoute = ({ children }) => {
 
 const NO_INDEX_PAGES = [
   '/data-deletion',
-  '/contacts', // Връщаме '/contacts' в списъка
+  '/contact', // Връщаме '/contacts' в списъка
   '/privacy-policy', 
   '/terms-of-service',
   '/login',
