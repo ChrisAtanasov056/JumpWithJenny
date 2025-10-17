@@ -203,7 +203,7 @@ public partial class Program
 
         app.UseRouting();
         app.UseCors("AllowOrigin");
-
+         
         app.Use(async (context, next) =>
         {
             context.Response.Headers.Append("Cross-Origin-Opener-Policy", "same-origin-allow-popups");
@@ -212,12 +212,13 @@ public partial class Program
 
         app.UseAuthentication();
         app.UseAuthorization();
+        
+        app.MapGet("/", () => Results.Ok(new { message = "JumpWithJenny API is running ✅" }));
 
         if (app.Environment.IsDevelopment())
         {
             app.UseDeveloperExceptionPage();
 
-            // 🔓 Премахваме CSP за Swagger, ако все пак middleware е включен
             app.Use(async (context, next) =>
             {
                 if (context.Request.Path.StartsWithSegments("/swagger"))
