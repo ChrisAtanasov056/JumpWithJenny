@@ -1,5 +1,6 @@
-@use 'sass:color';
 @use 'sass:math';
+@use 'sass:color';
+
 // Color variables
 $primary-color: #2C3E50;
 $secondary-color: #BDC3C7;
@@ -228,8 +229,8 @@ $mobile-breakpoint: 768px;
     
     @for $i from 1 through 15 {
         &:nth-child(#{$i}) {
-            $random-duration: 5 + math.div(random(100), 10);
-            $random-delay: math.div(random(50), 10);
+            $random-duration: 5 + math.div(math.random(100), 10);
+            $random-delay: math.div(math.random(50), 10);
             animation-duration: #{$random-duration}s;
             animation-delay: #{$random-delay}s;
         }
