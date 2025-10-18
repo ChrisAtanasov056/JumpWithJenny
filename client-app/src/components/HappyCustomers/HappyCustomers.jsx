@@ -131,7 +131,7 @@ const HappyCustomers = () => {
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
       >
-        <button className="arrow-btn left" onClick={prevSlide}>
+        <button className="arrow-btn left" aria-label="Previous slide" onClick={prevSlide}>
           <FaChevronLeft />
         </button>
 
@@ -158,7 +158,7 @@ const HappyCustomers = () => {
           ))}
         </div>
 
-        <button className="arrow-btn right" onClick={nextSlide}>
+        <button className="arrow-btn right" aria-label="Next slide" onClick={nextSlide}>
           <FaChevronRight />
         </button>
       </div>

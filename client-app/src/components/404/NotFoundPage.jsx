@@ -25,7 +25,6 @@ const NotFoundPage = () => {
                 <meta name="robots" content="noindex, nofollow" />
             </Helmet>
             
-            {/* Animated background elements */}
             <div className="background-elements">
                 <div 
                     className="floating-shape shape-1" 
