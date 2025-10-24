@@ -145,7 +145,8 @@
           "passwordLength": "Minimum 8 characters",
           "passwordUppercase": "At least one uppercase letter",
           "passwordNumber": "At least one number",
-          "invalidEmailError": "Please enter a valid email address."
+          "invalidEmailError": "Please enter a valid email address.",
+          "invalidUsernameError": "The username must contain only Latin letters, numbers, hyphens (-), and underscores (_)."
         },
         "registerFor": "Register for",
         "at": "at",

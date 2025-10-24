@@ -145,7 +145,7 @@
         "register": {
           "firstNameLabel": "Име",
           "lastNameLabel": "Фамилия",
-          "userNameLabel": "Потребителско име",
+          "userNameLabel": "Потребителско име (само на латиница)",
           "emailLabel": "Имейл",
           "passwordLabel": "Парола",
           "retypePasswordLabel": "Повтори паролата",
@@ -158,7 +158,8 @@
           "passwordLength": "Минимум 6 символа",
           "passwordUppercase": "Поне една главна буква",
           "passwordNumber": "Поне една цифра",
-          "invalidEmailError": "Моля, въведете валиден имейл адрес."
+          "invalidEmailError": "Моля, въведете валиден имейл адрес.",
+          "invalidUsernameError": "Потребителското име трябва да съдържа само латински букви, цифри, тирета (-) и долни черти (_)."
         },
         "registerFor": "Запиши се за",
         "at": "в",

@@ -2,7 +2,7 @@
     position: fixed;
     cursor: default;
     font-size: 0.9rem;
-    margin-left: auto; // Pushes to the end of flex container
+    margin-left: auto; 
     min-width: 60px;
     right: 20px;
 
@@ -19,7 +19,7 @@
       transition: background-color 0.2s;
   
       &:hover {
-        background-color: rgba(0, 0, 0, 0.05);
+        background-color: #C0392B;
       }
   
       .language-code {
