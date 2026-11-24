@@ -167,7 +167,9 @@ namespace ServerAPI.Migrations
 
                     b.HasIndex("ShoeId");
 
-                    b.HasIndex("WorkoutId");
+                    b.HasIndex("WorkoutId", "ShoeId")
+                        .IsUnique()
+                        .HasFilter("\"ShoeId\" IS NOT NULL AND \"IsDeleted\" = false");
 
                     b.ToTable("Appointments");
                 });
@@ -459,6 +461,11 @@ namespace ServerAPI.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<uint>("xmin")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid");
+
                     b.HasKey("Id");
 
                     b.ToTable("Workouts");
@@ -519,6 +526,11 @@ namespace ServerAPI.Migrations
 
                     b.Property<DateTime?>("ModifiedOn")
                         .HasColumnType("timestamp without time zone");
+
+                    b.Property<uint>("xmin")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid");
 
                     b.HasKey("WorkoutId", "ShoeId");
 

@@ -227,6 +227,22 @@
                 "confirmation": "Once we receive your request, we will send you a confirmation and keep you informed about the deletion process.",
                 "backButton": "Back to Home"
               },
+              "errorCheckingRegistration": "Error checking registration status. Please try again.",
+              "errorCancelRegistration": "Failed to cancel registration. Please try again.",
+              "registrationError": "Failed to register for the workout. Please try again.",
+              "bookingErrors": {
+                "WORKOUT_NOT_FOUND": "Workout was not found.",
+                "USER_NOT_FOUND": "User account was not found.",
+                "EMAIL_NOT_CONFIRMED": "Your account is not confirmed. Please confirm your email before registering.",
+                "WORKOUT_PAST": "This workout has already started or passed.",
+                "WORKOUT_NOT_AVAILABLE": "This workout is not open for registration.",
+                "ALREADY_REGISTERED": "You are already registered for this workout.",
+                "NO_AVAILABLE_SPOTS": "No available spots left for this workout.",
+                "NO_AVAILABLE_SHOES": "No available shoes of the selected size.",
+                "INVALID_SHOE_SIZE": "Please select a valid shoe size.",
+                "INVALID_CARD_TYPE": "Please select a valid workout card type.",
+                "CONCURRENCY_CONFLICT": "Availability just changed. Please check available spots and try again."
+              },
               "noShoes": "No shoes available",
               "available": "available",
               "availableSingular": "available"

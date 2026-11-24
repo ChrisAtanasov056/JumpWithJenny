@@ -1,15 +1,12 @@
 ﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
 using ServerAPI.Models.Schedule;
 using ServerAPI.Services.Schedule;
 using System.Security.Claims;
-using System.Threading.Tasks;
 
 namespace ServerAPI.Controllers
-{   
+{
     [Route("api/[controller]")]
     [ApiController]
     public class ScheduleController : ControllerBase
@@ -34,7 +31,7 @@ namespace ServerAPI.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error getting all workouts.");
-                return StatusCode(500, $"Internal server error: {ex.Message}");
+                return StatusCode(500, new { message = "Internal server error." });
             }
         }
 
@@ -46,8 +43,9 @@ namespace ServerAPI.Controllers
                 var workout = await _scheduleService.GetWorkoutByIdAsync(id);
                 if (workout == null)
                 {
-                    return NotFound($"Workout with ID {id} not found.");
+                    return NotFound(new { code = "WORKOUT_NOT_FOUND", message = $"Workout with ID {id} not found." });
                 }
+
                 return Ok(new
                 {
                     message = "Successfully retrieved workout details.",
@@ -56,21 +54,30 @@ namespace ServerAPI.Controllers
                         workout.Id,
                         workout.Day,
                         workout.Time,
+                        workout.Date,
                         workout.Status,
                         workout.AvailableSpots,
-                        Shoes = workout.WorkoutShoes.Select(s => new
-                        {
-                            s.Shoe.Id,
-                            s.Shoe.Size,
-                            s.IsTaken
-                        })
+                        workout.TakenSpots,
+                        workout.TotalSpots,
+                        Shoes = (workout.WorkoutShoes ?? Enumerable.Empty<Models.WorkoutShoes>())
+                            .Where(s => s.Shoe != null)
+                            .Select(s => new
+                            {
+                                s.Shoe.Id,
+                                s.Shoe.Size,
+                                s.IsTaken
+                            })
                     }
                 });
             }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { code = "WORKOUT_NOT_FOUND", message = ex.Message });
+            }
             catch (Exception ex)
             {
-                _logger.LogError(ex, $"Error getting workout by ID: {id}");
-                return StatusCode(500, $"Internal server error: {ex.Message}");
+                _logger.LogError(ex, "Error getting workout by ID: {WorkoutId}", id);
+                return StatusCode(500, new { message = "Internal server error." });
             }
         }
 
@@ -78,71 +85,69 @@ namespace ServerAPI.Controllers
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         public async Task<IActionResult> ApplyForWorkout([FromBody] ApplyForWorkoutRequest request)
         {
+            if (request == null)
+            {
+                return BadRequest(new { code = "INVALID_REQUEST", message = "Request body is required." });
+            }
+
             try
             {
                 var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-                _logger.LogInformation($"Received request to apply for workout: {request.WorkoutId} with userId: {userId}");
-                
+                _logger.LogInformation("Received request to apply for workout: {WorkoutId} with userId: {UserId}", request.WorkoutId, userId);
+
                 var updatedWorkout = await _scheduleService.ApplyForWorkoutAsync(
                     request.WorkoutId,
-                    request.ShoeSize, 
+                    request.ShoeSize,
                     request.CardType,
-                    userId, 
-                    request.UsesOwnShoes
+                    userId,
+                    request.UsesOwnShoes,
+                    requireConfirmedEmail: true
                 );
-
-                if (updatedWorkout == null)
-                {
-                    return BadRequest("Unable to apply for the workout. No available shoes of the requested size or no spots left.");
-                }
 
                 return Ok(new
                 {
                     message = "Successfully applied for the workout.",
-                    workout = new
-                    {
-                        updatedWorkout.Id,
-                        updatedWorkout.Day,
-                        updatedWorkout.Time,
-                        updatedWorkout.Status,
-                        updatedWorkout.AvailableSpots,
-                        Shoes = updatedWorkout.WorkoutShoes.Select(s => new
-                        {
-                            s.Shoe.Id,
-                            s.Shoe.Size,
-                        })
-                    }
+                    workout = updatedWorkout
                 });
+            }
+            catch (ScheduleBookingException ex)
+            {
+                _logger.LogWarning("Booking failed with code {Code}: {Message}", ex.Code, ex.Message);
+                return ToActionResult(ex);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error applying for workout.");
-                return StatusCode(500, $"Internal server error: {ex.Message}");
+                return StatusCode(500, new { message = "Internal server error." });
             }
         }
-        
+
         [HttpGet("is-registered/{workoutId}")]
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         public async Task<ActionResult<bool>> IsUserRegistered(string workoutId)
         {
             try
             {
-                _logger.LogInformation($"Checking registration status for workout {workoutId}");
+                _logger.LogInformation("Checking registration status for workout {WorkoutId}", workoutId);
                 var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-                
+
                 if (string.IsNullOrWhiteSpace(workoutId))
                 {
-                    return BadRequest("Workout ID is required");
+                    return BadRequest(new { code = "WORKOUT_NOT_FOUND", message = "Workout ID is required." });
                 }
 
                 var isRegistered = await _scheduleService.IsUserRegisteredAsync(workoutId, userId);
-                _logger.LogInformation($"User {userId} registration status for workout {workoutId}: {isRegistered}");
+                _logger.LogInformation("User {UserId} registration status for workout {WorkoutId}: {IsRegistered}", userId, workoutId, isRegistered);
                 return Ok(isRegistered);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { code = "USER_NOT_FOUND", message = ex.Message });
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error checking registration status");
-                return StatusCode(500, $"Internal server error: {ex.Message}");
+                return StatusCode(500, new { message = "Internal server error." });
             }
         }
 
@@ -153,26 +158,36 @@ namespace ServerAPI.Controllers
             try
             {
                 var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-                
-                var isCanceled = await _scheduleService.CancelRegistrationAsync(workoutId, userId);
+                var isCanceled = await _scheduleService.CancelRegistrationAsync(workoutId, userId, allowPastWorkout: false);
 
                 if (!isCanceled)
                 {
-                    return NotFound("Registration not found.");
+                    return NotFound(new { code = "REGISTRATION_NOT_FOUND", message = "Registration not found." });
                 }
 
-                return Ok("Registration canceled successfully.");
+                return Ok(new { message = "Registration canceled successfully." });
             }
-            catch (ArgumentException ex)
+            catch (ScheduleBookingException ex)
             {
-                _logger.LogWarning(ex.Message);
-                return BadRequest(ex.Message);
+                _logger.LogWarning("Cancel registration failed with code {Code}: {Message}", ex.Code, ex.Message);
+                return ToActionResult(ex);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error canceling registration");
-                return StatusCode(500, $"Internal server error: {ex.Message}");
+                return StatusCode(500, new { message = "Internal server error." });
             }
+        }
+
+        private IActionResult ToActionResult(ScheduleBookingException ex)
+        {
+            var payload = new { code = ex.Code, message = ex.Message };
+            return ex.ErrorCode switch
+            {
+                BookingErrorCode.WorkoutNotFound or BookingErrorCode.UserNotFound => NotFound(payload),
+                BookingErrorCode.AlreadyRegistered or BookingErrorCode.NoAvailableSpots or BookingErrorCode.NoAvailableShoes or BookingErrorCode.ConcurrencyConflict => Conflict(payload),
+                _ => BadRequest(payload)
+            };
         }
     }
 }

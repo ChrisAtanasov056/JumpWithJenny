@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using ServerAPI.Data;
 using ServerAPI.Data.Common.Repositories;
 using ServerAPI.Models;
 using ServerAPI.Models.Enums;
@@ -8,112 +9,244 @@ namespace ServerAPI.Services.Schedule
 {
     public class ScheduleService : IScheduleService
     {
+        private static readonly TimeZoneInfo BulgariaTimeZone =
+            TimeZoneInfo.FindSystemTimeZoneById("Europe/Sofia");
+
+        private readonly JumpWithJennyDbContext _context;
         private readonly IDeletableEntityRepository<Workout> _workoutRepository;
         private readonly IDeletableEntityRepository<Appointment> _appointmentRepository;
-        private readonly IDeletableEntityRepository<Shoes> _shoesRepository;
         private readonly IDeletableEntityRepository<User> _usersRepository;
-
         private readonly ILogger<ScheduleService> _logger;
 
         public ScheduleService(
+            JumpWithJennyDbContext context,
             IDeletableEntityRepository<Workout> workoutRepository,
             IDeletableEntityRepository<Appointment> appointmentRepository,
-            IDeletableEntityRepository<Shoes> shoesRepository,
             IDeletableEntityRepository<User> usersRepository,
             ILogger<ScheduleService> logger)
         {
+            _context = context;
             _workoutRepository = workoutRepository;
             _appointmentRepository = appointmentRepository;
-            _shoesRepository = shoesRepository;
             _usersRepository = usersRepository;
             _logger = logger;
         }
 
-        public async Task<Workout> ApplyForWorkoutAsync(string workoutId, ShoesSize? shoeSize, CardType cardType, string userId, bool usesOwnShoes)
+        private static DateTime GetCurrentLocalTime() =>
+            TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, BulgariaTimeZone);
+
+        public async Task<WorkoutViewModels> ApplyForWorkoutAsync(
+            string workoutId,
+            ShoesSize? shoeSize,
+            CardType cardType,
+            string userId,
+            bool usesOwnShoes,
+            bool requireConfirmedEmail = true)
         {
-            // First get the workout with all necessary includes
+            if (string.IsNullOrWhiteSpace(workoutId))
+            {
+                throw new ScheduleBookingException(
+                    BookingErrorCode.WorkoutNotFound,
+                    "WORKOUT_NOT_FOUND",
+                    "Workout ID is required.");
+            }
+
+            if (string.IsNullOrWhiteSpace(userId))
+            {
+                throw new ScheduleBookingException(
+                    BookingErrorCode.UserNotFound,
+                    "USER_NOT_FOUND",
+                    "User ID is required.");
+            }
+
+            if (!Enum.IsDefined(typeof(CardType), cardType))
+            {
+                throw new ScheduleBookingException(
+                    BookingErrorCode.InvalidCardType,
+                    "INVALID_CARD_TYPE",
+                    "Invalid workout card type.");
+            }
+
+            if (!usesOwnShoes && (!shoeSize.HasValue || !Enum.IsDefined(typeof(ShoesSize), shoeSize.Value)))
+            {
+                throw new ScheduleBookingException(
+                    BookingErrorCode.InvalidShoeSize,
+                    "INVALID_SHOE_SIZE",
+                    "Please select a valid shoe size.");
+            }
+
+            await using var transaction = await _context.Database.BeginTransactionAsync();
+
+            var user = await _usersRepository.AllAsNoTracking()
+                .FirstOrDefaultAsync(u => u.Id == userId);
+
+            if (user == null)
+            {
+                throw new ScheduleBookingException(
+                    BookingErrorCode.UserNotFound,
+                    "USER_NOT_FOUND",
+                    "User not found.");
+            }
+
+            if (requireConfirmedEmail && !user.EmailConfirmed)
+            {
+                throw new ScheduleBookingException(
+                    BookingErrorCode.EmailNotConfirmed,
+                    "EMAIL_NOT_CONFIRMED",
+                    "Please confirm your email address before registering for a workout.");
+            }
+
             var workout = await _workoutRepository.All()
                 .Include(w => w.WorkoutShoes)
-                .ThenInclude(ws => ws.Shoe)
+                    .ThenInclude(ws => ws.Shoe)
                 .Include(w => w.Appointments)
                 .FirstOrDefaultAsync(w => w.Id == workoutId);
 
             if (workout == null)
             {
-                
-                return null; // Workout not found
+                throw new ScheduleBookingException(
+                    BookingErrorCode.WorkoutNotFound,
+                    "WORKOUT_NOT_FOUND",
+                    "Workout not found.");
             }
 
-            if (workout.Appointments.Count >= 20)
+            if (workout.Date <= GetCurrentLocalTime())
             {
-                return null; // Workout is already full
+                throw new ScheduleBookingException(
+                    BookingErrorCode.WorkoutInPast,
+                    "WORKOUT_PAST",
+                    "Cannot register for a workout that has already started or passed.");
+            }
+
+            var existingAppointment = await _appointmentRepository.AllWithDeleted()
+                .FirstOrDefaultAsync(a => a.WorkoutId == workoutId && a.UserId == userId);
+
+            if (existingAppointment != null && !existingAppointment.IsDeleted)
+            {
+                throw new ScheduleBookingException(
+                    BookingErrorCode.AlreadyRegistered,
+                    "ALREADY_REGISTERED",
+                    "User is already registered for this workout.");
+            }
+
+            if (!string.Equals(workout.Status, "Available", StringComparison.OrdinalIgnoreCase))
+            {
+                throw new ScheduleBookingException(
+                    BookingErrorCode.WorkoutNotAvailable,
+                    "WORKOUT_NOT_AVAILABLE",
+                    "This workout is not open for registration.");
+            }
+
+            if (workout.AvailableSpots <= 0)
+            {
+                throw new ScheduleBookingException(
+                    BookingErrorCode.NoAvailableSpots,
+                    "NO_AVAILABLE_SPOTS",
+                    "No available spots left for this workout.");
             }
 
             Shoes assignedShoe = null;
-            WorkoutShoes workoutShoeToUpdate = null;
 
             if (!usesOwnShoes)
             {
-                // Find the first available shoe of the requested size
-                workoutShoeToUpdate = workout.WorkoutShoes
-                    .FirstOrDefault(ws => ws.Shoe.Size == shoeSize && !ws.IsTaken);
+                var workoutShoeToUpdate = workout.WorkoutShoes
+                    .FirstOrDefault(ws =>
+                        !ws.IsDeleted &&
+                        ws.Shoe != null &&
+                        !ws.Shoe.IsDeleted &&
+                        ws.Shoe.Size == shoeSize.Value &&
+                        !ws.IsTaken);
 
                 if (workoutShoeToUpdate == null)
                 {
-                    return null; // No available shoe of requested size
+                    throw new ScheduleBookingException(
+                        BookingErrorCode.NoAvailableShoes,
+                        "NO_AVAILABLE_SHOES",
+                        "No available shoes of the requested size.");
                 }
 
                 assignedShoe = workoutShoeToUpdate.Shoe;
-                workoutShoeToUpdate.IsTaken = true; // Mark the shoe as taken
-
-                // Explicitly update the WorkoutShoes entity
-                _workoutRepository.Update(workout);
+                workoutShoeToUpdate.IsTaken = true;
             }
-            // Create appointment
-            var appointment = new Appointment
-            {
-                UserId = userId,
-                WorkoutId = workoutId,
-                CardType = cardType,
-                ShoeId = assignedShoe?.Id, // Null if using own shoes
-                UsesOwnShoes = usesOwnShoes,
-                IsConfirmed = true
-            };
 
-            // Update available spots
+            if (existingAppointment != null && existingAppointment.IsDeleted)
+            {
+                _appointmentRepository.Undelete(existingAppointment);
+                existingAppointment.CardType = cardType;
+                existingAppointment.ShoeId = assignedShoe?.Id;
+                existingAppointment.UsesOwnShoes = usesOwnShoes;
+                existingAppointment.IsConfirmed = true;
+
+                if (!workout.Appointments.Any(a => a.UserId == userId && a.WorkoutId == workoutId))
+                {
+                    workout.Appointments.Add(existingAppointment);
+                }
+            }
+            else
+            {
+                var appointment = new Appointment
+                {
+                    UserId = userId,
+                    WorkoutId = workoutId,
+                    CardType = cardType,
+                    ShoeId = assignedShoe?.Id,
+                    UsesOwnShoes = usesOwnShoes,
+                    IsConfirmed = true
+                };
+
+                await _appointmentRepository.AddAsync(appointment);
+
+                if (!workout.Appointments.Contains(appointment))
+                {
+                    workout.Appointments.Add(appointment);
+                }
+            }
+
             workout.AvailableSpots -= 1;
+            if (workout.AvailableSpots <= 0)
+            {
+                workout.AvailableSpots = 0;
+                workout.Status = "Booked";
+            }
 
             try
             {
-                // Add the appointment
-                await _appointmentRepository.AddAsync(appointment);
-
-                // Save all changes
-                await _workoutRepository.SaveChangesAsync();
-                await _appointmentRepository.SaveChangesAsync();
-
-                if (workoutShoeToUpdate != null)
-                {
-                    await _shoesRepository.SaveChangesAsync();
-                }
-
-                return workout;
+                await _context.SaveChangesAsync();
+                await transaction.CommitAsync();
+                return MapToWorkoutViewModel(workout);
             }
-            catch
+            catch (DbUpdateConcurrencyException ex)
             {
-                return null;
+                await transaction.RollbackAsync();
+                _logger.LogWarning(ex, "Concurrency conflict while applying user {UserId} to workout {WorkoutId}", userId, workoutId);
+                throw new ScheduleBookingException(
+                    BookingErrorCode.ConcurrencyConflict,
+                    "CONCURRENCY_CONFLICT",
+                    "Workout availability changed concurrently. Please try again.",
+                    ex);
+            }
+            catch (DbUpdateException ex)
+            {
+                await transaction.RollbackAsync();
+                _logger.LogWarning(ex, "Database constraint conflict while applying user {UserId} to workout {WorkoutId}", userId, workoutId);
+                throw new ScheduleBookingException(
+                    BookingErrorCode.ConcurrencyConflict,
+                    "CONCURRENCY_CONFLICT",
+                    "Could not complete booking due to a concurrent update. Please try again.",
+                    ex);
             }
         }
 
         public async Task<List<WorkoutViewModels>> GetAllWorkoutsAsync()
         {
-            var today = DateTime.UtcNow.Date;
+            var today = GetCurrentLocalTime().Date;
 
             var workouts = await _workoutRepository
                 .AllAsNoTracking()
                 .Where(w => w.Date >= today)
                 .Include(w => w.WorkoutShoes)
                     .ThenInclude(ws => ws.Shoe)
+                .Include(w => w.Appointments)
                 .ToListAsync();
 
             return workouts.Select(MapToWorkoutViewModel).ToList();
@@ -126,6 +259,7 @@ namespace ServerAPI.Services.Schedule
                 .Where(w => w.Id == id)
                 .Include(w => w.WorkoutShoes)
                     .ThenInclude(ws => ws.Shoe)
+                .Include(w => w.Appointments)
                 .FirstOrDefaultAsync();
 
             if (workout == null)
@@ -138,6 +272,9 @@ namespace ServerAPI.Services.Schedule
 
         private static WorkoutViewModels MapToWorkoutViewModel(Workout workout)
         {
+            var activeAppointmentsCount = workout.Appointments?.Count(a => !a.IsDeleted) ?? 0;
+            var totalSpots = workout.AvailableSpots + activeAppointmentsCount;
+
             return new WorkoutViewModels
             {
                 Id = workout.Id,
@@ -145,8 +282,11 @@ namespace ServerAPI.Services.Schedule
                 Time = workout.Time,
                 Status = workout.Status,
                 AvailableSpots = workout.AvailableSpots,
+                TakenSpots = activeAppointmentsCount,
+                TotalSpots = totalSpots,
                 Date = workout.Date,
-                WorkoutShoes = workout.WorkoutShoes
+                WorkoutShoes = (workout.WorkoutShoes ?? Enumerable.Empty<WorkoutShoes>())
+                    .Where(ws => !ws.IsDeleted && ws.Shoe != null && !ws.Shoe.IsDeleted)
                     .Select(ws => new WorkoutShoes
                     {
                         Id = ws.Id,
@@ -157,71 +297,89 @@ namespace ServerAPI.Services.Schedule
                         ModifiedOn = ws.ModifiedOn,
                         IsDeleted = ws.IsDeleted,
                         DeletedOn = ws.DeletedOn,
-                        Shoe = ws.Shoe == null
-                            ? null
-                            : new Shoes
-                            {
-                                Id = ws.Shoe.Id,
-                                Size = ws.Shoe.Size,
-                                CreatedOn = ws.Shoe.CreatedOn,
-                                ModifiedOn = ws.Shoe.ModifiedOn,
-                                IsDeleted = ws.Shoe.IsDeleted,
-                                DeletedOn = ws.Shoe.DeletedOn,
-                            },
+                        Shoe = new Shoes
+                        {
+                            Id = ws.Shoe.Id,
+                            Size = ws.Shoe.Size,
+                            CreatedOn = ws.Shoe.CreatedOn,
+                            ModifiedOn = ws.Shoe.ModifiedOn,
+                            IsDeleted = ws.Shoe.IsDeleted,
+                            DeletedOn = ws.Shoe.DeletedOn,
+                        },
                     })
                     .ToList(),
             };
         }
 
-       public async Task<bool> IsUserRegisteredAsync(string workoutId, string userId)
+        public async Task<bool> IsUserRegisteredAsync(string workoutId, string userId)
         {
-            // First check if user exists
-            var userExists = await _usersRepository.All()
+            var userExists = await _usersRepository.AllAsNoTracking()
                 .AnyAsync(u => u.Id == userId);
-            
+
             if (!userExists)
             {
                 throw new KeyNotFoundException($"User with ID {userId} not found.");
             }
 
-            // Check if user is registered for the workout
-            return await _usersRepository.All()
-                .Where(u => u.Id == userId)
-                .SelectMany(u => u.Appointments)
-                .AnyAsync(a => a.WorkoutId == workoutId);
+            return await _appointmentRepository.AllAsNoTracking()
+                .AnyAsync(a => a.WorkoutId == workoutId && a.UserId == userId);
         }
 
-        public async Task<bool> CancelRegistrationAsync(string workoutId, string userId)
+        public async Task<bool> CancelRegistrationAsync(string workoutId, string userId, bool allowPastWorkout = false)
         {
-            if (string.IsNullOrEmpty(userId))
+            if (string.IsNullOrWhiteSpace(workoutId))
             {
-                throw new ArgumentException("User ID is required.");
+                throw new ScheduleBookingException(
+                    BookingErrorCode.WorkoutNotFound,
+                    "WORKOUT_NOT_FOUND",
+                    "Workout ID is required.");
             }
 
-            // Find the appointment
+            if (string.IsNullOrWhiteSpace(userId))
+            {
+                throw new ScheduleBookingException(
+                    BookingErrorCode.UserNotFound,
+                    "USER_NOT_FOUND",
+                    "User ID is required.");
+            }
+
+            await using var transaction = await _context.Database.BeginTransactionAsync();
+
             var appointment = await _appointmentRepository.All()
                 .FirstOrDefaultAsync(a => a.WorkoutId == workoutId && a.UserId == userId);
 
             if (appointment == null)
             {
-                return false; // Registration not found
+                return false;
             }
 
-            // Find the workout
             var workout = await _workoutRepository.All()
                 .Include(w => w.WorkoutShoes)
                 .FirstOrDefaultAsync(w => w.Id == workoutId);
 
             if (workout == null)
             {
-                throw new InvalidOperationException("Workout not found.");
+                throw new ScheduleBookingException(
+                    BookingErrorCode.WorkoutNotFound,
+                    "WORKOUT_NOT_FOUND",
+                    "Workout not found.");
             }
 
-            // Update available spots only if the workout is found
-            workout.AvailableSpots += 1;
+            if (!allowPastWorkout && workout.Date <= GetCurrentLocalTime())
+            {
+                throw new ScheduleBookingException(
+                    BookingErrorCode.WorkoutInPast,
+                    "WORKOUT_PAST",
+                    "Cannot cancel registration for a workout that has already started or passed.");
+            }
 
-            // Only process shoe release if user used one from the workout
-            if (appointment.ShoeId != null)
+            workout.AvailableSpots += 1;
+            if (string.Equals(workout.Status, "Booked", StringComparison.OrdinalIgnoreCase) && workout.AvailableSpots > 0)
+            {
+                workout.Status = "Available";
+            }
+
+            if (!string.IsNullOrEmpty(appointment.ShoeId))
             {
                 var workoutShoe = workout.WorkoutShoes?.FirstOrDefault(ws => ws.ShoeId == appointment.ShoeId);
                 if (workoutShoe != null)
@@ -230,20 +388,32 @@ namespace ServerAPI.Services.Schedule
                 }
                 else
                 {
-                    _logger.LogWarning($"No matching shoe found for appointment.ShoeId = {appointment.ShoeId}");
+                    _logger.LogWarning("No matching shoe found for appointment.ShoeId = {ShoeId}", appointment.ShoeId);
                 }
             }
             else
             {
-                _logger.LogInformation($"User {userId} canceled registration with own shoes — skipping shoe release.");
+                _logger.LogInformation("User {UserId} canceled registration with own shoes — skipping shoe release.", userId);
             }
 
-            // Remove the appointment
             _appointmentRepository.HardDelete(appointment);
-            await _appointmentRepository.SaveChangesAsync();
-            await _workoutRepository.SaveChangesAsync();
 
-            return true; // Registration canceled successfully
+            try
+            {
+                await _context.SaveChangesAsync();
+                await transaction.CommitAsync();
+                return true;
+            }
+            catch (DbUpdateConcurrencyException ex)
+            {
+                await transaction.RollbackAsync();
+                _logger.LogWarning(ex, "Concurrency conflict while canceling registration for user {UserId} in workout {WorkoutId}", userId, workoutId);
+                throw new ScheduleBookingException(
+                    BookingErrorCode.ConcurrencyConflict,
+                    "CONCURRENCY_CONFLICT",
+                    "Workout availability changed concurrently. Please try again.",
+                    ex);
+            }
         }
-    }   
+    }
 }

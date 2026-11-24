@@ -13,6 +13,8 @@ const AddUserSearchModal = ({
   const [shoeSize, setShoeSize] = useState('');
   const [cardType, setCardType] = useState('');
   const [usesOwnShoes, setUsesOwnShoes] = useState(false);
+  const [error, setError] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     const delayDebounce = setTimeout(async () => {
@@ -27,18 +29,6 @@ const AddUserSearchModal = ({
     return () => clearTimeout(delayDebounce);
   }, [searchTerm, searchUsers]);
 
-  const handleConfirm = () => {
-    if (selectedUser && cardType && (usesOwnShoes || shoeSize)) {
-      onConfirm({
-        userId: selectedUser.Id,
-        shoeSize: usesOwnShoes ? null : parseInt(shoeSize),
-        cardType: parseInt(cardType),
-        usesOwnShoes,
-      });
-      handleClose();
-    }
-  };
-
   const handleClose = () => {
     setSearchTerm('');
     setSearchResults([]);
@@ -46,7 +36,33 @@ const AddUserSearchModal = ({
     setShoeSize('');
     setCardType('');
     setUsesOwnShoes(false);
+    setError('');
+    setIsSubmitting(false);
     onClose();
+  };
+
+  const handleConfirm = async () => {
+    if (!selectedUser || !cardType || (!usesOwnShoes && !shoeSize)) {
+      setError('Please select a card type and shoe size.');
+      return;
+    }
+
+    setError('');
+    setIsSubmitting(true);
+
+    try {
+      await onConfirm({
+        userId: selectedUser.Id,
+        shoeSize: usesOwnShoes ? null : parseInt(shoeSize, 10),
+        cardType: parseInt(cardType, 10),
+        usesOwnShoes,
+      });
+      handleClose();
+    } catch (err) {
+      const serverMessage = err.response?.data?.message || err.response?.data || err.message;
+      setError(typeof serverMessage === 'string' ? serverMessage : 'Failed to add participant.');
+      setIsSubmitting(false);
+    }
   };
 
   if (!visible) return null;
@@ -55,8 +71,8 @@ const AddUserSearchModal = ({
     <div className="add-user-modal-overlay">
       <div className="add-user-modal">
         <h3>Add Participant</h3>
-        <button className="close-icon" onClick={onClose}>
-            &times;
+        <button type="button" className="close-icon" onClick={handleClose}>
+          &times;
         </button>
         {!selectedUser ? (
           <>
@@ -71,7 +87,7 @@ const AddUserSearchModal = ({
               {searchResults.map(user => (
                 <li key={user.Id}>
                   <span>{user.FullName} ({user.Email})</span>
-                  <button onClick={() => setSelectedUser(user)}>Select</button>
+                  <button type="button" onClick={() => setSelectedUser(user)}>Select</button>
                 </li>
               ))}
             </ul>
@@ -85,7 +101,14 @@ const AddUserSearchModal = ({
                 <input
                   type="checkbox"
                   checked={usesOwnShoes}
-                  onChange={(e) => setUsesOwnShoes(e.target.checked)}
+                  onChange={(e) => {
+                    const checked = e.target.checked;
+                    setUsesOwnShoes(checked);
+                    if (checked) {
+                      setShoeSize('');
+                    }
+                    setError('');
+                  }}
                 />
                 {' '}Participant uses own shoes
               </label>
@@ -94,7 +117,13 @@ const AddUserSearchModal = ({
             {!usesOwnShoes && (
               <div className="form-group">
                 <label>Shoe Size</label>
-                <select value={shoeSize} onChange={(e) => setShoeSize(e.target.value)}>
+                <select
+                  value={shoeSize}
+                  onChange={(e) => {
+                    setShoeSize(e.target.value);
+                    setError('');
+                  }}
+                >
                   <option value="" disabled>Select size</option>
                   <option value="1">S</option>
                   <option value="2">M</option>
@@ -106,7 +135,13 @@ const AddUserSearchModal = ({
 
             <div className="form-group">
               <label>Card Type</label>
-              <select value={cardType} onChange={(e) => setCardType(e.target.value)}>
+              <select
+                value={cardType}
+                onChange={(e) => {
+                  setCardType(e.target.value);
+                  setError('');
+                }}
+              >
                 <option value="" disabled>Select card type</option>
                 <option value="1">CoolFit</option>
                 <option value="2">PulseCard</option>
@@ -114,9 +149,15 @@ const AddUserSearchModal = ({
               </select>
             </div>
 
+            {error && <div className="error">{error}</div>}
+
             <div className="form-buttons">
-              <button onClick={handleConfirm}>Confirm</button>
-              <button onClick={handleClose}>Cancel</button>
+              <button type="button" onClick={handleConfirm} disabled={isSubmitting}>
+                {isSubmitting ? 'Adding...' : 'Confirm'}
+              </button>
+              <button type="button" onClick={handleClose} disabled={isSubmitting}>
+                Cancel
+              </button>
             </div>
           </div>
         )}

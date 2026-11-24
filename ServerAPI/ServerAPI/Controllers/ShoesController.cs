@@ -50,39 +50,69 @@ namespace ServerAPI.Controllers
                 return BadRequest(ModelState);
             }
 
-            var newShoe = await _shoesService.AddShoeAsync(newShoeDto);
-            return CreatedAtAction(nameof(GetShoeById), new { id = newShoe.Id }, newShoe);
+            try
+            {
+                var newShoe = await _shoesService.AddShoeAsync(newShoeDto);
+                return CreatedAtAction(nameof(GetShoeById), new { id = newShoe.Id }, newShoe);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
         }
 
         // PUT: api/shoes/{id}
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateShoe(string id, [FromBody] ShoesDTO updatedShoeDto)
         {
-            if (id != updatedShoeDto.Id)
+            if (!ModelState.IsValid)
             {
-                return BadRequest("ID mismatch.");
+                return BadRequest(ModelState);
             }
 
-            var result = await _shoesService.UpdateShoeAsync(id, updatedShoeDto);
-            if (!result)
+            if (!string.IsNullOrEmpty(updatedShoeDto.Id) && id != updatedShoeDto.Id)
             {
-                return NotFound();
+                return BadRequest(new { message = "ID mismatch." });
             }
 
-            return NoContent();
+            try
+            {
+                var result = await _shoesService.UpdateShoeAsync(id, updatedShoeDto);
+                if (!result)
+                {
+                    return NotFound();
+                }
+
+                return NoContent();
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
         }
 
         // DELETE: api/shoes/{id}
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteShoe(string id)
         {
-            var result = await _shoesService.DeleteShoeAsync(id);
-            if (!result)
+            try
             {
-                return NotFound();
+                var result = await _shoesService.DeleteShoeAsync(id);
+                if (!result)
+                {
+                    return NotFound();
+                }
+
+                return NoContent();
             }
-            
-            return NoContent();
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
         }
     }
 }

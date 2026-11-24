@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import axios from '../../api/axius'; 
+import React, { useState, useEffect, useCallback } from 'react';
+import axios from '../../api/axius';
 import { useAuth } from '../../services/AuthContext';
 import WorkoutModal from '../WorkoutModal/WorkoutModal';
 import { useTranslation } from 'react-i18next';
@@ -19,11 +19,11 @@ const Schedule = () => {
 
   const isMobile = useMediaQuery({ maxWidth: 768 });
 
-  const fetchWorkouts = React.useCallback(async () => {
+  const fetchWorkouts = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
-      const response = await axios.get('/api/Schedule'); 
+      const response = await axios.get('/api/Schedule');
       const now = new Date();
       const upcoming = response.data
         .filter(w => w.Date && new Date(w.Date) > now)
@@ -41,7 +41,6 @@ const Schedule = () => {
     fetchWorkouts();
   }, [fetchWorkouts]);
 
-  
   const openModal = (workout) => {
     setSelectedWorkout(workout);
     setIsModalOpen(true);
@@ -54,8 +53,7 @@ const Schedule = () => {
 
   const handleRegistration = async (workout, shoeSize, cardType, usesOwnShoes) => {
     if (!isAuthenticated) {
-      alert(t('schedule.loginRequired'));
-      return;
+      throw new Error(t('schedule.loginRequired'));
     }
 
     setIsRegistering(prev => ({ ...prev, [workout.Id]: true }));
@@ -63,23 +61,28 @@ const Schedule = () => {
     try {
       const payload = {
         workoutId: workout.Id,
-        shoeSize,
+        shoeSize: usesOwnShoes ? null : shoeSize,
         cardType,
-        userId: user.id,
+        userId: user?.id,
         usesOwnShoes,
       };
 
       const response = await axios.post('/api/Schedule/apply', payload);
 
       if (response.status === 200) {
-        const updatedWorkout = response.data;
+        const updatedWorkout = response.data?.workout || response.data;
         setWorkouts(prev =>
           prev.map(w => (w.Id === updatedWorkout.Id ? updatedWorkout : w))
         );
+        setSelectedWorkout(updatedWorkout);
+        return updatedWorkout;
       }
     } catch (err) {
       console.error('Error registering for workout:', err);
-      alert(err.response?.data?.message || t('schedule.registerFailed'));
+      if (err.response?.status === 409) {
+        await fetchWorkouts();
+      }
+      throw err;
     } finally {
       setIsRegistering(prev => ({ ...prev, [workout.Id]: false }));
     }
@@ -138,12 +141,13 @@ const Schedule = () => {
                     {dayKeys.map(dayKey => {
                       const workout = groupedWorkouts[dayKey]?.find(w => w.Time === time);
                       const status = workout?.Status?.toLowerCase();
+                      const canOpenModal = status === 'available' || (status === 'booked' && isAuthenticated);
 
                       return (
                         <td
                           key={`${dayKey}-${time}`}
                           className={`schedule-cell ${status || 'empty'}`}
-                          onClick={() => status === 'available' && openModal(workout)}
+                          onClick={() => canOpenModal && openModal(workout)}
                         >
                           {status === 'available' &&
                             (isRegistering[workout?.Id] ? t('schedule.registering') : t('schedule.available'))}
@@ -171,11 +175,13 @@ const Schedule = () => {
                   <h3 className="day-header">{translatedDay}</h3>
                   {dayWorkouts.map(workout => {
                     const status = workout?.Status?.toLowerCase();
+                    const canOpenModal = status === 'available' || (status === 'booked' && isAuthenticated);
+
                     return (
                       <div
                         key={`${dayKey}-${workout.Time}`}
                         className={`time-slot ${status || 'empty'}`}
-                        onClick={() => status === 'available' && openModal(workout)}
+                        onClick={() => canOpenModal && openModal(workout)}
                       >
                         <span>{workout.Time}</span>
                         <span>
@@ -198,6 +204,7 @@ const Schedule = () => {
         onClose={closeModal}
         selectedWorkout={selectedWorkout}
         onRegister={handleRegistration}
+        onRegistrationCancelled={fetchWorkouts}
         isLoggedIn={isAuthenticated}
       />
     </section>

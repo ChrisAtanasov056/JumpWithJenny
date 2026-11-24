@@ -3,17 +3,18 @@ import { Link, useNavigate } from 'react-router-dom';
 import ShoeService from '../../../services/ShoeService';
 import './AdminShoes.scss';
 
-const AdminShoesList = () => {
+const shoeSizeLabels = {
+  1: 'S',
+  2: 'M',
+  3: 'L',
+  4: 'XL',
+};
 
-  const shoeSizeLabels = {
-    1: 'S',
-    2: 'M',
-    3: 'L',
-    4: 'XL',
-  }
+const AdminShoesList = () => {
   const [shoes, setShoes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [actionError, setActionError] = useState(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -22,7 +23,8 @@ const AdminShoesList = () => {
         const data = await ShoeService.getAllShoes();
         setShoes(data);
       } catch (err) {
-        setError(err.message || 'Failed to load shoes');
+        const serverMessage = err.response?.data?.message || err.response?.data || err.message;
+        setError(typeof serverMessage === 'string' ? serverMessage : 'Failed to load shoes');
       } finally {
         setLoading(false);
       }
@@ -32,12 +34,15 @@ const AdminShoesList = () => {
 
   const handleDelete = async (id) => {
     if (!window.confirm('Are you sure you want to delete this shoe?')) return;
+    setActionError(null);
+
     try {
       await ShoeService.deleteShoe(id);
-      setShoes(shoes.filter(shoe => shoe.id !== id));
+      setShoes(prev => prev.filter(shoe => shoe.Id !== id));
       alert('Shoe deleted successfully!');
-    } catch (error) {
-      setError(error.message || 'Failed to delete shoe');
+    } catch (err) {
+      const serverMessage = err.response?.data?.message || err.response?.data || err.message;
+      setActionError(typeof serverMessage === 'string' ? serverMessage : 'Failed to delete shoe');
     }
   };
 
@@ -52,6 +57,8 @@ const AdminShoesList = () => {
           + Add New Shoe
         </button>
       </div>
+
+      {actionError && <div className="error">{actionError}</div>}
 
       <div className="shoes-table">
         <table>
@@ -69,8 +76,7 @@ const AdminShoesList = () => {
                   <td>{shoe.Id}</td>
                   <td>{shoeSizeLabels[Number(shoe.Size)] || 'N/A'}</td>
                   <td className="actions">
-                    {/* Добавен бутон за преглед на детайли */}
-                    <Link to={`/admin/shoes/details/${shoe.Id}`} className="btn-view"> 
+                    <Link to={`/admin/shoes/details/${shoe.Id}`} className="btn-view">
                       View Details
                     </Link>
                     <Link to={`/admin/shoes/${shoe.Id}`} className="btn-edit">

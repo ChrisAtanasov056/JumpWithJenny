@@ -5,13 +5,42 @@ import axios from '../../api/axius';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FaTimes, FaCheck, FaInfoCircle, FaCalendarAlt, FaShoePrints, FaCreditCard } from 'react-icons/fa';
 import './WorkoutModal.scss';
-import useOutsideClick from '../../services/useOutsideClick'; 
+import useOutsideClick from '../../services/useOutsideClick';
 
-const WorkoutModal = ({ isOpen, onClose, selectedWorkout, onRegister, isLoggedIn }) => {
+const SHOE_SIZE_MAP = {
+  S: 1,
+  M: 2,
+  L: 3,
+  XL: 4,
+};
+
+const BOOKING_ERROR_CODES = new Set([
+  'WORKOUT_NOT_FOUND',
+  'USER_NOT_FOUND',
+  'EMAIL_NOT_CONFIRMED',
+  'WORKOUT_PAST',
+  'WORKOUT_NOT_AVAILABLE',
+  'ALREADY_REGISTERED',
+  'NO_AVAILABLE_SPOTS',
+  'NO_AVAILABLE_SHOES',
+  'INVALID_SHOE_SIZE',
+  'INVALID_CARD_TYPE',
+  'CONCURRENCY_CONFLICT',
+]);
+
+const WorkoutModal = ({
+  isOpen,
+  onClose,
+  selectedWorkout,
+  onRegister,
+  onRegistrationCancelled,
+  isLoggedIn,
+}) => {
   const { t } = useTranslation();
   const { user } = useAuth();
-  
-  const modalRef = useRef(null); 
+
+  const modalRef = useRef(null);
+  const timeoutRef = useRef(null);
   useOutsideClick(modalRef, onClose);
 
   const [selectedSize, setSelectedSize] = useState('');
@@ -23,19 +52,53 @@ const WorkoutModal = ({ isOpen, onClose, selectedWorkout, onRegister, isLoggedIn
   const [cancelSuccess, setCancelSuccess] = useState(false);
   const [isRegistrationSuccess, setIsRegistrationSuccess] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-
   const [shoeAvailability, setShoeAvailability] = useState({});
+
+  const selectedWorkoutId = selectedWorkout?.Id;
+
+  const getLocalizedBookingError = useCallback(
+    (err, fallbackKey) => {
+      const code = err?.response?.data?.code;
+      if (code && BOOKING_ERROR_CODES.has(code)) {
+        return t(`bookingErrors.${code}`);
+      }
+      return t(fallbackKey);
+    },
+    [t]
+  );
+
+  const clearPendingTimeout = () => {
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+      timeoutRef.current = null;
+    }
+  };
+
+  useEffect(() => {
+    return () => clearPendingTimeout();
+  }, []);
+
+  const resetFormStates = useCallback(() => {
+    clearPendingTimeout();
+    setSelectedSize('');
+    setSelectedCard('');
+    setUsesOwnShoes(false);
+    setError('');
+    setIsAlreadyRegistered(false);
+    setCancelSuccess(false);
+    setIsRegistrationSuccess(false);
+  }, []);
 
   const checkUserRegistration = useCallback(async () => {
     setIsCheckingRegistration(true);
     try {
-      if (selectedWorkout && user?.id) {
-        const response = await axios.get(`/api/Schedule/is-registered/${selectedWorkout.Id}`);
-        setIsAlreadyRegistered(response.data);
+      if (selectedWorkoutId && user?.id) {
+        const response = await axios.get(`/api/Schedule/is-registered/${selectedWorkoutId}`);
+        setIsAlreadyRegistered(Boolean(response.data));
       }
-    } catch (error) {
-      console.error('Error checking registration:', error);
-      if (error.response && error.response.status === 401) {
+    } catch (err) {
+      console.error('Error checking registration:', err);
+      if (err.response && err.response.status === 401) {
         setIsAlreadyRegistered(false);
       } else {
         setError(t('errorCheckingRegistration'));
@@ -44,17 +107,7 @@ const WorkoutModal = ({ isOpen, onClose, selectedWorkout, onRegister, isLoggedIn
     } finally {
       setIsCheckingRegistration(false);
     }
-  }, [selectedWorkout, user?.id, t]);
-
-  const resetFormStates = () => {
-    setSelectedSize('');
-    setSelectedCard('');
-    setUsesOwnShoes(false);
-    setError('');
-    setIsAlreadyRegistered(false);
-    setCancelSuccess(false);
-    setIsRegistrationSuccess(false);
-  };
+  }, [selectedWorkoutId, user?.id, t]);
 
   useEffect(() => {
     if (isOpen && selectedWorkout?.WorkoutShoes) {
@@ -75,24 +128,33 @@ const WorkoutModal = ({ isOpen, onClose, selectedWorkout, onRegister, isLoggedIn
   }, [isOpen, selectedWorkout]);
 
   useEffect(() => {
-    if (isOpen && isLoggedIn && selectedWorkout) {
+    if (isOpen && isLoggedIn && selectedWorkoutId) {
       resetFormStates();
       checkUserRegistration();
+    } else if (!isOpen) {
+      resetFormStates();
     }
-  }, [isOpen, selectedWorkout, isLoggedIn, checkUserRegistration]);
+  }, [isOpen, selectedWorkoutId, isLoggedIn, checkUserRegistration, resetFormStates]);
 
   const handleCancelRegistration = async () => {
+    setIsSubmitting(true);
+    setError('');
     try {
-      await axios.delete(`/api/Schedule/cancel-registration/${selectedWorkout.Id}`);
+      await axios.delete(`/api/Schedule/cancel-registration/${selectedWorkoutId}`);
       setCancelSuccess(true);
-      setTimeout(() => {
+      if (onRegistrationCancelled) {
+        await onRegistrationCancelled();
+      }
+      timeoutRef.current = setTimeout(() => {
         setIsAlreadyRegistered(false);
         setCancelSuccess(false);
         onClose();
-      }, 3000);
-    } catch (error) {
-      console.error('Error canceling registration:', error);
-      setError(t('errorCancelRegistration'));
+      }, 2000);
+    } catch (err) {
+      console.error('Error canceling registration:', err);
+      setError(getLocalizedBookingError(err, 'errorCancelRegistration'));
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -107,31 +169,32 @@ const WorkoutModal = ({ isOpen, onClose, selectedWorkout, onRegister, isLoggedIn
   };
 
   const handleOwnShoesChange = (e) => {
-    setUsesOwnShoes(e.target.checked);
-    if (e.target.checked) setSelectedSize('');
+    const checked = e.target.checked;
+    setUsesOwnShoes(checked);
+    if (checked) {
+      setSelectedSize('');
+    }
+    setError('');
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!user.emailConfirmed) {
+    if (!user?.emailConfirmed) {
       setError(t('errorAccountNotConfirmed'));
       return;
     }
 
-    if (!usesOwnShoes && !selectedSize) {
+    const parsedShoeSize = usesOwnShoes ? null : SHOE_SIZE_MAP[selectedSize] ?? null;
+    if (!usesOwnShoes && !parsedShoeSize) {
       setError(t('errorSelectShoes'));
       return;
     }
-    if (!selectedCard) {
+
+    const parsedCardType = Number(selectedCard);
+    if (!parsedCardType) {
       setError(t('errorSelectCard'));
       return;
     }
-
-    const cardTypeMap = {
-      [t('coolfitCard')]: 0,
-      [t('pulseCard')]: 1,
-      [t('individualWorkout')]: 2
-    };
 
     setIsSubmitting(true);
     setError('');
@@ -139,25 +202,31 @@ const WorkoutModal = ({ isOpen, onClose, selectedWorkout, onRegister, isLoggedIn
     try {
       await onRegister(
         selectedWorkout,
-        selectedSize || 0,
-        cardTypeMap[selectedCard],
+        parsedShoeSize,
+        parsedCardType,
         usesOwnShoes
       );
 
       setIsRegistrationSuccess(true);
-      setTimeout(() => onClose(), 2000);
+      timeoutRef.current = setTimeout(() => onClose(), 2000);
     } catch (err) {
       console.error('Registration failed:', err);
+      const code = err?.response?.data?.code;
+      if (code === 'ALREADY_REGISTERED') {
+        setIsAlreadyRegistered(true);
+      }
       setIsRegistrationSuccess(false);
-      setError(t('registrationError'));
+      setError(getLocalizedBookingError(err, 'registrationError'));
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  const maxSpots = 20;
-  const takenSpots = maxSpots - (selectedWorkout?.AvailableSpots ?? 0);
-  const isFull = takenSpots >= maxSpots;
+  const availableSpots = selectedWorkout?.AvailableSpots ?? 0;
+  const takenSpots = selectedWorkout?.TakenSpots ?? 0;
+  const maxSpots = selectedWorkout?.TotalSpots || (availableSpots + takenSpots) || availableSpots;
+  const isFull = availableSpots <= 0 || selectedWorkout?.Status?.toLowerCase() === 'booked';
+  const progressPercent = maxSpots > 0 ? Math.min(100, (takenSpots / maxSpots) * 100) : 0;
 
   return (
     <AnimatePresence>
@@ -171,7 +240,7 @@ const WorkoutModal = ({ isOpen, onClose, selectedWorkout, onRegister, isLoggedIn
           <motion.div
             className="modal-content"
             ref={modalRef}
-            onClick={(e) => e.stopPropagation()} 
+            onClick={(e) => e.stopPropagation()}
             initial={{ y: "100vh", opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: "100vh", opacity: 0 }}
@@ -180,7 +249,7 @@ const WorkoutModal = ({ isOpen, onClose, selectedWorkout, onRegister, isLoggedIn
             <button className="close-btn" onClick={onClose}><FaTimes /></button>
 
             {isLoggedIn ? (
-              !user.emailConfirmed ? (
+              !user?.emailConfirmed ? (
                 <div className="status-message info">
                   <FaInfoCircle className="status-icon" />
                   <p>{t('errorAccountNotConfirmed')}</p>
@@ -191,7 +260,9 @@ const WorkoutModal = ({ isOpen, onClose, selectedWorkout, onRegister, isLoggedIn
                   <div className="modal-header">
                     <FaCalendarAlt className="header-icon" />
                     <h3>{t('registerFor')}</h3>
-                    <h2>{t(`days.${selectedWorkout.Day.toLowerCase()}`)} {t('at')} {selectedWorkout.Time}</h2>
+                    <h2>
+                      {selectedWorkout?.Day ? t(`days.${selectedWorkout.Day.toLowerCase()}`) : ''} {t('at')} {selectedWorkout?.Time}
+                    </h2>
                   </div>
 
                   <div className="modal-body">
@@ -209,6 +280,7 @@ const WorkoutModal = ({ isOpen, onClose, selectedWorkout, onRegister, isLoggedIn
                       <div className="status-message info">
                         <FaInfoCircle className="status-icon" />
                         <p>{t('alreadyRegistered')}</p>
+                        {error && <div className="error-message">{error}</div>}
                         <button onClick={handleCancelRegistration} className="btn-cancel">
                           {t('cancelRegistration')}
                         </button>
@@ -229,7 +301,7 @@ const WorkoutModal = ({ isOpen, onClose, selectedWorkout, onRegister, isLoggedIn
                               <div className="progress-bar-container">
                                 <div
                                   className="progress-bar"
-                                  style={{ width: `${(takenSpots / maxSpots) * 100}%` }}
+                                  style={{ width: `${progressPercent}%` }}
                                 ></div>
                               </div>
                             </div>
@@ -272,7 +344,7 @@ const WorkoutModal = ({ isOpen, onClose, selectedWorkout, onRegister, isLoggedIn
                                         </small>
                                         <br />
                                         <span className="availability">
-                                          
+
                                         </span>
                                       </button>
                                     );
@@ -291,9 +363,9 @@ const WorkoutModal = ({ isOpen, onClose, selectedWorkout, onRegister, isLoggedIn
                                   required
                                 >
                                   <option value="" disabled>{t('selectCardPlaceholder')}</option>
-                                  <option value={t('coolfitCard')}>{t('coolfitCard')}</option>
-                                  <option value={t('pulseCard')}>{t('pulseCard')}</option>
-                                  <option value={t('individualWorkout')}>{t('individualWorkout')}</option>
+                                  <option value="1">{t('coolfitCard')}</option>
+                                  <option value="2">{t('pulseCard')}</option>
+                                  <option value="3">{t('individualWorkout')}</option>
                                 </select>
                               </div>
                             </div>

@@ -60,6 +60,17 @@
                 .Entity<Appointment>()
                 .HasKey(k => new { k.UserId, k.WorkoutId });
 
+            builder.Entity<Appointment>()
+                .HasIndex(a => new { a.WorkoutId, a.ShoeId })
+                .IsUnique()
+                .HasFilter("\"ShoeId\" IS NOT NULL AND \"IsDeleted\" = false");
+
+            builder.Entity<Workout>()
+                .UseXminAsConcurrencyToken();
+
+            builder.Entity<WorkoutShoes>()
+                .UseXminAsConcurrencyToken();
+
             builder.Entity<WorkoutShoes>()
                 .HasKey(ws => new { ws.WorkoutId, ws.ShoeId }); // Composite primary key
 

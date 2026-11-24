@@ -10,6 +10,14 @@ namespace ServerAPI.Services.Workouts
 {
     public class WorkoutServices : IWorkoutServices
     {
+        private static readonly HashSet<string> AllowedStatuses = new(StringComparer.OrdinalIgnoreCase)
+        {
+            "Available",
+            "Booked",
+            "Completed",
+            "Cancelled"
+        };
+
         private readonly IDeletableEntityRepository<Workout> _workoutRepository;
         private readonly IDeletableEntityRepository<Appointment> _appointmentRepository;
         private readonly IDeletableEntityRepository<Shoes> _shoesRepository;
@@ -32,12 +40,48 @@ namespace ServerAPI.Services.Workouts
 
         public async Task<WorkoutCreateModel> CreateWorkoutAsync(WorkoutCreateModel dto)
         {
+            if (dto == null)
+            {
+                throw new ArgumentException("Workout payload is required.");
+            }
+
+            if (string.IsNullOrWhiteSpace(dto.Day))
+            {
+                throw new ArgumentException("Workout day is required.");
+            }
+
+            if (string.IsNullOrWhiteSpace(dto.Time))
+            {
+                throw new ArgumentException("Workout time is required.");
+            }
+
+            if (dto.Date == default)
+            {
+                throw new ArgumentException("Workout date is required.");
+            }
+
+            if (dto.AvailableSpots < 0)
+            {
+                throw new ArgumentException("Available spots cannot be negative.");
+            }
+
+            var status = string.IsNullOrWhiteSpace(dto.Status) ? "Available" : dto.Status.Trim();
+            if (!AllowedStatuses.Contains(status))
+            {
+                throw new ArgumentException("Invalid workout status.");
+            }
+
+            if (dto.AvailableSpots == 0 && string.Equals(status, "Available", StringComparison.OrdinalIgnoreCase))
+            {
+                status = "Booked";
+            }
+
             var workout = new Workout
             {
-                Day = dto.Day,
-                Time = dto.Time,
-                Date = dto.Date, 
-                Status = "Available",
+                Day = dto.Day.Trim(),
+                Time = dto.Time.Trim(),
+                Date = dto.Date,
+                Status = status,
                 AvailableSpots = dto.AvailableSpots
             };
 
@@ -49,7 +93,7 @@ namespace ServerAPI.Services.Workouts
             {
                 WorkoutId = workout.Id,
                 ShoeId = shoe.Id,
-                IsTaken = workout.Status == "Booked"
+                IsTaken = string.Equals(workout.Status, "Booked", StringComparison.OrdinalIgnoreCase)
             }).ToList();
 
             foreach (var workoutShoe in workoutShoes)
@@ -64,70 +108,70 @@ namespace ServerAPI.Services.Workouts
                 Id = workout.Id,
                 Day = workout.Day,
                 Time = workout.Time,
-                Date = workout.Date, 
+                Date = workout.Date,
                 Status = workout.Status,
                 AvailableSpots = workout.AvailableSpots,
             };
         }
 
-
         public async Task<AdminWorkoutViewModel> GetWorkoutByIdAsync(string id)
         {
             var workout = await _workoutRepository
-                .All()
+                .AllAsNoTracking()
                 .Where(w => w.Id == id)
                 .Include(w => w.WorkoutShoes)
-                .ThenInclude(ws => ws.Shoe)
+                    .ThenInclude(ws => ws.Shoe)
                 .Include(w => w.Appointments)
-                .ThenInclude(a => a.User)
+                    .ThenInclude(a => a.User)
                 .Include(w => w.Appointments)
-                .ThenInclude(a => a.Shoe) 
+                    .ThenInclude(a => a.Shoe)
                 .Select(w => new AdminWorkoutViewModel
                 {
                     Id = w.Id,
                     Day = w.Day,
                     Time = w.Time,
-                    Date = w.Date, 
+                    Date = w.Date,
                     Status = w.Status,
                     AvailableSpots = w.AvailableSpots,
-                    WorkoutShoes = w.WorkoutShoes.ToList(),
-                    Appointments = w.Appointments.Select(a => new AppointmentViewModel
-                    {
-                        Id = a.Id,
-                        UserId = a.UserId,
-                        UserFullName = a.User.FirstName + " " + a.User.LastName,
-                        UserEmail = a.User.Email,
-                        ShoeId = a.ShoeId,
-                        CardType = a.CardType,
-                        ShoeSize = a.Shoe != null ? a.Shoe.Size : 0,
-                        UsesOwnShoes = a.UsesOwnShoes,
-                    }).ToList()
-                }).Where(w => w.Date >= DateTime.UtcNow.Date)
+                    WorkoutShoes = w.WorkoutShoes
+                        .Where(ws => !ws.IsDeleted && ws.Shoe != null && !ws.Shoe.IsDeleted)
+                        .ToList(),
+                    Appointments = w.Appointments
+                        .Where(a => !a.IsDeleted)
+                        .Select(a => new AppointmentViewModel
+                        {
+                            Id = a.Id,
+                            UserId = a.UserId,
+                            UserFullName = a.User != null ? (a.User.FirstName + " " + a.User.LastName).Trim() : string.Empty,
+                            UserEmail = a.User != null ? a.User.Email : string.Empty,
+                            ShoeId = a.ShoeId,
+                            CardType = a.CardType,
+                            ShoeSize = a.Shoe != null ? a.Shoe.Size : (ShoesSize?)null,
+                            UsesOwnShoes = a.UsesOwnShoes,
+                        }).ToList()
+                })
                 .FirstOrDefaultAsync();
 
             return workout ?? throw new KeyNotFoundException($"Workout with ID {id} not found.");
         }
 
-
         public async Task DeleteWorkoutAsync(string id)
         {
-            _logger.LogInformation($"Service layer - Deleting workout {id}");
+            _logger.LogInformation("Service layer - Deleting workout {WorkoutId}", id);
             var workout = await _workoutRepository.All()
                 .Include(w => w.WorkoutShoes)
                 .FirstOrDefaultAsync(w => w.Id == id);
 
-            _logger.LogInformation($"Deleting workout with ID: {id}");
-
-            
-
             if (workout == null)
-                {
-                    _logger.LogDebug($"Workout lookup result: {(workout != null ? "Found" : "Not Found")}");
+            {
+                _logger.LogDebug("Workout lookup result for {WorkoutId}: Not Found", id);
                 throw new KeyNotFoundException("Workout not found");
-                }
+            }
+
             var appointments = await _appointmentRepository.All()
                 .Where(a => a.WorkoutId == id)
                 .ToListAsync();
+
             foreach (var appointment in appointments)
             {
                 _appointmentRepository.Delete(appointment);
@@ -138,14 +182,13 @@ namespace ServerAPI.Services.Workouts
                 _workoutShoesRepository.Delete(workoutShoe);
             }
 
-            // Delete workout
             _workoutRepository.Delete(workout);
             await _workoutRepository.SaveChangesAsync();
         }
 
         public async Task<IEnumerable<GetParticipantsModel>> GetParticipantsAsync(string workoutId)
         {
-            var appointments = await _appointmentRepository.All()
+            var appointments = await _appointmentRepository.AllAsNoTracking()
                 .Where(a => a.WorkoutId == workoutId)
                 .Include(a => a.User)
                 .Include(a => a.Shoe)
@@ -154,71 +197,111 @@ namespace ServerAPI.Services.Workouts
             return appointments.Select(a => new GetParticipantsModel
             {
                 Id = a.UserId,
-                FirstName = a.User.FirstName,
-                LastName = a.User.LastName,
-                Email = a.User.Email,
-                ShoeSize = a.Shoe.Size,
+                FirstName = a.User?.FirstName,
+                LastName = a.User?.LastName,
+                Email = a.User?.Email,
+                ShoeSize = a.Shoe?.Size,
+                UsesOwnShoes = a.UsesOwnShoes,
             });
         }
 
         public async Task<WorkoutUpdateModel> UpdateWorkoutAsync(string id, WorkoutUpdateModel dto)
         {
+            if (dto == null)
+            {
+                throw new ArgumentException("Workout payload is required.");
+            }
+
+            if (string.IsNullOrWhiteSpace(dto.Day))
+            {
+                throw new ArgumentException("Workout day is required.");
+            }
+
+            if (string.IsNullOrWhiteSpace(dto.Time))
+            {
+                throw new ArgumentException("Workout time is required.");
+            }
+
+            if (dto.Date == default)
+            {
+                throw new ArgumentException("Workout date is required.");
+            }
+
+            if (dto.AvailableSpots < 0)
+            {
+                throw new ArgumentException("Available spots cannot be negative.");
+            }
+
             var workout = await _workoutRepository.All()
                 .Include(w => w.WorkoutShoes)
                 .FirstOrDefaultAsync(w => w.Id == id);
 
             if (workout == null)
+            {
                 throw new KeyNotFoundException("Workout not found");
+            }
 
-            // Update workout properties
-            workout.Day = dto.Day;
-            workout.Time = dto.Time;
+            var nextStatus = string.IsNullOrWhiteSpace(dto.Status) ? workout.Status : dto.Status.Trim();
+            if (!AllowedStatuses.Contains(nextStatus))
+            {
+                throw new ArgumentException("Invalid workout status.");
+            }
+
+            if (dto.AvailableSpots == 0 && string.Equals(nextStatus, "Available", StringComparison.OrdinalIgnoreCase))
+            {
+                nextStatus = "Booked";
+            }
+
+            workout.Day = dto.Day.Trim();
+            workout.Time = dto.Time.Trim();
+            workout.Date = dto.Date;
+            workout.Status = nextStatus;
             workout.AvailableSpots = dto.AvailableSpots;
 
-            // Update workout-shoe relationships
+            await _workoutRepository.SaveChangesAsync();
 
             return new WorkoutUpdateModel
             {
                 Id = workout.Id,
                 Day = workout.Day,
                 Time = workout.Time,
+                Date = workout.Date,
+                Status = workout.Status,
                 AvailableSpots = workout.AvailableSpots
             };
         }
 
         public async Task<IEnumerable<AdminWorkoutViewModel>> GetAllWorkoutsAsync()
         {
-            var workouts = await _workoutRepository.All()
-            .Select(w => new AdminWorkoutViewModel
-            {
-                Id = w.Id,
-                Day = w.Day,
-                Time = w.Time,
-                Date = w.Date,
-                Status = w.Status,
-                AvailableSpots = w.AvailableSpots,
-                WorkoutShoes = w.WorkoutShoes
-                    .Select(ws => ws)
-                    .ToList(),
-                Appointments = w.Appointments
-                    .Select(a => new AppointmentViewModel
-                    {
-                        Id = a.Id,
-                        UserId = a.UserId,
-                        UserFullName = a.User.FirstName + " " + a.User.LastName,
-                        UserEmail = a.User.Email,
-                        CardType = a.CardType,
-                        ShoeId = a.ShoeId,
-                        ShoeSize = a.Shoe != null ? a.Shoe.Size : (ShoesSize?)null,
-                        UsesOwnShoes = a.UsesOwnShoes
-                    }).ToList()
-            })
-            .ToListAsync();
-
+            var workouts = await _workoutRepository.AllAsNoTracking()
+                .Select(w => new AdminWorkoutViewModel
+                {
+                    Id = w.Id,
+                    Day = w.Day,
+                    Time = w.Time,
+                    Date = w.Date,
+                    Status = w.Status,
+                    AvailableSpots = w.AvailableSpots,
+                    WorkoutShoes = w.WorkoutShoes
+                        .Where(ws => !ws.IsDeleted && ws.Shoe != null && !ws.Shoe.IsDeleted)
+                        .ToList(),
+                    Appointments = w.Appointments
+                        .Where(a => !a.IsDeleted)
+                        .Select(a => new AppointmentViewModel
+                        {
+                            Id = a.Id,
+                            UserId = a.UserId,
+                            UserFullName = a.User != null ? (a.User.FirstName + " " + a.User.LastName).Trim() : string.Empty,
+                            UserEmail = a.User != null ? a.User.Email : string.Empty,
+                            CardType = a.CardType,
+                            ShoeId = a.ShoeId,
+                            ShoeSize = a.Shoe != null ? a.Shoe.Size : (ShoesSize?)null,
+                            UsesOwnShoes = a.UsesOwnShoes
+                        }).ToList()
+                })
+                .ToListAsync();
 
             return workouts;
         }
-
-
     }
 }

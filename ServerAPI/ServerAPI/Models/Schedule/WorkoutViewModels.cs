@@ -7,6 +7,8 @@
         public string Time { get; set; } 
         public string Status { get; set; } 
         public int AvailableSpots { get; set; }
+        public int TakenSpots { get; set; }
+        public int TotalSpots { get; set; }
 
         public DateTime Date { get; set; }
 

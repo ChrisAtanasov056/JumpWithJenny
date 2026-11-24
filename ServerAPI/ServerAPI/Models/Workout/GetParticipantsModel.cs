@@ -11,7 +11,9 @@ namespace ServerAPI.ViewModels.Workout
 
         public string Email { get; set; }
 
-        public ShoesSize ShoeSize { get; set; }
+        public ShoesSize? ShoeSize { get; set; }
+
+        public bool UsesOwnShoes { get; set; }
 
     }
 }

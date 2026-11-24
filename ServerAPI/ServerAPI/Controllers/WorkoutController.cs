@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using ServerAPI.Common;
 using ServerAPI.Models.Schedule;
 using ServerAPI.Services.Schedule;
@@ -36,6 +37,10 @@ namespace ServerAPI.Controllers
                 var createdWorkout = await _workoutService.CreateWorkoutAsync(workoutDto);
                 return CreatedAtAction(nameof(GetWorkout), new { id = createdWorkout.Id }, createdWorkout);
             }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error creating workout");
@@ -51,10 +56,19 @@ namespace ServerAPI.Controllers
                 var updatedWorkout = await _workoutService.UpdateWorkoutAsync(id, workoutDto);
                 return Ok(updatedWorkout);
             }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
             catch (KeyNotFoundException ex)
             {
                 _logger.LogWarning(ex.Message);
                 return NotFound(ex.Message);
+            }
+            catch (DbUpdateConcurrencyException ex)
+            {
+                _logger.LogWarning(ex, "Concurrency conflict updating workout {WorkoutId}", id);
+                return Conflict(new { message = "The workout was modified by another request. Please reload and try again." });
             }
             catch (Exception ex)
             {

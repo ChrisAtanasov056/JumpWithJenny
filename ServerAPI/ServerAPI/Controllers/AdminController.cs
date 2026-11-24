@@ -113,39 +113,50 @@ namespace ServerAPI.Controllers
             }
         }
 
-        // POST: /api/workout/add/participant
+        // POST: /api/Admin/add/participant
         [HttpPost("add/participant")]
-        public async Task<IActionResult> AddParticipantToWorkout(string id, [FromBody] ApplyForWorkoutRequest request)
+        public async Task<IActionResult> AddParticipantToWorkout([FromQuery] string id = null, [FromBody] ApplyForWorkoutRequest request = null)
         {
+            if (request == null)
+            {
+                return BadRequest(new { code = "INVALID_REQUEST", message = "Request body is required." });
+            }
+
+            var workoutId = !string.IsNullOrWhiteSpace(request.WorkoutId) ? request.WorkoutId : id;
+
             try
             {
-                var updatedWorkout = await _scheduleService.ApplyForWorkoutAsync(
-                    request.WorkoutId,
-                    request.ShoeSize, 
+                await _scheduleService.ApplyForWorkoutAsync(
+                    workoutId,
+                    request.ShoeSize,
                     request.CardType,
                     request.UserId,
-                    request.UsesOwnShoes
+                    request.UsesOwnShoes,
+                    requireConfirmedEmail: false
                 );
 
-                if (updatedWorkout == null)
-                {
-                    return BadRequest("Could not add participant (maybe no available spots or no available shoes).");
-                }
-
-                _logger.LogInformation("Participant added to workout {WorkoutId}", request.WorkoutId);
-                return Ok(updatedWorkout);
+                var adminWorkout = await _workoutService.GetWorkoutByIdAsync(workoutId);
+                _logger.LogInformation("Participant {UserId} added to workout {WorkoutId}", request.UserId, workoutId);
+                return Ok(adminWorkout);
             }
-            catch (ArgumentException ex)
+            catch (ScheduleBookingException ex)
             {
-                return BadRequest(ex.Message);
+                var payload = new { code = ex.Code, message = ex.Message };
+                return ex.ErrorCode switch
+                {
+                    BookingErrorCode.WorkoutNotFound or BookingErrorCode.UserNotFound => NotFound(payload),
+                    BookingErrorCode.AlreadyRegistered or BookingErrorCode.NoAvailableSpots or BookingErrorCode.NoAvailableShoes or BookingErrorCode.ConcurrencyConflict => Conflict(payload),
+                    _ => BadRequest(payload)
+                };
             }
             catch (KeyNotFoundException ex)
             {
-                return NotFound(ex.Message);
+                return NotFound(new { code = "WORKOUT_NOT_FOUND", message = ex.Message });
             }
             catch (Exception ex)
             {
-                return StatusCode(500, "An error occurred: " + ex.Message);
+                _logger.LogError(ex, "Error adding participant to workout {WorkoutId}", workoutId);
+                return StatusCode(500, new { message = "Internal server error." });
             }
         }
 
@@ -154,30 +165,35 @@ namespace ServerAPI.Controllers
         {
             if (string.IsNullOrEmpty(workoutId) || string.IsNullOrEmpty(userId))
             {
-                return BadRequest("Workout ID and User ID must be provided.");
+                return BadRequest(new { message = "Workout ID and User ID must be provided." });
             }
 
             try
             {
-                var success = await _scheduleService.CancelRegistrationAsync(workoutId, userId);
+                var success = await _scheduleService.CancelRegistrationAsync(workoutId, userId, allowPastWorkout: true);
 
                 if (!success)
                 {
-                    return BadRequest("Failed to remove participant from the workout.");
+                    return NotFound(new { code = "REGISTRATION_NOT_FOUND", message = "Participant registration not found." });
                 }
 
                 _logger.LogInformation("Participant {UserId} removed from workout {WorkoutId}", userId, workoutId);
                 return Ok(new { Message = "Participant removed successfully." });
             }
-            catch (KeyNotFoundException ex)
+            catch (ScheduleBookingException ex)
             {
-                _logger.LogWarning(ex.Message);
-                return NotFound(ex.Message);
+                var payload = new { code = ex.Code, message = ex.Message };
+                return ex.ErrorCode switch
+                {
+                    BookingErrorCode.WorkoutNotFound or BookingErrorCode.UserNotFound => NotFound(payload),
+                    BookingErrorCode.ConcurrencyConflict => Conflict(payload),
+                    _ => BadRequest(payload)
+                };
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error removing participant from workout");
-                return StatusCode(500, "Internal server error");
+                return StatusCode(500, new { message = "Internal server error" });
             }
         }
 
