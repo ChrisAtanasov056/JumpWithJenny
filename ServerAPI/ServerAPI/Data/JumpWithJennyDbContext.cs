@@ -119,6 +119,7 @@
 
         private void ApplyAuditInfoRules()
         {
+            var utcNow = DateTime.UtcNow;
             var changedEntries = this.ChangeTracker
                 .Entries()
                 .Where(e =>
@@ -128,13 +129,16 @@
             foreach (var entry in changedEntries)
             {
                 var entity = (IAuditInfo)entry.Entity;
-                if (entry.State == EntityState.Added && entity.CreatedOn == default)
+                if (entry.State == EntityState.Added)
                 {
-                    entity.CreatedOn = DateTime.UtcNow;
+                    if (entity.CreatedOn == default)
+                    {
+                        entity.CreatedOn = utcNow;
+                    }
                 }
                 else
                 {
-                    entity.ModifiedOn = DateTime.UtcNow;
+                    entity.ModifiedOn = utcNow;
                 }
             }
         }

@@ -2,6 +2,7 @@
 {
     using Microsoft.AspNetCore.Identity;
     using Microsoft.EntityFrameworkCore;
+    using ServerAPI.Common;
     using ServerAPI.Data;
     using ServerAPI.Data.Common.Repositories;
     using ServerAPI.Models;
@@ -17,10 +18,9 @@
     {
         private readonly IDeletableEntityRepository<User> usersRepository;
         private readonly UserManager<User> userManager;
-
         private readonly JumpWithJennyDbContext _context;
-
         private readonly ILogger<UserService> _logger;
+
         public UserService(
             IDeletableEntityRepository<User> usersRepository,
             UserManager<User> userManager,
@@ -33,50 +33,258 @@
             this._context = context;
         }
 
-        public UserService(
-            IDeletableEntityRepository<User> usersRepository,
-            UserManager<User> userManager)
-        {
-            this.usersRepository = usersRepository;
-            this.userManager = userManager;
-        }
-
-
         public async Task<bool> DeleteUserAsync(string id)
         {
+            if (string.IsNullOrWhiteSpace(id))
+            {
+                return false;
+            }
+
+            await using var transaction = await _context.Database.BeginTransactionAsync();
             try
             {
-                var user = await this.userManager.FindByIdAsync(id);
-                if (user == null) return false;
+                var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == id);
+                if (user == null)
+                {
+                    return false;
+                }
 
-                var tokens = _context.RefreshTokens.Where(t => t.UserId == user.Id);
-                _context.RefreshTokens.RemoveRange(tokens);
+                if (await this.userManager.IsInRoleAsync(user, GlobalConstants.AdministratorRoleName))
+                {
+                    var admins = await this.userManager.GetUsersInRoleAsync(GlobalConstants.AdministratorRoleName);
+                    if (!admins.Any(a => !a.IsDeleted && a.Id != id))
+                    {
+                        throw new InvalidOperationException("Cannot delete the last administrator account.");
+                    }
+                }
+
+                var nowSofia = BulgariaTimeHelper.GetCurrentSofiaTime();
+                var utcNow = DateTime.UtcNow;
+
+                var upcomingAppointments = await _context.Appointments
+                    .Where(a => a.UserId == id && a.Workout.Date > nowSofia)
+                    .Include(a => a.Workout)
+                        .ThenInclude(w => w.WorkoutShoes)
+                    .ToListAsync();
+
+                foreach (var appointment in upcomingAppointments)
+                {
+                    if (appointment.Workout != null)
+                    {
+                        appointment.Workout.AvailableSpots += 1;
+                        if (string.Equals(appointment.Workout.Status, "Booked", StringComparison.OrdinalIgnoreCase) &&
+                            appointment.Workout.AvailableSpots > 0)
+                        {
+                            appointment.Workout.Status = "Available";
+                        }
+
+                        if (!string.IsNullOrEmpty(appointment.ShoeId))
+                        {
+                            var workoutShoe = appointment.Workout.WorkoutShoes?
+                                .FirstOrDefault(ws => ws.ShoeId == appointment.ShoeId);
+                            if (workoutShoe != null)
+                            {
+                                workoutShoe.IsTaken = false;
+                            }
+                        }
+                    }
+
+                    appointment.IsDeleted = true;
+                    appointment.DeletedOn = utcNow;
+                }
+
+                await RefreshTokenHelper.RevokeActiveRefreshTokensAsync(_context, user.Id);
+
+                var userLogins = await _context.UserLogins
+                    .Where(l => l.UserId == user.Id)
+                    .ToListAsync();
+                if (userLogins.Count > 0)
+                {
+                    _context.UserLogins.RemoveRange(userLogins);
+                }
+
+                var deletedTag = $"deleted_{user.Id}";
+                user.IsDeleted = true;
+                user.DeletedOn = utcNow;
+                user.LockoutEnabled = true;
+                user.LockoutEnd = DateTimeOffset.MaxValue;
+                user.EmailConfirmed = false;
+                user.SecurityStamp = Guid.NewGuid().ToString();
+                user.UserName = deletedTag;
+                user.NormalizedUserName = deletedTag.ToUpperInvariant();
+                user.Email = $"{deletedTag}@deleted.local";
+                user.NormalizedEmail = user.Email.ToUpperInvariant();
+
                 await _context.SaveChangesAsync();
-
-
-                var result = await this.userManager.DeleteAsync(user);
-                if (!result.Succeeded) return false;
-
-                await this.usersRepository.SaveChangesAsync();
+                await transaction.CommitAsync();
                 return true;
+            }
+            catch (InvalidOperationException)
+            {
+                await transaction.RollbackAsync();
+                throw;
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error deleting user: {ex.Message}");
+                await transaction.RollbackAsync();
+                _logger.LogError(ex, "Error deleting user {UserId}", id);
                 return false;
+            }
+        }
+
+        public async Task<UserAdminViewModel> UpdateUserAsync(string id, UserUpdateViewModel model, string actingUserId = null)
+        {
+            if (string.IsNullOrWhiteSpace(id))
+            {
+                throw new ArgumentException("User ID is required.");
+            }
+
+            if (model == null)
+            {
+                throw new ArgumentException("User payload is required.");
+            }
+
+            var normalizedUsername = model.Username?.Trim();
+            var normalizedEmail = model.Email?.Trim();
+            var normalizedFirstName = model.FirstName?.Trim();
+            var normalizedLastName = model.LastName?.Trim() ?? string.Empty;
+            var normalizedRole = model.Role?.Trim();
+
+            if (string.IsNullOrWhiteSpace(normalizedUsername))
+            {
+                throw new ArgumentException("Username is required.");
+            }
+
+            if (string.IsNullOrWhiteSpace(normalizedEmail))
+            {
+                throw new ArgumentException("Email is required.");
+            }
+
+            if (string.IsNullOrWhiteSpace(normalizedFirstName))
+            {
+                throw new ArgumentException("First name is required.");
+            }
+
+            if (string.IsNullOrWhiteSpace(normalizedRole))
+            {
+                throw new ArgumentException("Role is required.");
+            }
+
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == id);
+            if (user == null)
+            {
+                throw new KeyNotFoundException("User not found.");
+            }
+
+            var roleEntity = await _context.Roles.FirstOrDefaultAsync(r => r.Name == normalizedRole);
+            if (roleEntity == null)
+            {
+                throw new ArgumentException($"Role '{normalizedRole}' does not exist.");
+            }
+
+            var currentRoles = await this.userManager.GetRolesAsync(user);
+            var isCurrentlyAdmin = currentRoles.Any(r =>
+                string.Equals(r, GlobalConstants.AdministratorRoleName, StringComparison.OrdinalIgnoreCase));
+            var willBeAdmin = string.Equals(roleEntity.Name, GlobalConstants.AdministratorRoleName, StringComparison.OrdinalIgnoreCase);
+
+            if (isCurrentlyAdmin && !willBeAdmin)
+            {
+                if (!string.IsNullOrEmpty(actingUserId) && actingUserId == id)
+                {
+                    throw new InvalidOperationException("You cannot remove your own Administrator role.");
+                }
+
+                var admins = await this.userManager.GetUsersInRoleAsync(GlobalConstants.AdministratorRoleName);
+                if (!admins.Any(a => !a.IsDeleted && a.Id != id))
+                {
+                    throw new InvalidOperationException("Cannot demote the last administrator account.");
+                }
+            }
+
+            await using var transaction = await _context.Database.BeginTransactionAsync();
+            try
+            {
+                if (!string.Equals(user.UserName, normalizedUsername, StringComparison.Ordinal))
+                {
+                    var setUsernameResult = await this.userManager.SetUserNameAsync(user, normalizedUsername);
+                    if (!setUsernameResult.Succeeded)
+                    {
+                        throw new ArgumentException(string.Join("; ", setUsernameResult.Errors.Select(e => e.Description)));
+                    }
+                }
+
+                var wasEmailConfirmed = user.EmailConfirmed;
+                if (!string.Equals(user.Email, normalizedEmail, StringComparison.OrdinalIgnoreCase))
+                {
+                    var setEmailResult = await this.userManager.SetEmailAsync(user, normalizedEmail);
+                    if (!setEmailResult.Succeeded)
+                    {
+                        throw new ArgumentException(string.Join("; ", setEmailResult.Errors.Select(e => e.Description)));
+                    }
+
+                    user.EmailConfirmed = wasEmailConfirmed;
+                }
+
+                user.FirstName = normalizedFirstName;
+                user.LastName = normalizedLastName;
+
+                var updateResult = await this.userManager.UpdateAsync(user);
+                if (!updateResult.Succeeded)
+                {
+                    throw new ArgumentException(string.Join("; ", updateResult.Errors.Select(e => e.Description)));
+                }
+
+                var rolesChanged = !currentRoles.SequenceEqual(new[] { roleEntity.Name });
+                if (rolesChanged)
+                {
+                    if (currentRoles.Count > 0)
+                    {
+                        var removeRolesResult = await this.userManager.RemoveFromRolesAsync(user, currentRoles);
+                        if (!removeRolesResult.Succeeded)
+                        {
+                            throw new ArgumentException(string.Join("; ", removeRolesResult.Errors.Select(e => e.Description)));
+                        }
+                    }
+
+                    var addRoleResult = await this.userManager.AddToRoleAsync(user, roleEntity.Name);
+                    if (!addRoleResult.Succeeded)
+                    {
+                        throw new ArgumentException(string.Join("; ", addRoleResult.Errors.Select(e => e.Description)));
+                    }
+
+                    await RefreshTokenHelper.RevokeActiveRefreshTokensAsync(_context, user.Id);
+                    await _context.SaveChangesAsync();
+                }
+
+                await transaction.CommitAsync();
+
+                return new UserAdminViewModel
+                {
+                    Id = user.Id,
+                    Username = user.UserName,
+                    Email = user.Email,
+                    FirstName = user.FirstName,
+                    LastName = user.LastName,
+                    Role = roleEntity.Name,
+                };
+            }
+            catch
+            {
+                await transaction.RollbackAsync();
+                throw;
             }
         }
 
        public async Task<List<T>> GetAllUsersAsync<T>(int? count = null) where T : class, new()
         {
-            var query = this.usersRepository.AllWithDeleted();
+            var query = this.usersRepository.All();
 
             if (count.HasValue)
             {
                 query = query.Take(count.Value);
             }
 
-            _logger.LogInformation($"Querying {count} users from the database.");
+            _logger.LogInformation("Querying {Count} active users from the database.", count);
 
             var users = await query
                 .OrderBy(u => u.UserName)
@@ -133,7 +341,7 @@
 
         public async Task<UserAdminViewModel> GetUserByIdAsync(string id)
         {
-            var user = await this.usersRepository.GetByIdWithDeletedAsync(id);
+            var user = await this.usersRepository.All().FirstOrDefaultAsync(u => u.Id == id);
             if (user == null)
             {
                 return null;
@@ -191,7 +399,7 @@
 
         public async Task<User> ChangeFirstNameAsync(string id, string firstName)
         {
-            var user = await this.usersRepository.AllWithDeleted().FirstOrDefaultAsync(u => u.Id == id);
+            var user = await this.usersRepository.All().FirstOrDefaultAsync(u => u.Id == id);
             if (user == null)
             {
                 return null;
@@ -206,7 +414,7 @@
 
         public async Task<User> ChangeLastNameAsync(string id, string lastName)
         {
-            var user = await this.usersRepository.AllWithDeleted().FirstOrDefaultAsync(u => u.Id == id);
+            var user = await this.usersRepository.All().FirstOrDefaultAsync(u => u.Id == id);
             if (user == null)
             {
                 return null;
@@ -221,28 +429,35 @@
 
         public async Task<string> GetFirstNameAsync(string id)
         {
-            var user = await this.usersRepository.AllWithDeleted().FirstOrDefaultAsync(u => u.Id == id);
+            var user = await this.usersRepository.All().FirstOrDefaultAsync(u => u.Id == id);
             return user?.FirstName;
         }
 
         public async Task<string> GetLastNameAsync(string id)
         {
-            var user = await this.usersRepository.AllWithDeleted().FirstOrDefaultAsync(u => u.Id == id);
+            var user = await this.usersRepository.All().FirstOrDefaultAsync(u => u.Id == id);
             return user?.LastName;
         }
 
         public async Task<string> GetProfilePicAsync(string id)
         {
-            var user = await this.usersRepository.AllWithDeleted().FirstOrDefaultAsync(u => u.Id == id);
+            var user = await this.usersRepository.All().FirstOrDefaultAsync(u => u.Id == id);
             return user?.ProfilePictureUrl;
         }
 
         public async Task<IEnumerable<UserSearchResultModel>> SearchUsersAsync(string query)
         {
+            if (string.IsNullOrWhiteSpace(query))
+            {
+                return Enumerable.Empty<UserSearchResultModel>();
+            }
+
+            var term = query.Trim().ToLower();
+
             return await userManager.Users
-                .Where(u => u.FirstName.Contains(query) ||
-                            u.LastName.Contains(query) ||
-                            u.Email.Contains(query))
+                .Where(u => (u.FirstName != null && u.FirstName.ToLower().Contains(term)) ||
+                            (u.LastName != null && u.LastName.ToLower().Contains(term)) ||
+                            (u.Email != null && u.Email.ToLower().Contains(term)))
                 .Select(u => new UserSearchResultModel
                 {
                     Id = u.Id,

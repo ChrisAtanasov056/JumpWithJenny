@@ -22,7 +22,8 @@
         public Task<UserAdminViewModel> GetUserByIdAsync(string id);
 
         public Task<bool> ChangePasswordAsync(string Id, string currentPassword, string newPassword);
-        public  Task<bool> DeleteUserAsync(string Id); 
+        public Task<UserAdminViewModel> UpdateUserAsync(string id, UserUpdateViewModel model, string actingUserId = null);
+        public Task<bool> DeleteUserAsync(string Id); 
 
         Task<IEnumerable<UserSearchResultModel>> SearchUsersAsync(string query);
 

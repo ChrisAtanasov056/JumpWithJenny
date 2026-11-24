@@ -2,12 +2,8 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import WorkoutService from '../../../services/WorkoutSevices';
 import AddUserSearchModal from './AddUserSearchModal';
+import { formatWorkoutDateForInput } from '../../../utils/workoutDate';
 import './WorkoutForm.scss';
-
-const formatDateForInput = (dateValue) => {
-  if (!dateValue) return '';
-  return String(dateValue).slice(0, 16);
-};
 
 const WorkoutForm = () => {
   const { id } = useParams();
@@ -47,7 +43,7 @@ const WorkoutForm = () => {
     );
     setWorkout({
       ...updatedWorkout,
-      Date: formatDateForInput(updatedWorkout.Date),
+      Date: formatWorkoutDateForInput(updatedWorkout.Date),
     });
   };
 
@@ -57,7 +53,7 @@ const WorkoutForm = () => {
       const refreshed = await WorkoutService.getWorkoutById(id);
       setWorkout({
         ...refreshed,
-        Date: formatDateForInput(refreshed.Date),
+        Date: formatWorkoutDateForInput(refreshed.Date),
       });
     } catch (err) {
       const serverMessage = err.response?.data?.message || err.message;
@@ -71,7 +67,7 @@ const WorkoutForm = () => {
         const data = await WorkoutService.getWorkoutById(id);
         setWorkout({
           ...data,
-          Date: formatDateForInput(data.Date),
+          Date: formatWorkoutDateForInput(data.Date),
         });
       } catch (err) {
         const serverMessage = err.response?.data?.message || err.message;

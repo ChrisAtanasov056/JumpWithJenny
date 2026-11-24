@@ -15,7 +15,8 @@
             CardType cardType,
             string userId,
             bool usesOwnShoes,
-            bool requireConfirmedEmail = true);
+            bool requireConfirmedEmail = true,
+            bool allowPastWorkout = false);
         Task<bool> IsUserRegisteredAsync(string workoutId, string userId);
         Task<bool> CancelRegistrationAsync(string workoutId, string userId, bool allowPastWorkout = false);
     }

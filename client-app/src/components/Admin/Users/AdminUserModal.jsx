@@ -5,12 +5,16 @@ const AdminUserModal = ({ user, onClose, onSave, onDelete }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [editedUser, setEditedUser] = useState({ ...user });
   const [errors, setErrors] = useState({});
+  const [saveError, setSaveError] = useState('');
+  const [isSaving, setIsSaving] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   useEffect(() => {
     setEditedUser({ ...user });
     setIsEditing(false);
     setErrors({});
+    setSaveError('');
+    setIsSaving(false);
     setShowDeleteConfirm(false);
   }, [user]);
 
@@ -24,6 +28,7 @@ const AdminUserModal = ({ user, onClose, onSave, onDelete }) => {
           setIsEditing(false);
           setEditedUser({ ...user });
           setErrors({});
+          setSaveError('');
         } else {
           onClose();
         }
@@ -67,10 +72,31 @@ const AdminUserModal = ({ user, onClose, onSave, onDelete }) => {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSave = () => {
-    if (validateForm()) {
-      onSave(editedUser);
+  const handleSave = async () => {
+    if (!validateForm()) {
+      return;
+    }
+
+    setIsSaving(true);
+    setSaveError('');
+    try {
+      await onSave({
+        Id: editedUser.Id,
+        Username: editedUser.Username?.trim(),
+        Email: editedUser.Email?.trim(),
+        FirstName: editedUser.FirstName?.trim(),
+        LastName: editedUser.LastName?.trim() || '',
+        Role: editedUser.Role || 'User',
+      });
       setIsEditing(false);
+    } catch (err) {
+      const serverMessage =
+        err?.response?.data?.message ||
+        err?.response?.data?.Message ||
+        err?.message;
+      setSaveError(serverMessage || 'Неуспешно запазване на промените.');
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -132,6 +158,7 @@ const AdminUserModal = ({ user, onClose, onSave, onDelete }) => {
                 setIsEditing(false);
                 setEditedUser({ ...user });
                 setErrors({});
+                setSaveError('');
               } : onClose}
               aria-label={isEditing ? "Cancel editing" : "Close modal"}
             >
@@ -236,11 +263,10 @@ const AdminUserModal = ({ user, onClose, onSave, onDelete }) => {
               <div className="edit-field">
                 <select
                   name="Role"
-                  value={editedUser.Role || ''}
+                  value={editedUser.Role || 'User'}
                   onChange={handleInputChange}
                 >
                   <option value="Administrator">Administrator</option>
-                  <option value="Moderator">Moderator</option>
                   <option value="User">User</option>
                 </select>
               </div>
@@ -250,53 +276,35 @@ const AdminUserModal = ({ user, onClose, onSave, onDelete }) => {
               </span>
             )}
           </div>
-          
-          <div className="detail-row">
-            <span className="detail-label">Status:</span>
-            {isEditing ? (
-              <div className="edit-field">
-                <label className="toggle-switch">
-                  <input
-                    type="checkbox"
-                    checked={editedUser.IsActive}
-                    onChange={() => setEditedUser(prev => ({
-                      ...prev,
-                      IsActive: !prev.IsActive
-                    }))}
-                  />
-                  <span className="slider round"></span>
-                  <span className="toggle-label">
-                    {editedUser.IsActive ? 'Active' : 'Inactive'}
-                  </span>
-                </label>
-              </div>
-            ) : (
-              <span className="detail-value">
-                <span className={`status-dot ${editedUser.IsActive ? 'active' : 'inactive'}`} />
-                {editedUser.IsActive ? 'Active' : 'Inactive'}
-              </span>
-            )}
-          </div>
             </div>
+
+            {saveError && (
+              <div className="error-message" style={{ color: '#dc3545', marginBottom: '1rem', fontSize: '0.9rem' }}>
+                {saveError}
+              </div>
+            )}
 
             <div className="modal-actions">
               {isEditing ? (
                 <>
                   <button 
                     className="btn-cancel"
+                    disabled={isSaving}
                     onClick={() => {
                       setIsEditing(false);
                       setEditedUser({ ...user });
                       setErrors({});
+                      setSaveError('');
                     }}
                   >
                     Cancel
                   </button>
                   <button 
                     className="btn-save"
+                    disabled={isSaving}
                     onClick={handleSave}
                   >
-                    Save Changes
+                    {isSaving ? 'Запазване...' : 'Save Changes'}
                   </button>
                 </>
               ) : (

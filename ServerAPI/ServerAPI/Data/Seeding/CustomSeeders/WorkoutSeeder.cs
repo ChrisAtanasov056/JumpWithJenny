@@ -1,4 +1,5 @@
-﻿using ServerAPI.Data;
+﻿using ServerAPI.Common;
+using ServerAPI.Data;
 using ServerAPI.Data.Seeding;
 using ServerAPI.Models;
 
@@ -15,6 +16,7 @@ public class WorkoutSeeder : ISeeder
 
         var shoes = dbContext.Shoes.ToList();  // Get all shoes from the database
         var cardTypes = dbContext.WorkoutCardTypes.ToList(); // Get all workout card types
+        var nowSofia = BulgariaTimeHelper.GetCurrentSofiaTime();
 
         var specificWorkouts = new List<(string Day, string Time, string Status)>
         {
@@ -29,13 +31,17 @@ public class WorkoutSeeder : ISeeder
 
         foreach (var (day, time, status) in specificWorkouts)
         {
+            var dayOfWeek = Enum.Parse<DayOfWeek>(day, ignoreCase: true);
+            var timeOfDay = TimeSpan.Parse(time);
+
             var workout = new Workout
             {
                 Day = day,
                 Time = time,
+                Date = BulgariaTimeHelper.GetNextUpcomingSofiaDate(dayOfWeek, timeOfDay, nowSofia),
                 Status = status,
                 WorkoutCardTypes = cardTypes, // Assign all card types (if many-to-many)
-                AvailableSpots = 20 // Max 20 people (users with or without shoes)
+                AvailableSpots = string.Equals(status, "Booked", StringComparison.OrdinalIgnoreCase) ? 0 : 20
             };
 
             workouts.Add(workout);

@@ -4,6 +4,7 @@ import { useAuth } from '../../services/AuthContext';
 import WorkoutModal from '../WorkoutModal/WorkoutModal';
 import { useTranslation } from 'react-i18next';
 import { useMediaQuery } from 'react-responsive';
+import { parseWorkoutDate } from '../../utils/workoutDate';
 import './Schedule.scss';
 
 const Schedule = () => {
@@ -26,8 +27,11 @@ const Schedule = () => {
       const response = await axios.get('/api/Schedule');
       const now = new Date();
       const upcoming = response.data
-        .filter(w => w.Date && new Date(w.Date) > now)
-        .sort((a, b) => new Date(a.Date) - new Date(b.Date));
+        .filter(w => {
+          const parsedDate = parseWorkoutDate(w.Date);
+          return parsedDate && parsedDate > now;
+        })
+        .sort((a, b) => parseWorkoutDate(a.Date) - parseWorkoutDate(b.Date));
       setWorkouts(upcoming);
     } catch (err) {
       console.error('Error fetching workouts:', err);

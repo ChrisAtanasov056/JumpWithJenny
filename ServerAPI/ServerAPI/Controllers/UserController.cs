@@ -74,16 +74,58 @@
         }
 
         [Authorize(Roles = GlobalConstants.AdministratorRoleName)]
+        [HttpPut("{id}")]
+        public async Task<IActionResult> Update(string id, [FromBody] UserUpdateViewModel model)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            try
+            {
+                var updatedUser = await this.userService.UpdateUserAsync(id, model, currentUserId);
+                return Ok(updatedUser);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { message = ex.Message });
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+
+        [Authorize(Roles = GlobalConstants.AdministratorRoleName)]
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(string id)
         {
-            var result = await this.userService.DeleteUserAsync(id);
-            if (!result)
+            var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (!string.IsNullOrEmpty(currentUserId) && currentUserId == id)
             {
-                return NotFound("User not found or could not be deleted.");
+                return BadRequest(new { message = "You cannot delete your own account." });
             }
 
-            return Ok("User deleted successfully.");
+            try
+            {
+                var result = await this.userService.DeleteUserAsync(id);
+                if (!result)
+                {
+                    return NotFound(new { message = "User not found or could not be deleted." });
+                }
+
+                return Ok(new { message = "User deleted successfully." });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
         }
     }
 }

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
 import UserService from '../../../services/UserServices';
+import AdminUserModal from './AdminUserModal';
 import './AdminUserProfile.scss';
 
 const AdminUserProfile = () => {
@@ -9,7 +10,9 @@ const AdminUserProfile = () => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [actionError, setActionError] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -17,7 +20,7 @@ const AdminUserProfile = () => {
         const data = await UserService.getUserById(userId);
         setUser(data);
       } catch (err) {
-        setError(err.message || 'Failed to fetch user data');
+        setError(err.message || 'Неуспешно зареждане на данните за потребителя.');
       } finally {
         setLoading(false);
       }
@@ -26,15 +29,28 @@ const AdminUserProfile = () => {
     fetchUser();
   }, [userId]);
 
+  const handleSaveUser = async (updatedUser) => {
+    setActionError('');
+    const savedUser = await UserService.updateUser(updatedUser.Id, updatedUser);
+    setUser(savedUser?.Id ? savedUser : updatedUser);
+    setSuccessMessage('Потребителят е обновен успешно!');
+    setTimeout(() => setSuccessMessage(''), 3000);
+  };
+
   const handleDelete = async () => {
-    if (window.confirm('Are you sure you want to delete this user?')) {
+    if (window.confirm('Сигурни ли сте, че искате да изтриете този потребител?')) {
+      setActionError('');
       try {
         await UserService.deleteUser(userId);
-        setSuccessMessage('User deleted successfully');
+        setSuccessMessage('Потребителят е изтрит успешно!');
         setTimeout(() => navigate('/admin/users'), 1500);
-      } catch (error) {
-        setError(error.message || 'Failed to delete user');
-        setTimeout(() => setError(''), 5000);
+      } catch (err) {
+        const serverMessage =
+          err?.response?.data?.message ||
+          err?.response?.data?.Message ||
+          err?.message;
+        setActionError(serverMessage || 'Неуспешно изтриване на потребителя.');
+        setTimeout(() => setActionError(''), 5000);
       }
     }
   };
@@ -83,9 +99,9 @@ const AdminUserProfile = () => {
         </div>
       )}
 
-      {error && (
+      {actionError && (
         <div className="error-message">
-          {error}
+          {actionError}
         </div>
       )}
       
@@ -115,22 +131,31 @@ const AdminUserProfile = () => {
             </div>
             <div className="info-item">
               <span className="info-label">Role:</span>
-              <span className={`info-value role ${user.Role.toLowerCase()}`}>
-                {user.Role}
+              <span className={`info-value role ${(user.Role || '').toLowerCase()}`}>
+                {user.Role || 'Unknown'}
               </span>
             </div>
           </div>
         </div>
 
         <div className="profile-actions">
-          <Link to={`/admin/users/${user.Id}/edit`} className="btn-edit">
+          <button type="button" className="btn-edit" onClick={() => setIsModalOpen(true)}>
             Edit User
-          </Link>
+          </button>
           <button className="btn-delete" onClick={handleDelete}>
             Delete User
           </button>
         </div>
       </div>
+
+      {isModalOpen && (
+        <AdminUserModal
+          user={user}
+          onClose={() => setIsModalOpen(false)}
+          onSave={handleSaveUser}
+          onDelete={handleDelete}
+        />
+      )}
     </div>
   );
 };

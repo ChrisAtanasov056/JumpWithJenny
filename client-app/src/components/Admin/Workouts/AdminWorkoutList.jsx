@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import WorkoutService from '../../../services/WorkoutSevices';
+import { parseWorkoutDate, formatWorkoutDateBg } from '../../../utils/workoutDate';
 import './AdminWorkoutList.scss';
 
 const AdminWorkoutsList = () => {
@@ -21,12 +22,17 @@ const AdminWorkoutsList = () => {
         const now = new Date();
 
         const filtered = data
-          .filter(w => w.Date)
           .filter(w => {
-            const workoutDate = new Date(w.Date);
-            return showPast ? workoutDate <= now : workoutDate > now;
+            const workoutDate = parseWorkoutDate(w.Date);
+            return showPast
+              ? (!workoutDate || workoutDate <= now)
+              : Boolean(workoutDate && workoutDate > now);
           })
-          .sort((a, b) => new Date(a.Date) - new Date(b.Date));
+          .sort((a, b) => {
+            const timeA = parseWorkoutDate(a.Date)?.getTime() ?? 0;
+            const timeB = parseWorkoutDate(b.Date)?.getTime() ?? 0;
+            return showPast ? timeB - timeA : timeA - timeB;
+          });
 
         setWorkouts(filtered);
       } catch (err) {
@@ -111,7 +117,7 @@ const AdminWorkoutsList = () => {
               <div key={workout.Id} className="workout-card">
                 <div className="info-row">
                   <span className="info-label">Дата:</span>
-                  <span>{new Date(workout.Date).toLocaleDateString('bg-BG')}</span>
+                  <span>{formatWorkoutDateBg(workout.Date)}</span>
                 </div>
                 <div className="info-row">
                   <span className="info-label">Ден:</span>
@@ -167,7 +173,7 @@ const AdminWorkoutsList = () => {
               {filteredWorkouts.length > 0 ? (
                 filteredWorkouts.map(workout => (
                   <tr key={workout.Id}>
-                    <td>{new Date(workout.Date).toLocaleDateString('bg-BG')}</td>
+                    <td>{formatWorkoutDateBg(workout.Date)}</td>
                     <td>{workout.Day}</td>
                     <td>{workout.Time}</td>
                     <td>

@@ -9,6 +9,7 @@ const AdminUsersList = () => {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [actionError, setActionError] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
   const [selectedUser, setSelectedUser] = useState(null);
@@ -43,29 +44,32 @@ const AdminUsersList = () => {
   };
 
   const handleSaveUser = async (updatedUser) => {
-    try {
-      await UserService.updateUser(updatedUser.Id, updatedUser);
-      setUsers(users.map(user => user.Id === updatedUser.Id ? updatedUser : user));
-      setSuccessMessage('User updated successfully!');
-      setTimeout(() => setSuccessMessage(''), 3000);
-    } catch (error) {
-      setError(error.message || 'Failed to update user.');
-      setTimeout(() => setError(''), 5000);
-    }
+    setActionError('');
+    const savedUser = await UserService.updateUser(updatedUser.Id, updatedUser);
+    const mergedUser = savedUser?.Id ? savedUser : updatedUser;
+    setUsers(prev => prev.map(user => (user.Id === mergedUser.Id ? mergedUser : user)));
+    setSelectedUser(mergedUser);
+    setSuccessMessage('Потребителят е обновен успешно!');
+    setTimeout(() => setSuccessMessage(''), 3000);
   };
 
   const handleDeleteUser = async (userId) => {
-    if (!window.confirm("Are you sure you want to delete this user?")) {
+    if (!window.confirm("Сигурни ли сте, че искате да изтриете този потребител?")) {
       return;
     }
+    setActionError('');
     try {
       await UserService.deleteUser(userId);
-      setUsers(users.filter(user => user.Id !== userId));
-      setSuccessMessage('User deleted successfully!');
+      setUsers(prev => prev.filter(user => user.Id !== userId));
+      setSuccessMessage('Потребителят е изтрит успешно!');
       setTimeout(() => setSuccessMessage(''), 3000);
-    } catch (error) {
-      setError(error.message || 'Failed to delete user.');
-      setTimeout(() => setError(''), 5000);
+    } catch (err) {
+      const serverMessage =
+        err?.response?.data?.message ||
+        err?.response?.data?.Message ||
+        err?.message;
+      setActionError(serverMessage || 'Неуспешно изтриване на потребителя.');
+      setTimeout(() => setActionError(''), 5000);
     }
   };
 
@@ -123,6 +127,12 @@ const AdminUsersList = () => {
       {successMessage && (
         <div className="message-alert success-alert">
           {successMessage}
+        </div>
+      )}
+
+      {actionError && (
+        <div className="message-alert error-alert">
+          {actionError}
         </div>
       )}
 

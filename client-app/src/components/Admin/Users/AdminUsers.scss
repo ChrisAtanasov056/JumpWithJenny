@@ -177,6 +177,11 @@ body {
     background-color: color.adjust($success-color, $lightness: 40%);
     color: $success-color;
   }
+
+  &.error-alert {
+    background-color: color.adjust($danger-color, $lightness: 38%);
+    color: $danger-color;
+  }
 }
 
 /* Empty State */

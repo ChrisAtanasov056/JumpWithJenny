@@ -7,6 +7,7 @@ using ServerAPI.ViewModels.Users;
 using ServerAPI.Services.Workouts;
 using ServerAPI.Services.Schedule;
 using ServerAPI.Models.Schedule;
+using System.Security.Claims;
 using System.Threading.Tasks;
 
 namespace ServerAPI.Controllers
@@ -19,13 +20,13 @@ namespace ServerAPI.Controllers
         private readonly JumpWithJennyDbContext _context;
         private readonly IUserService _userService;
         private readonly IWorkoutServices _workoutService;
-        private readonly ILogger<WorkoutController> _logger;
+        private readonly ILogger<AdminController> _logger;
         private readonly IScheduleService _scheduleService;
         
         public AdminController(JumpWithJennyDbContext context, 
         IUserService userService, 
         IWorkoutServices workoutService, 
-        ILogger<WorkoutController> logger,
+        ILogger<AdminController> logger,
         IScheduleService scheduleService)
         {
             _context = context;
@@ -75,21 +76,35 @@ namespace ServerAPI.Controllers
             return Ok(users);
         }
 
-        // GET: api/admin/users/{id}
+        // DELETE: api/admin/users/{id}
         [HttpDelete("users/{id}")]
         public async Task<IActionResult> DeleteUser(string id)
         {
             if (string.IsNullOrEmpty(id))
             {
-                return BadRequest(new { Message = "User ID cannot be null or empty" });
+                return BadRequest(new { Message = "User ID cannot be null or empty." });
             }
-            var result = await _userService.DeleteUserAsync(id);
-            if (!result)
+
+            var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (!string.IsNullOrEmpty(currentUserId) && currentUserId == id)
             {
-                return BadRequest(new { Message = "User deletion failed" });
+                return BadRequest(new { Message = "You cannot delete your own account." });
             }
-            
-            return Ok(new { Message = "User deleted successfully" });
+
+            try
+            {
+                var result = await _userService.DeleteUserAsync(id);
+                if (!result)
+                {
+                    return NotFound(new { Message = "User not found or could not be deleted." });
+                }
+
+                return Ok(new { Message = "User deleted successfully." });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(new { Message = ex.Message });
+            }
         }
         
         // GET: api/admin/workouts
@@ -132,7 +147,8 @@ namespace ServerAPI.Controllers
                     request.CardType,
                     request.UserId,
                     request.UsesOwnShoes,
-                    requireConfirmedEmail: false
+                    requireConfirmedEmail: false,
+                    allowPastWorkout: true
                 );
 
                 var adminWorkout = await _workoutService.GetWorkoutByIdAsync(workoutId);

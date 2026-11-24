@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using ServerAPI.Common;
 using ServerAPI.Data.Common.Repositories;
 using ServerAPI.Models;
 using ServerAPI.Models.Enums;
@@ -76,11 +77,13 @@ namespace ServerAPI.Services.Workouts
                 status = "Booked";
             }
 
+            var normalizedDate = BulgariaTimeHelper.NormalizeToSofiaWallClock(dto.Date, dto.Time);
+
             var workout = new Workout
             {
                 Day = dto.Day.Trim(),
                 Time = dto.Time.Trim(),
-                Date = dto.Date,
+                Date = normalizedDate,
                 Status = status,
                 AvailableSpots = dto.AvailableSpots
             };
@@ -108,7 +111,7 @@ namespace ServerAPI.Services.Workouts
                 Id = workout.Id,
                 Day = workout.Day,
                 Time = workout.Time,
-                Date = workout.Date,
+                Date = BulgariaTimeHelper.SofiaToUtc(workout.Date),
                 Status = workout.Status,
                 AvailableSpots = workout.AvailableSpots,
             };
@@ -142,7 +145,7 @@ namespace ServerAPI.Services.Workouts
                         {
                             Id = a.Id,
                             UserId = a.UserId,
-                            UserFullName = a.User != null ? (a.User.FirstName + " " + a.User.LastName).Trim() : string.Empty,
+                            UserFullName = a.User != null ? (a.User.FirstName + " " + a.User.LastName).Trim() : "Deleted User",
                             UserEmail = a.User != null ? a.User.Email : string.Empty,
                             ShoeId = a.ShoeId,
                             CardType = a.CardType,
@@ -152,7 +155,13 @@ namespace ServerAPI.Services.Workouts
                 })
                 .FirstOrDefaultAsync();
 
-            return workout ?? throw new KeyNotFoundException($"Workout with ID {id} not found.");
+            if (workout == null)
+            {
+                throw new KeyNotFoundException($"Workout with ID {id} not found.");
+            }
+
+            workout.Date = BulgariaTimeHelper.SofiaToUtc(workout.Date);
+            return workout;
         }
 
         public async Task DeleteWorkoutAsync(string id)
@@ -252,9 +261,11 @@ namespace ServerAPI.Services.Workouts
                 nextStatus = "Booked";
             }
 
+            var normalizedDate = BulgariaTimeHelper.NormalizeToSofiaWallClock(dto.Date, dto.Time);
+
             workout.Day = dto.Day.Trim();
             workout.Time = dto.Time.Trim();
-            workout.Date = dto.Date;
+            workout.Date = normalizedDate;
             workout.Status = nextStatus;
             workout.AvailableSpots = dto.AvailableSpots;
 
@@ -265,7 +276,7 @@ namespace ServerAPI.Services.Workouts
                 Id = workout.Id,
                 Day = workout.Day,
                 Time = workout.Time,
-                Date = workout.Date,
+                Date = BulgariaTimeHelper.SofiaToUtc(workout.Date),
                 Status = workout.Status,
                 AvailableSpots = workout.AvailableSpots
             };
@@ -274,6 +285,7 @@ namespace ServerAPI.Services.Workouts
         public async Task<IEnumerable<AdminWorkoutViewModel>> GetAllWorkoutsAsync()
         {
             var workouts = await _workoutRepository.AllAsNoTracking()
+                .OrderBy(w => w.Date)
                 .Select(w => new AdminWorkoutViewModel
                 {
                     Id = w.Id,
@@ -291,7 +303,7 @@ namespace ServerAPI.Services.Workouts
                         {
                             Id = a.Id,
                             UserId = a.UserId,
-                            UserFullName = a.User != null ? (a.User.FirstName + " " + a.User.LastName).Trim() : string.Empty,
+                            UserFullName = a.User != null ? (a.User.FirstName + " " + a.User.LastName).Trim() : "Deleted User",
                             UserEmail = a.User != null ? a.User.Email : string.Empty,
                             CardType = a.CardType,
                             ShoeId = a.ShoeId,
@@ -300,6 +312,11 @@ namespace ServerAPI.Services.Workouts
                         }).ToList()
                 })
                 .ToListAsync();
+
+            foreach (var workout in workouts)
+            {
+                workout.Date = BulgariaTimeHelper.SofiaToUtc(workout.Date);
+            }
 
             return workouts;
         }

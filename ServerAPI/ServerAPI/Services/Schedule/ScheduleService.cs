@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using ServerAPI.Common;
 using ServerAPI.Data;
 using ServerAPI.Data.Common.Repositories;
 using ServerAPI.Models;
@@ -9,9 +10,6 @@ namespace ServerAPI.Services.Schedule
 {
     public class ScheduleService : IScheduleService
     {
-        private static readonly TimeZoneInfo BulgariaTimeZone =
-            TimeZoneInfo.FindSystemTimeZoneById("Europe/Sofia");
-
         private readonly JumpWithJennyDbContext _context;
         private readonly IDeletableEntityRepository<Workout> _workoutRepository;
         private readonly IDeletableEntityRepository<Appointment> _appointmentRepository;
@@ -32,16 +30,14 @@ namespace ServerAPI.Services.Schedule
             _logger = logger;
         }
 
-        private static DateTime GetCurrentLocalTime() =>
-            TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, BulgariaTimeZone);
-
         public async Task<WorkoutViewModels> ApplyForWorkoutAsync(
             string workoutId,
             ShoesSize? shoeSize,
             CardType cardType,
             string userId,
             bool usesOwnShoes,
-            bool requireConfirmedEmail = true)
+            bool requireConfirmedEmail = true,
+            bool allowPastWorkout = false)
         {
             if (string.IsNullOrWhiteSpace(workoutId))
             {
@@ -110,7 +106,7 @@ namespace ServerAPI.Services.Schedule
                     "Workout not found.");
             }
 
-            if (workout.Date <= GetCurrentLocalTime())
+            if (!allowPastWorkout && workout.Date <= BulgariaTimeHelper.GetCurrentSofiaTime())
             {
                 throw new ScheduleBookingException(
                     BookingErrorCode.WorkoutInPast,
@@ -239,11 +235,12 @@ namespace ServerAPI.Services.Schedule
 
         public async Task<List<WorkoutViewModels>> GetAllWorkoutsAsync()
         {
-            var today = GetCurrentLocalTime().Date;
+            var nowSofia = BulgariaTimeHelper.GetCurrentSofiaTime();
 
             var workouts = await _workoutRepository
                 .AllAsNoTracking()
-                .Where(w => w.Date >= today)
+                .Where(w => w.Date > nowSofia)
+                .OrderBy(w => w.Date)
                 .Include(w => w.WorkoutShoes)
                     .ThenInclude(ws => ws.Shoe)
                 .Include(w => w.Appointments)
@@ -284,7 +281,7 @@ namespace ServerAPI.Services.Schedule
                 AvailableSpots = workout.AvailableSpots,
                 TakenSpots = activeAppointmentsCount,
                 TotalSpots = totalSpots,
-                Date = workout.Date,
+                Date = BulgariaTimeHelper.SofiaToUtc(workout.Date),
                 WorkoutShoes = (workout.WorkoutShoes ?? Enumerable.Empty<WorkoutShoes>())
                     .Where(ws => !ws.IsDeleted && ws.Shoe != null && !ws.Shoe.IsDeleted)
                     .Select(ws => new WorkoutShoes
@@ -365,7 +362,7 @@ namespace ServerAPI.Services.Schedule
                     "Workout not found.");
             }
 
-            if (!allowPastWorkout && workout.Date <= GetCurrentLocalTime())
+            if (!allowPastWorkout && workout.Date <= BulgariaTimeHelper.GetCurrentSofiaTime())
             {
                 throw new ScheduleBookingException(
                     BookingErrorCode.WorkoutInPast,

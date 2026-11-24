@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using ServerAPI.Common;
 using ServerAPI.Data;
 using ServerAPI.DTOs;
 using ServerAPI.Models;
@@ -8,18 +9,12 @@ namespace ServerAPI.Services
 {
     public class ShoesService : IShoesService
     {
-        private static readonly TimeZoneInfo BulgariaTimeZone =
-            TimeZoneInfo.FindSystemTimeZoneById("Europe/Sofia");
-
         private readonly JumpWithJennyDbContext _context;
 
         public ShoesService(JumpWithJennyDbContext context)
         {
             _context = context;
         }
-
-        private static DateTime GetCurrentLocalTime() =>
-            TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, BulgariaTimeZone);
 
         public async Task<List<ShoesDTO>> GetAllShoesAsync()
         {
@@ -58,7 +53,7 @@ namespace ServerAPI.Services
                     .Select(ws => new WorkoutDTO
                     {
                         Id = ws.Workout.Id,
-                        Date = ws.Workout.Date,
+                        Date = BulgariaTimeHelper.SofiaToUtc(ws.Workout.Date),
                         Day = ws.Workout.Day,
                         Time = ws.Workout.Time,
                     }).ToList(),
@@ -89,7 +84,7 @@ namespace ServerAPI.Services
             _context.Shoes.Add(newShoe);
             await _context.SaveChangesAsync();
 
-            var nowLocal = GetCurrentLocalTime();
+            var nowLocal = BulgariaTimeHelper.GetCurrentSofiaTime();
             var upcomingWorkouts = await _context.Workouts
                 .Where(w => w.Date > nowLocal)
                 .ToListAsync();
@@ -126,7 +121,7 @@ namespace ServerAPI.Services
 
             if (shoeToUpdate.Size != updatedShoeDto.Size)
             {
-                var nowLocal = GetCurrentLocalTime();
+                var nowLocal = BulgariaTimeHelper.GetCurrentSofiaTime();
                 var isReserved = await _context.WorkoutShoes
                     .AnyAsync(ws => ws.ShoeId == id && ws.IsTaken && ws.Workout.Date > nowLocal);
 
@@ -149,7 +144,7 @@ namespace ServerAPI.Services
                 return false;
             }
 
-            var nowLocal = GetCurrentLocalTime();
+            var nowLocal = BulgariaTimeHelper.GetCurrentSofiaTime();
             var isReservedInWorkoutShoes = await _context.WorkoutShoes
                 .AnyAsync(ws => ws.ShoeId == id && ws.IsTaken && ws.Workout.Date > nowLocal);
 
