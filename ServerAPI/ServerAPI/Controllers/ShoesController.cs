@@ -1,10 +1,13 @@
 // Controllers/ShoesController.cs
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using ServerAPI.Common;
 using ServerAPI.DTOs;
 using ServerAPI.Services;
 
 namespace ServerAPI.Controllers
 {
+    [Authorize(Roles = GlobalConstants.AdministratorRoleName)]
     [ApiController]
     [Route("api/[controller]")]
     public class ShoesController : ControllerBase

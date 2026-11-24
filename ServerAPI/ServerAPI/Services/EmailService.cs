@@ -52,14 +52,31 @@ namespace ServerAPI.Services
             var fromEmail = _configuration["EmailSettings:FromEmail"];
             var fromName = _configuration["EmailSettings:FromName"];
 
-            var message = new MimeMessage();
-            message.From.Add(new MailboxAddress(fromName, fromEmail));
-            message.To.Add(MailboxAddress.Parse(toEmail));
-            message.Subject = subject;
-
-            if (!string.IsNullOrEmpty(replyToEmail))
+            if (string.IsNullOrWhiteSpace(fromEmail) || !MailboxAddress.TryParse(fromEmail, out var parsedFrom))
             {
-                message.ReplyTo.Add(MailboxAddress.Parse(replyToEmail));
+                _logger.LogError("Invalid or missing EmailSettings:FromEmail configuration.");
+                return false;
+            }
+
+            if (string.IsNullOrWhiteSpace(toEmail) || !MailboxAddress.TryParse(toEmail, out var parsedTo))
+            {
+                _logger.LogError("Invalid recipient email address.");
+                return false;
+            }
+
+            var message = new MimeMessage();
+            message.From.Add(new MailboxAddress(fromName ?? string.Empty, parsedFrom.Address));
+            message.To.Add(parsedTo);
+            message.Subject = (subject ?? string.Empty).Replace("\r", string.Empty).Replace("\n", string.Empty);
+
+            if (!string.IsNullOrWhiteSpace(replyToEmail))
+            {
+                if (!MailboxAddress.TryParse(replyToEmail, out var parsedReplyTo))
+                {
+                    _logger.LogWarning("Invalid reply-to email address provided.");
+                    return false;
+                }
+                message.ReplyTo.Add(parsedReplyTo);
             }
 
             var bodyBuilder = new BodyBuilder

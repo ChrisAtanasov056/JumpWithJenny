@@ -43,3 +43,8 @@
 - [Архитектура, директории, комуникация и команди](docs/ai-context/architecture.md)
 - [Схема на базата данни (PostgreSQL) и API ендпойнти](docs/ai-context/database-and-api.md)
 - [Автентикация, бизнес потоци и технически дълг](docs/ai-context/auth-and-flows.md)
+
+## Preferred Skills
+- При дебъгване на грешки винаги използвай скила `systematic-debugging` преди да редактираш код.
+- При промени по React компоненти в `client-app` прилагай `vercel-react-best-practices` и `frontend-design`.
+- При добавяне или редакция на анимации и преходи използвай `animate` и `review-animations`.

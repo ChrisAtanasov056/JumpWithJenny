@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Diagnostics;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
@@ -20,6 +22,7 @@ using ServerAPI.Services.Workouts;
 using System.Security.Claims;
 using System.Text;
 using System.Text.Json;
+using System.Threading.RateLimiting;
 
 public partial class Program
 {
@@ -27,24 +30,84 @@ public partial class Program
     {
         var builder = WebApplication.CreateBuilder(args);
         builder.Logging.AddConsole(); // This enables console logg
-        ConfigureServices(builder.Services, builder.Configuration);
+        ConfigureServices(builder.Services, builder.Configuration, builder.Environment);
         var app = builder.Build();
         Configure(app);
         app.Run();
     }
 
-    private static void ConfigureServices(IServiceCollection services, IConfiguration configuration)
+    private static void ConfigureServices(IServiceCollection services, IConfiguration configuration, IWebHostEnvironment environment)
     {
+        var configuredOrigins = configuration.GetSection("AllowedOrigins").Get<string[]>() ?? Array.Empty<string>();
+        var allowedOrigins = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+        {
+            "https://jumpwithjenny.com",
+            "https://www.jumpwithjenny.com"
+        };
+
+        foreach (var origin in configuredOrigins)
+        {
+            if (!string.IsNullOrWhiteSpace(origin))
+            {
+                allowedOrigins.Add(origin.Trim());
+            }
+        }
+
+        if (environment.IsDevelopment())
+        {
+            allowedOrigins.Add("http://localhost:3000");
+            allowedOrigins.Add("https://localhost:3000");
+            allowedOrigins.Add("https://localhost:5001");
+            allowedOrigins.Add("http://localhost:5173");
+        }
+
         services.AddCors(options =>
         {
             options.AddPolicy("AllowOrigin", builder =>
             {
                 builder
-                    .WithOrigins("http://localhost:3000", "https://localhost:3000", "https://localhost:5001", "https://jumpwithjenny.com") 
+                    .WithOrigins(allowedOrigins.ToArray())
                     .AllowAnyHeader()
                     .AllowAnyMethod()
-                    .AllowCredentials(); 
+                    .AllowCredentials();
             });
+        });
+
+        services.Configure<ForwardedHeadersOptions>(options =>
+        {
+            options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+        });
+
+        services.AddRateLimiter(options =>
+        {
+            options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+            options.OnRejected = async (context, cancellationToken) =>
+            {
+                context.HttpContext.Response.ContentType = "application/json";
+                await context.HttpContext.Response.WriteAsync(
+                    "{\"error\":\"Too many requests. Please try again later.\"}",
+                    cancellationToken);
+            };
+
+            options.AddPolicy("AuthPolicy", httpContext =>
+                RateLimitPartition.GetFixedWindowLimiter(
+                    partitionKey: httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+                    factory: _ => new FixedWindowRateLimiterOptions
+                    {
+                        PermitLimit = 15,
+                        Window = TimeSpan.FromMinutes(1),
+                        QueueLimit = 0
+                    }));
+
+            options.AddPolicy("EmailPolicy", httpContext =>
+                RateLimitPartition.GetFixedWindowLimiter(
+                    partitionKey: httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+                    factory: _ => new FixedWindowRateLimiterOptions
+                    {
+                        PermitLimit = 5,
+                        Window = TimeSpan.FromMinutes(5),
+                        QueueLimit = 0
+                    }));
         });
 
         services.AddSingleton<IConfiguration>(configuration);
@@ -63,10 +126,31 @@ public partial class Program
 
         services.AddTransient<JwtTokenService>();
 
-       var jwtSection = configuration.GetSection("Jwt");
+        // Identity configuration (must precede AddAuthentication so JWT remains the default scheme)
+        services.AddIdentity<User, UserRole>(IdentityOptionsProvider.GetIdentityOptions)
+            .AddRoles<UserRole>()
+            .AddEntityFrameworkStores<JumpWithJennyDbContext>()
+            .AddDefaultTokenProviders();
+
+        services.AddHttpContextAccessor();
+        services.Configure<IdentityOptions>(options =>
+        {
+            options.Password.RequireNonAlphanumeric = false;
+            options.Password.RequireDigit = false;
+            options.Password.RequireLowercase = false;
+            options.Password.RequireUppercase = false;
+            options.Password.RequiredLength = 5;
+        });
+
+        var jwtSection = configuration.GetSection("Jwt");
         services.Configure<JwtSettings>(jwtSection);
         var jwtSettings = jwtSection.Get<JwtSettings>();
-        var key = Encoding.ASCII.GetBytes(jwtSettings.Secret);
+        if (jwtSettings == null || string.IsNullOrWhiteSpace(jwtSettings.Secret))
+        {
+            throw new InvalidOperationException("Jwt:Secret configuration value is missing.");
+        }
+
+        var key = Encoding.UTF8.GetBytes(jwtSettings.Secret);
 
         services.AddAuthentication(options =>
         {
@@ -95,7 +179,6 @@ public partial class Program
             {
                 OnAuthenticationFailed = context =>
                 {
-                    Console.WriteLine("❌ Authentication failed: " + context.Exception);
                     var logger = context.HttpContext.RequestServices
                         .GetRequiredService<ILogger<Program>>();
                     logger.LogError(context.Exception, "❌ Authentication failed");
@@ -103,8 +186,6 @@ public partial class Program
                 },
                 OnTokenValidated = context =>
                 {
-                    Console.WriteLine("✅ Token validated for user: " +
-                        (context.Principal.Identity?.Name ?? "Unknown"));
                     var logger = context.HttpContext.RequestServices
                         .GetRequiredService<ILogger<Program>>();
                     logger.LogInformation("✅ Token validated for user {User}",
@@ -113,7 +194,6 @@ public partial class Program
                 },
                 OnChallenge = context =>
                 {
-                    Console.WriteLine($"⚠️ JWT challenge: {context.Error} - {context.ErrorDescription}");
                     var logger = context.HttpContext.RequestServices
                         .GetRequiredService<ILogger<Program>>();
                     logger.LogWarning("⚠️ JWT challenge: {Error} - {Description}",
@@ -121,24 +201,6 @@ public partial class Program
                     return Task.CompletedTask;
                 }
             };
-        });
-
-
-        
-        // Identity configuration
-        services.AddIdentity<User, UserRole>(IdentityOptionsProvider.GetIdentityOptions)
-            .AddRoles<UserRole>()
-            .AddEntityFrameworkStores<JumpWithJennyDbContext>()
-            .AddDefaultTokenProviders();
-
-        services.AddHttpContextAccessor();
-        services.Configure<IdentityOptions>(options =>
-        {
-            options.Password.RequireNonAlphanumeric = false;
-            options.Password.RequireDigit = false;
-            options.Password.RequireLowercase = false;
-            options.Password.RequireUppercase = false;
-            options.Password.RequiredLength = 5;
         });
 
         // Repositories
@@ -181,48 +243,21 @@ public partial class Program
                 context.Response.StatusCode = 401;
                 return Task.CompletedTask;
             };
+            options.Events.OnRedirectToAccessDenied = context =>
+            {
+                context.Response.StatusCode = 403;
+                return Task.CompletedTask;
+            };
         });
     }
 
     private static void Configure(WebApplication app)
     {
-        // Middleware configuration
-        app.UseHttpsRedirection();
-        app.UseStaticFiles();
-
-        // Добавяме CSP само в Production, за да не пречи на Swagger
-        if (!app.Environment.IsDevelopment())
-        {
-            app.UseMiddleware<CspNonceMiddleware>();
-        }
-
-        app.UseRouting();
-        app.UseCors("AllowOrigin");
-         
-        app.Use(async (context, next) =>
-        {
-            context.Response.Headers.Append("Cross-Origin-Opener-Policy", "same-origin-allow-popups");
-            await next();
-        });
-
-        app.UseAuthentication();
-        app.UseAuthorization();
-        
-        app.MapGet("/", () => Results.Ok(new { message = "JumpWithJenny API is running ✅" }));
+        app.UseForwardedHeaders();
 
         if (app.Environment.IsDevelopment())
         {
             app.UseDeveloperExceptionPage();
-
-            app.Use(async (context, next) =>
-            {
-                if (context.Request.Path.StartsWithSegments("/swagger"))
-                {
-                    context.Response.Headers.Remove("Content-Security-Policy");
-                }
-                await next();
-            });
-
             app.UseSwagger();
             app.UseSwaggerUI(c =>
             {
@@ -232,9 +267,6 @@ public partial class Program
         }
         else
         {
-            app.UseStatusCodePagesWithReExecute("/Home/Error/{0}");
-            app.UseHsts();
-
             app.UseExceptionHandler(errorApp =>
             {
                 errorApp.Run(async context =>
@@ -252,7 +284,33 @@ public partial class Program
                     await context.Response.WriteAsync(result);
                 });
             });
+
+            app.UseHsts();
         }
+
+        // Security headers before UseStaticFiles so uploaded static files also receive CSP and nosniff
+        if (!app.Environment.IsDevelopment())
+        {
+            app.UseMiddleware<CspNonceMiddleware>();
+        }
+
+        app.Use(async (context, next) =>
+        {
+            context.Response.Headers.Append("Cross-Origin-Opener-Policy", "same-origin-allow-popups");
+            await next();
+        });
+
+        app.UseHttpsRedirection();
+        app.UseStaticFiles();
+
+        app.UseRouting();
+        app.UseCors("AllowOrigin");
+        app.UseRateLimiter();
+
+        app.UseAuthentication();
+        app.UseAuthorization();
+
+        app.MapGet("/", () => Results.Ok(new { message = "JumpWithJenny API is running ✅" }));
 
         app.MapControllers();
 

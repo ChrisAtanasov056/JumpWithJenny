@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using ServerAPI.Models.Contacts;
 using ServerAPI.Services.Contacts;
 
@@ -15,6 +16,7 @@ namespace ServerAPI.Controllers
                 _contactService = contactService;
             }
 
+            [EnableRateLimiting("EmailPolicy")]
             [HttpPost("send")]
             public async Task<IActionResult> SendContactMessage([FromBody] ContactFormDto contactForm)
             {

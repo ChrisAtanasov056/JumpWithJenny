@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using ServerAPI.Common;
 using ServerAPI.Models.Schedule;
 using ServerAPI.Services.Schedule;
 using ServerAPI.Services.Workouts;
@@ -8,7 +9,7 @@ using ServerAPI.ViewModels.Workout;
 
 namespace ServerAPI.Controllers
 {
-    //[Authorize(Roles = "Administrator")]   
+    [Authorize(Roles = GlobalConstants.AdministratorRoleName)]
     [Route("api/[controller]")]
     [ApiController]
     public class WorkoutController : ControllerBase
@@ -28,7 +29,6 @@ namespace ServerAPI.Controllers
         }
 
         [HttpPost]
-        [AllowAnonymous]
         public async Task<IActionResult> CreateWorkout([FromBody] WorkoutCreateModel workoutDto)
         {
             try
@@ -64,7 +64,6 @@ namespace ServerAPI.Controllers
         }
 
         [HttpDelete("delete-workout/{id}")]
-        [AllowAnonymous]
         public async Task<IActionResult> DeleteWorkout(string id)
         {
             if (string.IsNullOrEmpty(id))
@@ -90,7 +89,6 @@ namespace ServerAPI.Controllers
         }
 
         [HttpGet("{id}")]
-        [AllowAnonymous]
         public async Task<IActionResult> GetWorkout(string id)
         {
             try
@@ -111,7 +109,6 @@ namespace ServerAPI.Controllers
         }
 
         [HttpGet]
-        [AllowAnonymous]
         public async Task<IActionResult> GetAllWorkouts()
         {
             try

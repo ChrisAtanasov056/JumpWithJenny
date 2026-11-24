@@ -1,11 +1,16 @@
 ﻿namespace ServerAPI.Controllers{
 
+    using System.Security.Claims;
+    using Microsoft.AspNetCore.Authorization;
     using Microsoft.AspNetCore.Cors;
     using Microsoft.AspNetCore.Mvc;
+    using Microsoft.AspNetCore.RateLimiting;
+    using ServerAPI.Common;
     using ServerAPI.Models.Authentication;
 
     [Route("/[controller]")]
     [EnableCors("AllowOrigin")]
+    [EnableRateLimiting("AuthPolicy")]
     [ApiController]
     public class AccountController : ControllerBase
     {
@@ -70,10 +75,23 @@
             return Ok(new { message = "Email confirmed successfully.", user = result.User });
         }
 
+        [Authorize]
         [HttpGet("verifyEmailStatus")]
         public async Task<IActionResult> VerifyEmailStatus(string userId)
         {
-            var result = await _authService.VerifyEmailStatusAsync(userId);
+            var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(currentUserId))
+            {
+                return Unauthorized();
+            }
+
+            var targetUserId = string.IsNullOrWhiteSpace(userId) ? currentUserId : userId;
+            if (targetUserId != currentUserId && !User.IsInRole(GlobalConstants.AdministratorRoleName))
+            {
+                return Forbid();
+            }
+
+            var result = await _authService.VerifyEmailStatusAsync(targetUserId);
             
             if (!result.Success)
             {
@@ -83,6 +101,7 @@
             return Ok(new { user = result.User });
         }
 
+        [EnableRateLimiting("EmailPolicy")]
         [HttpPost("forgot-password")]
         public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordRequest request)
         {
@@ -96,9 +115,22 @@
             return Ok();
         }
 
+        [Authorize]
         [HttpPost("reset-password")]
         public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordRequest request)
         {
+            var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(currentUserId))
+            {
+                return Unauthorized();
+            }
+
+            if (!string.IsNullOrEmpty(request.Id) && request.Id != currentUserId)
+            {
+                return Forbid();
+            }
+
+            request.Id = currentUserId;
             var result = await _authService.ChangePasswordAsync(request);
             
             if (!result.Success)
@@ -141,6 +173,7 @@
                 user = result.User
             });
         }
+        [EnableRateLimiting("EmailPolicy")]
         [HttpPost("resend-verification")]
         public async Task<IActionResult> ResendVerificationEmail([FromBody] ResendEmailRequest request)
         {

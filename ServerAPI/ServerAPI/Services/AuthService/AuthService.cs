@@ -79,7 +79,7 @@ namespace ServerAPI.Services.AuthService
             var existingRefreshToken = await _dbContext.RefreshTokens
                 .FirstOrDefaultAsync(rt => rt.UserId == user.Id);
             
-            _logger.LogInformation($"Existing refresh token: {existingRefreshToken?.Token}");
+            _logger.LogInformation("Rotating refresh token on login for user {UserId}", user.Id);
             RefreshToken refreshToken;
             if (existingRefreshToken != null)
             {
@@ -214,7 +214,7 @@ namespace ServerAPI.Services.AuthService
         {
             try
             {
-                _logger.LogInformation($"Confirming email for user {request.UserId} with token {request.Token}");
+                _logger.LogInformation("Confirming email for user {UserId}", request.UserId);
                 if (string.IsNullOrWhiteSpace(request.UserId) || string.IsNullOrWhiteSpace(request.Token))
                 {
                     return new AuthResult
@@ -323,7 +323,7 @@ namespace ServerAPI.Services.AuthService
                 
                 var token = await _userManager.GeneratePasswordResetTokenAsync(user);
                 var encodedToken = System.Web.HttpUtility.UrlEncode(token);
-                _logger.LogInformation($"Generated password reset token for {request.Email}: {encodedToken}");
+                _logger.LogInformation("Generated password reset token for user {UserId}", user.Id);
                 var frontendUrl = _configuration["FrontendBaseUrl"];
                 var websiteUrl = _configuration["WebsiteUrl"] ?? frontendUrl;
                 var contactUrl = $"{websiteUrl}/contact";
@@ -379,7 +379,7 @@ namespace ServerAPI.Services.AuthService
         public async Task<AuthResult> ChangePasswordAsync(ResetPasswordRequest request)
         {
             var user = await _userManager.FindByIdAsync(request.Id);
-            _logger.LogInformation($"Attempting to change password for user: {user}");
+            _logger.LogInformation("Attempting to change password for user {UserId}", request.Id);
             if (user == null)
             {
                 return new AuthResult
@@ -523,7 +523,7 @@ namespace ServerAPI.Services.AuthService
         
       public async Task<AuthResult> RefreshTokenAsync(string token)
         {
-            _logger.LogInformation($"Received token: {token}");
+            _logger.LogInformation("Processing refresh token request");
 
             using (var transaction = await _dbContext.Database.BeginTransactionAsync())
             {
@@ -615,9 +615,10 @@ namespace ServerAPI.Services.AuthService
                                     <a href='{templateData.Link}' class='button'>{(string)templateContent.ButtonText}</a>
                                 </td></tr></table>";
 
+                var safeFirstName = WebUtility.HtmlEncode((string)(templateData.FirstName ?? string.Empty));
                 var bodyContent = $@"
                     <h1>{(string)templateContent.Heading}</h1>
-                    <p>{(string)templateContent.Greeting}, {templateData.FirstName}</p>
+                    <p>{(string)templateContent.Greeting}, {safeFirstName}</p>
                     <p>{(string)templateContent.Instructions}</p>
                     {resetButton}
                     <p><small>{(string)templateContent.ExpiryNote}</small></p>

@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using ServerAPI.Common;
 using ServerAPI.Data;
 using ServerAPI.Services.Users;
 using ServerAPI.ViewModels.Users;
@@ -7,11 +8,10 @@ using ServerAPI.Services.Workouts;
 using ServerAPI.Services.Schedule;
 using ServerAPI.Models.Schedule;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
 
 namespace ServerAPI.Controllers
 {
-    [Authorize(Roles = "Administrator")]            
+    [Authorize(Roles = GlobalConstants.AdministratorRoleName)]
     [Route("api/[controller]")]
     [ApiController]
     public class AdminController : ControllerBase
@@ -37,7 +37,6 @@ namespace ServerAPI.Controllers
 
         // POST: api/admin/users
         [HttpPost("users/create")]
-        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         public async Task<IActionResult> CreateUser([FromBody] UserCreateViewModel userModel)
         {
             if (!ModelState.IsValid)
@@ -94,12 +93,9 @@ namespace ServerAPI.Controllers
         }
         
         // GET: api/admin/workouts
-        [AllowAnonymous]
         [HttpGet("workouts/{id}")]
         public async Task<IActionResult> GetWorkout(string id)
         {
-             _logger.LogInformation("IsAuthenticated: {auth}", User.Identity.IsAuthenticated);
-             _logger.LogInformation("Roles: {roles}", string.Join(", ", User.Claims));
             try
             {
                 var workout = await _workoutService.GetWorkoutByIdAsync(id);
@@ -119,8 +115,7 @@ namespace ServerAPI.Controllers
 
         // POST: /api/workout/add/participant
         [HttpPost("add/participant")]
-        [AllowAnonymous]
-       public async Task<IActionResult> AddParticipantToWorkout(string id, [FromBody] ApplyForWorkoutRequest request)
+        public async Task<IActionResult> AddParticipantToWorkout(string id, [FromBody] ApplyForWorkoutRequest request)
         {
             try
             {
@@ -155,7 +150,6 @@ namespace ServerAPI.Controllers
         }
 
         [HttpDelete("remove/participant")]
-        [AllowAnonymous]
         public async Task<IActionResult> RemoveParticipantFromWorkout([FromQuery] string workoutId, [FromQuery] string userId)
         {
             if (string.IsNullOrEmpty(workoutId) || string.IsNullOrEmpty(userId))
@@ -188,7 +182,6 @@ namespace ServerAPI.Controllers
         }
 
         [HttpGet("/api/users/search")]
-        [AllowAnonymous]
         public async Task<IActionResult> SearchUsers([FromQuery] string query)
         {
             var results = await _userService.SearchUsersAsync(query);
@@ -196,7 +189,6 @@ namespace ServerAPI.Controllers
         }
 
         [HttpGet("/api/workouts/all")]
-        [AllowAnonymous]
         public async Task<ActionResult<IEnumerable<AdminWorkoutViewModel>>> GetAllWorkouts()
         {
             var workouts = await _workoutService.GetAllWorkoutsAsync();

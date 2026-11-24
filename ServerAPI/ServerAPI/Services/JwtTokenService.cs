@@ -35,7 +35,7 @@ namespace ServerAPI.Services
 
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtSettings.Secret));
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-            _logger.LogInformation("Generating JWT token for user: {UserId}", _jwtSettings.Secret);
+            _logger.LogInformation("Generating JWT token for user: {UserId}", user.Id);
 
             var token = new JwtSecurityToken(
                 issuer: _jwtSettings.Issuer,

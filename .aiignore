@@ -10,7 +10,7 @@
 **/node_modules/
 **/dist/
 **/build/
-**/package-lock.json
+**/npx skills add github.com/anthropics/skills --skill frontend-design -a gemini-clipackage-lock.json
 **/yarn.lock
 **/.env
 **/.env.*

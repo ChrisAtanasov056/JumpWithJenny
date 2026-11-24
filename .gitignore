@@ -7,31 +7,8 @@ out/
 .env.local
 .env.development.local
 .env.production.local
-*.log
-
-# .NET / Backend
-bin/
-obj/
-*.userprefs
-*.suo
-*.cache
-*.pdb
-*.vs/
-.vscode/
-ServerAPI/ServerAPI/appsetting.json
-ServerAPI/ServerAPI/appsettings.json
-.DS_Store
-client-app/.env.production
-
-# React / Node / Frontend
-node_modules/
-dist/
-build/
-.next/
-out/
-.env.local
-.env.development.local
-.env.production.local
+client-app/.env
+client-app/.env.*
 *.log
 
 # .NET / Backend
@@ -44,25 +21,23 @@ obj/
 *.vs/
 .vscode/
 
-# Ignore appsettings.json (често съдържа конфиденциални настройки)
-ServerAPI/ServerAPI/appsetting.json
+# Ignore appsettings configuration files
 ServerAPI/ServerAPI/appsettings.json
+ServerAPI/ServerAPI/appsettings.Development.json
+ServerAPI/ServerAPI/appsettings.*.json
 
-# Ignore publish folder (файлове от публикация/дистрибуция)
+# Ignore publish folder
 ServerAPI/publish/
 
-# Ignore all .dll files in ServerAPI/ServerAPI/ (библиотеки)
+# Ignore all .dll files in ServerAPI/ServerAPI/
 ServerAPI/ServerAPI/*.dll
 
-# Ignore other билд файлове и конфигурации
+# Ignore stray build, IIS, and Nginx artifacts
 ServerAPI/ServerAPI/ServerAPI
 ServerAPI/ServerAPI/ServerAPI.dll
 ServerAPI/ServerAPI/ServerAPI.staticwebassets.endpoints.json
 ServerAPI/ServerAPI/web.config.bak
-
-# Ignore .env production file in client app
-client-app/.env.production
+ServerAPI/ServerAPI/дс
 
 # MacOS system files
 .DS_Store
-client-app/.env

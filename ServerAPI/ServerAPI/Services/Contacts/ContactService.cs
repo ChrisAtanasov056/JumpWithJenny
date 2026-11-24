@@ -1,3 +1,5 @@
+using System.Net;
+using MimeKit;
 using ServerAPI.Models.Contacts;
 
 namespace ServerAPI.Services.Contacts
@@ -6,16 +8,24 @@ namespace ServerAPI.Services.Contacts
 {
     private readonly IEmailService _emailService;
     private readonly ILogger<ContactService> _logger;
+    private readonly IConfiguration _configuration;
 
-    public ContactService(IEmailService emailService, ILogger<ContactService> logger)
+    public ContactService(IEmailService emailService, ILogger<ContactService> logger, IConfiguration configuration)
     {
         _emailService = emailService;
         _logger = logger;
+        _configuration = configuration;
     }
 
     public async Task<(bool Success, List<string> Errors)> ProcessContactFormAsync(ContactFormDto contactForm)
     {
         var errors = new List<string>();
+
+        if (contactForm == null)
+        {
+            errors.Add("Invalid contact form payload.");
+            return (false, errors);
+        }
 
         if (string.IsNullOrWhiteSpace(contactForm.Name))
             errors.Add("Name is required.");
@@ -26,8 +36,19 @@ namespace ServerAPI.Services.Contacts
         if (string.IsNullOrWhiteSpace(contactForm.Message))
             errors.Add("Message is required.");
 
+        if (!string.IsNullOrWhiteSpace(contactForm.Email) && !MailboxAddress.TryParse(contactForm.Email.Trim(), out _))
+            errors.Add("Invalid email address.");
+
         if (errors.Any())
             return (false, errors);
+
+        var cleanSubject = contactForm.Subject.Replace("\r", string.Empty).Replace("\n", string.Empty).Trim();
+        var encodedName = WebUtility.HtmlEncode(contactForm.Name.Trim());
+        var encodedEmail = WebUtility.HtmlEncode(contactForm.Email.Trim());
+        var encodedSubject = WebUtility.HtmlEncode(cleanSubject);
+        var encodedMessage = WebUtility.HtmlEncode(contactForm.Message.Trim())
+            .Replace("\r\n", "<br />")
+            .Replace("\n", "<br />");
 
         var emailBody = $@"
         <!DOCTYPE html>
@@ -74,10 +95,10 @@ namespace ServerAPI.Services.Contacts
         <body>
         <div class=""container"">
             <h2>Нов контакт от формата</h2>
-            <p><strong>Име:</strong> {contactForm.Name}</p>
-            <p><strong>Email:</strong> {contactForm.Email}</p>
-            <p><strong>Тема:</strong> {contactForm.Subject}</p>
-            <p><strong>Съобщение:</strong><br />{contactForm.Message}</p>
+            <p><strong>Име:</strong> {encodedName}</p>
+            <p><strong>Email:</strong> {encodedEmail}</p>
+            <p><strong>Тема:</strong> {encodedSubject}</p>
+            <p><strong>Съобщение:</strong><br />{encodedMessage}</p>
             <div class=""footer"">
             Това е автоматично генериран имейл. Моля, не отговаряйте на него.
             </div>
@@ -86,12 +107,13 @@ namespace ServerAPI.Services.Contacts
         </html>";
 
 
-        var toEmail = "jumpwithjenny.kj@gmail.com";
-        var subject = $"Contact Form: {contactForm.Subject}";
+        var toEmail = _configuration["ContactSettings:RecipientEmail"]
+            ?? _configuration["EmailSettings:FromEmail"]
+            ?? "jumpwithjenny.kj@gmail.com";
+        var subject = $"Contact Form: {cleanSubject}";
 
-        var sent = await _emailService.SendEmailAsync(toEmail, subject, emailBody, contactForm.Email);
+        var sent = await _emailService.SendEmailAsync(toEmail, subject, emailBody, contactForm.Email.Trim());
 
-        _logger.LogInformation("Contact form email sent to {ToEmail} with subject: {Subject}", toEmail, subject);
         if (!sent)
         {
             _logger.LogError("Failed to send contact form email.");
@@ -99,6 +121,7 @@ namespace ServerAPI.Services.Contacts
             return (false, errors);
         }
 
+        _logger.LogInformation("Contact form email sent to {ToEmail} with subject: {Subject}", toEmail, subject);
         return (true, null);
     }
 }

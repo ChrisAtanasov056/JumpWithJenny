@@ -1,12 +1,14 @@
 // ServerAPI.Controllers.AuthController.cs
 
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using ServerAPI.Models.Authentication;
 using ServerAPI.Services.AuthService;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 
 [ApiController]
+[EnableRateLimiting("AuthPolicy")]
 [Route("api/[controller]")]
 public class AuthController : ControllerBase
 {

@@ -1,3 +1,5 @@
+using System.Security.Cryptography;
+
 namespace ServerAPI.Services
 {
 public class CspNonceMiddleware
@@ -12,7 +14,7 @@ public class CspNonceMiddleware
 
     public async Task InvokeAsync(HttpContext context)
     {
-        var nonce = Convert.ToBase64String(Guid.NewGuid().ToByteArray());
+        var nonce = Convert.ToBase64String(RandomNumberGenerator.GetBytes(16));
         context.Items[NonceKey] = nonce;
 
         var csp = $"default-src 'self'; " +
@@ -21,13 +23,14 @@ public class CspNonceMiddleware
                   $"script-src 'self' 'nonce-{nonce}'; " +
                   $"font-src 'self' https://fonts.gstatic.com https://fonts.googleapis.com https://cdn.jsdelivr.net; " +
                   $"img-src 'self' data: https:; " +
-                  $"connect-src 'self' https://jumpwithjenny.com https://api.jumpwithjenny.com https://localhost:7024; " +
-                  $"frame-src 'self' https://www.google.com;";
+                  $"connect-src 'self' https://jumpwithjenny.com https://www.jumpwithjenny.com https://api.jumpwithjenny.com; " +
+                  $"frame-src 'self' https://www.google.com; " +
+                  $"object-src 'none'; base-uri 'self'; frame-ancestors 'self';";
 
         context.Response.Headers["Content-Security-Policy"] = csp;
         context.Response.Headers["X-Content-Type-Options"] = "nosniff";
         context.Response.Headers["X-Frame-Options"] = "SAMEORIGIN";
-        context.Response.Headers["X-XSS-Protection"] = "1; mode=block";
+        context.Response.Headers["Permissions-Policy"] = "camera=(), microphone=(), geolocation=()";
         context.Response.Headers["Referrer-Policy"] = "strict-origin-when-cross-origin";
 
         await _next(context);
