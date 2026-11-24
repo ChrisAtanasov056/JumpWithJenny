@@ -2,12 +2,11 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
-using System.Security.Cryptography;
 using System.Threading.Tasks;
 using Google.Apis.Auth;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using ServerAPI.Common;
 using ServerAPI.Data;
 using ServerAPI.Models;
@@ -18,12 +17,15 @@ namespace ServerAPI.Services.AuthService
 {
     public class GoogleAuthService : IGoogleAuthService
     {
+        private const string ProviderName = "Google";
+
         private readonly UserManager<User> _userManager;
         private readonly IUserService _userService;
         private readonly IConfiguration _configuration;
         private readonly JumpWithJennyDbContext _dbContext;
         private readonly JwtTokenService _jwtTokenService;
         private readonly HttpClient _httpClient;
+        private readonly ILogger<GoogleAuthService> _logger;
 
         public GoogleAuthService(
             JwtTokenService jwtTokenService,
@@ -31,7 +33,8 @@ namespace ServerAPI.Services.AuthService
             IUserService userService,
             JumpWithJennyDbContext dbContext,
             IConfiguration configuration,
-            HttpClient httpClient)
+            HttpClient httpClient,
+            ILogger<GoogleAuthService> logger)
         {
             _jwtTokenService = jwtTokenService;
             _userManager = userManager;
@@ -39,24 +42,85 @@ namespace ServerAPI.Services.AuthService
             _dbContext = dbContext;
             _configuration = configuration;
             _httpClient = httpClient;
+            _logger = logger;
         }
 
         public async Task<AuthResult> ExternalLoginAsync(string idToken)
         {
             var payload = await VerifyGoogleToken(idToken);
-            if (payload == null)
+            if (payload == null ||
+                string.IsNullOrWhiteSpace(payload.Subject) ||
+                string.IsNullOrWhiteSpace(payload.Email) ||
+                !payload.EmailVerified)
             {
                 return new AuthResult
                 {
                     Success = false,
-                    Errors = new[] { "Invalid Google token." }
+                    Errors = new[] { "Google account email is not verified or invalid." }
                 };
             }
 
-            var user = await _userManager.FindByEmailAsync(payload.Email);
-
+            var user = await _userManager.FindByLoginAsync(ProviderName, payload.Subject);
             if (user != null)
             {
+                if (user.IsDeleted || await _userManager.IsLockedOutAsync(user))
+                {
+                    return new AuthResult
+                    {
+                        Success = false,
+                        Errors = new[] { "User account is unavailable or locked." }
+                    };
+                }
+
+                return await GenerateAuthResultForUser(user);
+            }
+
+            user = await _userManager.FindByEmailAsync(payload.Email);
+            if (user != null)
+            {
+                if (user.IsDeleted || await _userManager.IsLockedOutAsync(user))
+                {
+                    return new AuthResult
+                    {
+                        Success = false,
+                        Errors = new[] { "User account is unavailable or locked." }
+                    };
+                }
+
+                if (!user.EmailConfirmed)
+                {
+                    return new AuthResult
+                    {
+                        Success = false,
+                        Errors = new[] { "An unverified account with this email already exists. Please verify your email or reset your password first." }
+                    };
+                }
+
+                var existingLogins = await _userManager.GetLoginsAsync(user);
+                if (existingLogins.Any(l => l.LoginProvider == ProviderName && l.ProviderKey != payload.Subject))
+                {
+                    return new AuthResult
+                    {
+                        Success = false,
+                        Errors = new[] { "A different Google account is already linked to this user." }
+                    };
+                }
+
+                if (!existingLogins.Any(l => l.LoginProvider == ProviderName && l.ProviderKey == payload.Subject))
+                {
+                    var addLoginResult = await _userManager.AddLoginAsync(
+                        user,
+                        new UserLoginInfo(ProviderName, payload.Subject, ProviderName));
+                    if (!addLoginResult.Succeeded)
+                    {
+                        return new AuthResult
+                        {
+                            Success = false,
+                            Errors = addLoginResult.Errors.Select(e => e.Description)
+                        };
+                    }
+                }
+
                 return await GenerateAuthResultForUser(user);
             }
 
@@ -64,10 +128,12 @@ namespace ServerAPI.Services.AuthService
             {
                 UserName = payload.Email,
                 Email = payload.Email,
-                FirstName = payload.GivenName,
-                LastName = payload.FamilyName,
+                FirstName = payload.GivenName ?? string.Empty,
+                LastName = payload.FamilyName ?? string.Empty,
                 EmailConfirmed = true,
-                IsExternalLogin = true
+                IsExternalLogin = true,
+                ProviderName = ProviderName,
+                ProviderId = payload.Subject
             };
 
             var createResult = await _userManager.CreateAsync(user);
@@ -80,14 +146,47 @@ namespace ServerAPI.Services.AuthService
                 };
             }
 
-            await _userManager.AddToRoleAsync(user, GlobalConstants.UserRoleName);
+            var roleResult = await _userManager.AddToRoleAsync(user, GlobalConstants.UserRoleName);
+            if (!roleResult.Succeeded)
+            {
+                await _userManager.DeleteAsync(user);
+                return new AuthResult
+                {
+                    Success = false,
+                    Errors = roleResult.Errors.Select(e => e.Description)
+                };
+            }
+
+            var loginResult = await _userManager.AddLoginAsync(
+                user,
+                new UserLoginInfo(ProviderName, payload.Subject, ProviderName));
+            if (!loginResult.Succeeded)
+            {
+                await _userManager.DeleteAsync(user);
+                return new AuthResult
+                {
+                    Success = false,
+                    Errors = loginResult.Errors.Select(e => e.Description)
+                };
+            }
 
             return await GenerateAuthResultForUser(user);
         }
 
         public async Task<GoogleJsonWebSignature.Payload> VerifyGoogleToken(string idToken)
         {
+            if (string.IsNullOrWhiteSpace(idToken))
+            {
+                return null;
+            }
+
             var clientId = _configuration["Authentication:Google:ClientId"];
+            if (string.IsNullOrWhiteSpace(clientId))
+            {
+                _logger.LogError("Google ClientId is not configured.");
+                return null;
+            }
+
             var settings = new GoogleJsonWebSignature.ValidationSettings()
             {
                 Audience = new List<string> { clientId }
@@ -100,16 +199,37 @@ namespace ServerAPI.Services.AuthService
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Google token validation failed: {ex.Message}");
+                _logger.LogWarning(ex, "Google token validation failed.");
                 return null;
             }
         }
-        
+
         public async Task<TokenExchangeResult> ExchangeCodeForTokensAsync(string code)
         {
+            if (string.IsNullOrWhiteSpace(code))
+            {
+                return new TokenExchangeResult
+                {
+                    Success = false,
+                    Errors = new[] { "Authorization code is required." }
+                };
+            }
+
             var clientId = _configuration["Authentication:Google:ClientId"];
             var clientSecret = _configuration["Authentication:Google:ClientSecret"];
             var redirectUri = _configuration["Authentication:Google:RedirectUri"];
+
+            if (string.IsNullOrWhiteSpace(clientId) ||
+                string.IsNullOrWhiteSpace(clientSecret) ||
+                string.IsNullOrWhiteSpace(redirectUri))
+            {
+                _logger.LogError("Google OAuth configuration values are missing.");
+                return new TokenExchangeResult
+                {
+                    Success = false,
+                    Errors = new[] { "Google authentication is not properly configured." }
+                };
+            }
 
             var tokenRequestUri = "https://oauth2.googleapis.com/token";
 
@@ -125,7 +245,15 @@ namespace ServerAPI.Services.AuthService
             try
             {
                 var response = await _httpClient.PostAsync(tokenRequestUri, formContent);
-                response.EnsureSuccessStatusCode();
+                if (!response.IsSuccessStatusCode)
+                {
+                    _logger.LogWarning("Google token exchange returned HTTP {StatusCode}", (int)response.StatusCode);
+                    return new TokenExchangeResult
+                    {
+                        Success = false,
+                        Errors = new[] { "Failed to exchange Google authorization code." }
+                    };
+                }
 
                 var responseContent = await response.Content.ReadAsStringAsync();
                 var tokenResponse = System.Text.Json.JsonSerializer.Deserialize<GoogleTokenResponse>(responseContent);
@@ -148,10 +276,11 @@ namespace ServerAPI.Services.AuthService
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "Error exchanging Google authorization code for tokens.");
                 return new TokenExchangeResult
                 {
                     Success = false,
-                    Errors = new[] { $"Error exchanging code for tokens: {ex.Message}" }
+                    Errors = new[] { "Error exchanging Google authorization code." }
                 };
             }
         }
@@ -160,63 +289,19 @@ namespace ServerAPI.Services.AuthService
         {
             var roles = await _userManager.GetRolesAsync(user);
             var jwtToken = _jwtTokenService.GenerateJwtToken(user, roles);
-
-            var existingRefreshToken = await _dbContext.RefreshTokens
-                .FirstOrDefaultAsync(rt => rt.UserId == user.Id);
-            
-            RefreshToken refreshToken;
-            if (existingRefreshToken != null)
-            {
-                existingRefreshToken.Revoked = DateTime.UtcNow;
-                _dbContext.RefreshTokens.Update(existingRefreshToken);
-                refreshToken = GenerateRefreshToken();
-                refreshToken.UserId = user.Id;
-                _dbContext.RefreshTokens.Add(refreshToken);
-            }
-            else
-            {
-                refreshToken = GenerateRefreshToken();
-                refreshToken.UserId = user.Id;
-                _dbContext.RefreshTokens.Add(refreshToken);
-            }
-
-            await _dbContext.SaveChangesAsync();
+            var rawRefreshToken = await RefreshTokenHelper.RotateUserRefreshTokensAsync(_dbContext, user.Id);
 
             return new AuthResult
             {
                 Success = true,
                 Token = jwtToken,
-                RefreshToken = refreshToken.Token,
-                User = MapToUserDto(user, roles.FirstOrDefault())
-            };
-        }
-
-        private static RefreshToken GenerateRefreshToken()
-        {
-            return new RefreshToken
-            {
-                Token = Convert.ToBase64String(RandomNumberGenerator.GetBytes(64)),
-                Expires = DateTime.UtcNow.AddDays(7),
-                Revoked = null
-            };
-        }
-        
-        private UserDto MapToUserDto(User user, string role)
-        {
-            return new UserDto
-            {
-                id = user.Id,
-                email = user.Email,
-                username = user.UserName,
-                firstname = user.FirstName,
-                lastname = user.LastName,
-                emailConfirmed = user.EmailConfirmed,
-                role = role
+                RefreshToken = rawRefreshToken,
+                User = RefreshTokenHelper.MapToUserDto(user, roles.FirstOrDefault())
             };
         }
     }
-    
-    // Модел, който да улавя отговора от Google
+
+    // Response model for Google OAuth token endpoint
     public class GoogleTokenResponse
     {
         [System.Text.Json.Serialization.JsonPropertyName("id_token")]

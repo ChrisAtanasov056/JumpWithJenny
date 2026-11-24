@@ -1,148 +1,149 @@
 import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
-import axios from '../api/axius';
 import jwtDecode from 'jwt-decode';
+import { refreshAccessToken, clearStoredAuth, AUTH_LOGOUT_EVENT } from '../api/axius';
+import { logoutUser } from './authService';
 
 const AuthContext = createContext();
+
+const parseStoredUser = () => {
+    const rawUser = localStorage.getItem('user');
+    if (!rawUser) {
+        return null;
+    }
+    try {
+        return JSON.parse(rawUser);
+    } catch {
+        return null;
+    }
+};
 
 export const AuthProvider = ({ children }) => {
     const [isAuthenticated, setIsAuthenticated] = useState(false);
     const [user, setUser] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
-    const [isRefreshing, setIsRefreshing] = useState(false);
     const [error, setError] = useState(null);
 
-    const validateToken = (token) => {
+    const validateToken = useCallback((token) => {
         if (!token || typeof token !== 'string') return false;
         try {
             const decoded = jwtDecode(token);
             return decoded.exp * 1000 > Date.now();
-        } catch (error) {
-            console.error('Token validation failed:', error);
+        } catch (err) {
+            console.error('Token validation failed:', err);
             return false;
         }
-    };
+    }, []);
 
-    const initializeAuth = useCallback(async () => {
+    const logout = useCallback(({ skipServer = false } = {}) => {
         try {
-            const token = localStorage.getItem('jwtToken');
-            const storedUser = JSON.parse(localStorage.getItem('user'));
+            const currentRefreshToken = localStorage.getItem('refreshToken');
+            clearStoredAuth();
+            setIsAuthenticated(false);
+            setUser(null);
 
-            if (!token || !storedUser) {
-                setIsLoading(false);
-                return;
+            if (!skipServer && currentRefreshToken) {
+                logoutUser(currentRefreshToken).catch((err) => {
+                    console.error('Server logout failed:', err);
+                });
             }
-
-            if (validateToken(token)) {
-                setIsAuthenticated(true);
-                setUser(storedUser);
-                axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-            } else {
-                const refreshToken = localStorage.getItem('refreshToken');
-                if (refreshToken) {
-                    await handleTokenRefresh();
-                    setUser(storedUser);
-                } else {
-                    logout();
-                }
-            }
-        } catch (error) {
-            console.error('Auth initialization error:', error);
-            logout();
-        } finally {
-            setIsLoading(false);
+        } catch (err) {
+            console.error('Logout error:', err);
+            setError(err);
         }
     }, []);
 
     const handleTokenRefresh = useCallback(async () => {
-        if (isRefreshing) {
-            return;
-        }
-        setIsRefreshing(true); 
-        
         try {
-            const response = await axios.post('/Account/refresh-token', {
-                refreshToken: localStorage.getItem('refreshToken')
-            });
-            const newToken = response.data.accessToken;
-            const newRefreshToken = response.data.refreshToken;
-            axios.defaults.headers.common['Authorization'] = `Bearer ${newToken}`;
-            localStorage.setItem('jwtToken', newToken);         
-            if (newRefreshToken && newRefreshToken !== localStorage.getItem('refreshToken')) {
-                localStorage.setItem('refreshToken', newRefreshToken);
-            }
-            setIsAuthenticated(true); 
-        } catch (error) {
-            console.error('Token refresh failed:', error);
-            logout(); 
-        } finally {
-            setIsRefreshing(false); 
+            const refreshed = await refreshAccessToken();
+            setIsAuthenticated(true);
+            return refreshed;
+        } catch (err) {
+            console.error('Token refresh failed:', err);
+            logout({ skipServer: true });
+            return null;
         }
-    }, [isRefreshing]);
+    }, [logout]);
+
+    const initializeAuth = useCallback(async () => {
+        try {
+            const token = localStorage.getItem('jwtToken');
+            const refreshToken = localStorage.getItem('refreshToken');
+            const storedUser = parseStoredUser();
+
+            if (!token && !refreshToken) {
+                clearStoredAuth();
+                setIsAuthenticated(false);
+                setUser(null);
+                return;
+            }
+
+            if (token && validateToken(token) && storedUser) {
+                setIsAuthenticated(true);
+                setUser(storedUser);
+                return;
+            }
+
+            if (refreshToken) {
+                const refreshed = await handleTokenRefresh();
+                if (refreshed) {
+                    const resolvedUser = refreshed.user
+                        ? { ...(storedUser || {}), ...refreshed.user }
+                        : storedUser;
+                    if (resolvedUser) {
+                        localStorage.setItem('user', JSON.stringify(resolvedUser));
+                        setUser(resolvedUser);
+                    }
+                    setIsAuthenticated(true);
+                }
+                return;
+            }
+
+            logout({ skipServer: true });
+        } catch (err) {
+            console.error('Auth initialization error:', err);
+            logout({ skipServer: true });
+        } finally {
+            setIsLoading(false);
+        }
+    }, [handleTokenRefresh, logout, validateToken]);
+
+    const persistAuthSession = useCallback((userData) => {
+        try {
+            if (!userData?.token) {
+                throw new Error('Missing access token');
+            }
+            localStorage.setItem('jwtToken', userData.token);
+            if (userData.refreshToken) {
+                localStorage.setItem('refreshToken', userData.refreshToken);
+            }
+            const { token, refreshToken, ...safeUserData } = userData;
+            const userToStore = Object.keys(safeUserData).length > 0 ? safeUserData : userData;
+            localStorage.setItem('user', JSON.stringify(userToStore));
+            setIsAuthenticated(true);
+            setUser(userToStore);
+        } catch (err) {
+            console.error('Persist auth session error:', err);
+            setError(err);
+        }
+    }, []);
 
     const login = useCallback((userData) => {
-        try {
-            axios.defaults.headers.common['Authorization'] = `Bearer ${userData.token}`;
-            setIsAuthenticated(true);
-            setUser(userData);
-            localStorage.setItem('jwtToken', userData.token);
-            localStorage.setItem('user', JSON.stringify(userData));
-            if (userData.refreshToken) {
-                localStorage.setItem('refreshToken', userData.refreshToken);
-            }
-        } catch (error) {
-            console.error('Login error:', error);
-            setError(error);
-        }
-    }, []);
+        persistAuthSession(userData);
+    }, [persistAuthSession]);
 
     const googleLogin = useCallback((userData) => {
-        try {
-            axios.defaults.headers.common['Authorization'] = `Bearer ${userData.token}`;
-            setIsAuthenticated(true);
-            setUser(userData);
-            localStorage.setItem('jwtToken', userData.token);
-            localStorage.setItem('user', JSON.stringify(userData));
-            if (userData.refreshToken) {
-                localStorage.setItem('refreshToken', userData.refreshToken);
-            }
-        } catch (error) {
-            console.error('Google login error:', error);
-            setError(error);
-        }
-    }, []);
-    
+        persistAuthSession(userData);
+    }, [persistAuthSession]);
+
     const facebookLogin = useCallback((userData) => {
-      try {
-          axios.defaults.headers.common['Authorization'] = `Bearer ${userData.token}`;
-          setIsAuthenticated(true);
-          setUser(userData);
-          localStorage.setItem('jwtToken', userData.token);
-          localStorage.setItem('user', JSON.stringify(userData));
-          if (userData.refreshToken) {
-              localStorage.setItem('refreshToken', userData.refreshToken);
-          }
-      } catch (error) {
-          console.error('Facebook login error:', error);
-          setError(error);
-      }
-    }, []);
-    
-    const logout = useCallback(() => {
-        try {
-            localStorage.removeItem('jwtToken');
-            localStorage.removeItem('refreshToken');
-            localStorage.removeItem('user');
-            delete axios.defaults.headers.common['Authorization'];
-            setIsAuthenticated(false);
-            setUser(null);
-        } catch (error) {
-            console.error('Logout error:', error);
-            setError(error);
-        }
-    }, []);
+        persistAuthSession(userData);
+    }, [persistAuthSession]);
 
     const updateUser = useCallback((newUserData) => {
         setUser((prevUser) => {
+            if (!prevUser) {
+                return null;
+            }
             const updatedUser = { ...prevUser, ...newUserData };
             localStorage.setItem('user', JSON.stringify(updatedUser));
             return updatedUser;
@@ -152,6 +153,18 @@ export const AuthProvider = ({ children }) => {
     useEffect(() => {
         initializeAuth();
     }, [initializeAuth]);
+
+    useEffect(() => {
+        const handleForcedLogout = () => {
+            setIsAuthenticated(false);
+            setUser(null);
+        };
+
+        window.addEventListener(AUTH_LOGOUT_EVENT, handleForcedLogout);
+        return () => {
+            window.removeEventListener(AUTH_LOGOUT_EVENT, handleForcedLogout);
+        };
+    }, []);
 
     if (error) {
         return (
@@ -164,14 +177,14 @@ export const AuthProvider = ({ children }) => {
     }
 
     return (
-        <AuthContext.Provider value={{ 
+        <AuthContext.Provider value={{
             isAuthenticated,
             isLoading,
             user,
             login,
             logout,
             googleLogin,
-            facebookLogin, 
+            facebookLogin,
             updateUser,
             error
         }}>

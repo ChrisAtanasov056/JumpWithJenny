@@ -1,5 +1,5 @@
 // src/services/userService.js
-import api from './api';
+import api from '../api/axius';
 
 const UserService = {
   // Get all users

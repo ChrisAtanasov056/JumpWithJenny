@@ -10,10 +10,9 @@ import ForgotPasswordModal from '../ForgotPassword/ForgotPasswordModal';
 import { useTranslation } from 'react-i18next';
 import { useGoogleLogin } from '@react-oauth/google';
 import { useAuth } from '../../services/AuthContext';
-import { googleLogin, facebookLogin } from '../../services/authService';
-import axios from 'axios';
+import { googleLogin, facebookLogin, forgotPasswordEmail } from '../../services/authService';
 import { useFacebookSDK } from '../../services/FacebookSDKContext.jsx';
-// Импортиране на custom hook-а
+// Custom hook for closing modal on outside click
 import useOutsideClick from '../../services/useOutsideClick'; 
 
 const AuthModal = ({ onClose, onLoginSuccess, setModalOpen }) => {
@@ -23,15 +22,15 @@ const AuthModal = ({ onClose, onLoginSuccess, setModalOpen }) => {
   const [showForgotModal, setShowForgotModal] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
-  const { googleLogin: authLogin } = useAuth();
+  const { googleLogin: authGoogleLogin, facebookLogin: authFacebookLogin } = useAuth();
   const [isAnimating, setIsAnimating] = useState(false);
 
   const { isFbSdkReady } = useFacebookSDK();
 
-  // Създаване на референция към модалната карта
+  // Reference to the modal card element
   const modalCardRef = useRef(null);
 
-  // Използване на custom hook-а за затваряне при клик извън референцията
+  // Close modal when clicking outside the card
   useOutsideClick(modalCardRef, onClose);
 
   const socialPlatforms = [
@@ -53,7 +52,7 @@ const AuthModal = ({ onClose, onLoginSuccess, setModalOpen }) => {
       if (response?.Success) {
         const { Token: token, RefreshToken: refreshToken, User: user } = response;
         if (user && token && refreshToken) {
-          authLogin({ ...user, token, refreshToken });
+          authGoogleLogin({ ...user, token, refreshToken });
           onLoginSuccess({ ...user, token, refreshToken });
           onClose();
           setSuccessMessage(t('login.successMessage'));
@@ -65,7 +64,12 @@ const AuthModal = ({ onClose, onLoginSuccess, setModalOpen }) => {
         setErrorMessage(t('login.noDataError'));
       }
     } catch (error) {
-      setErrorMessage(t('login.credentialsError'));
+      const serverError = error.response?.data?.errors?.[0];
+      if (typeof serverError === 'string' && serverError.toLowerCase().includes('unverified')) {
+        setErrorMessage(t('login.oauthUnverifiedAccount'));
+      } else {
+        setErrorMessage(t('login.googleLoginFailed'));
+      }
     }
   };
 
@@ -77,7 +81,7 @@ const AuthModal = ({ onClose, onLoginSuccess, setModalOpen }) => {
       if (response?.Success) {
         const { Token: token, RefreshToken: refreshToken, User: user } = response;
         if (user && token && refreshToken) {
-          authLogin({ ...user, token, refreshToken });
+          authFacebookLogin({ ...user, token, refreshToken });
           onLoginSuccess({ ...user, token, refreshToken });
           onClose();
           setSuccessMessage(t('login.successMessage'));
@@ -89,7 +93,12 @@ const AuthModal = ({ onClose, onLoginSuccess, setModalOpen }) => {
         setErrorMessage(t('login.noDataError'));
       }
     } catch (error) {
-      setErrorMessage(t('login.credentialsError'));
+      const serverError = error.response?.data?.errors?.[0];
+      if (typeof serverError === 'string' && serverError.toLowerCase().includes('unverified')) {
+        setErrorMessage(t('login.oauthUnverifiedAccount'));
+      } else {
+        setErrorMessage(t('login.facebookLoginFailed'));
+      }
     }
   };
 
@@ -101,7 +110,7 @@ const AuthModal = ({ onClose, onLoginSuccess, setModalOpen }) => {
 
   const handleForgotPassword = async (userData) => {
     try {
-      await axios.post('/Account/forgot-password', {
+      await forgotPasswordEmail({
         email: userData.email,
         language: i18n.language,
       });

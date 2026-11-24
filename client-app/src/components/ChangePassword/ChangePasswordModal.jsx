@@ -21,8 +21,12 @@ const ChangePasswordModal = ({ onClose, userId }) => {
       setError(t('change_password.errors.all_required'));
       return;
     }
-    if (passwords.new.length < 6) {
+    if (passwords.new.length < 8) {
       setError(t('change_password.errors.min_length'));
+      return;
+    }
+    if (!/[A-Z]/.test(passwords.new) || !/[a-z]/.test(passwords.new) || !/[0-9]/.test(passwords.new)) {
+      setError(t('change_password.errors.weak_password'));
       return;
     }
     if (passwords.new !== passwords.confirm) {

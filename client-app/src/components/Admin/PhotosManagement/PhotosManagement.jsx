@@ -1,13 +1,10 @@
 import React, { useState, useEffect } from "react";
-import axios from "../../../api/axius";
-import { API_BASE_URL } from "../../../api/axius";
+import axios, { API_BASE_URL } from "../../../api/axius";
 import "./PhotosManagement.scss";
 import { FaTrashAlt, FaImage, FaPlus, FaSpinner } from "react-icons/fa";
 
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-
-const API_URL = API_BASE_URL;
 
 const PhotosManagement = () => {
   const [photos, setPhotos] = useState([]);
@@ -21,10 +18,7 @@ const PhotosManagement = () => {
   useEffect(() => {
     const fetchPhotos = async () => {
       try {
-        const token = localStorage.getItem("token");
-        const response = await axios.get(`${API_URL}/Gallery/all`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        const response = await axios.get("/Gallery/all");
 
         const formattedPhotos = response.data.map((img) => ({
           id: img.Id,
@@ -51,10 +45,7 @@ const PhotosManagement = () => {
           <button
             onClick={async () => {
               try {
-                const token = localStorage.getItem("token");
-                await axios.delete(`${API_URL}/Gallery/${photoId}`, {
-                  headers: { Authorization: `Bearer ${token}` },
-                });
+                await axios.delete(`/Gallery/${photoId}`);
                 setPhotos((prev) => prev.filter((photo) => photo.id !== photoId));
                 toast.success("Снимката е изтрита успешно!");
                 closeToast();
@@ -85,17 +76,11 @@ const PhotosManagement = () => {
 
     try {
       setIsUploading(true);
-      const token = localStorage.getItem("token");
       const formData = new FormData();
       formData.append("file", selectedFile);
       formData.append("description", description);
 
-      const response = await axios.post(`${API_URL}/Gallery/upload`, formData, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "multipart/form-data",
-        },
-      });
+      const response = await axios.post("/Gallery/upload", formData);
 
       setPhotos((prev) => [
         ...prev,

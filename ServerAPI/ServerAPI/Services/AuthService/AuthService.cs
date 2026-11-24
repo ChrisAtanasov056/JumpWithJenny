@@ -4,7 +4,6 @@ namespace ServerAPI.Services.AuthService
 {
     using System.Collections.Concurrent;
     using System.Net;
-    using System.Security.Cryptography;
     using global::ServerAPI.Common;
     using global::ServerAPI.Data;
     using global::ServerAPI.Models;
@@ -12,6 +11,8 @@ namespace ServerAPI.Services.AuthService
     using Microsoft.AspNetCore.Identity;
     using Microsoft.EntityFrameworkCore;
     using Newtonsoft.Json;
+    using Npgsql;
+
     public class AuthService : IAuthService
     {
         private readonly UserManager<User> _userManager;
@@ -26,9 +27,8 @@ namespace ServerAPI.Services.AuthService
 
         private readonly IEmailTemplateService _emailTemplateService;
 
-
-       private readonly ConcurrentDictionary<string, DateTime> _recentResetRequests = new();
-       private readonly TimeSpan _resetRequestCooldown = TimeSpan.FromMinutes(1);
+        private static readonly ConcurrentDictionary<string, DateTime> _recentResetRequests = new(StringComparer.OrdinalIgnoreCase);
+        private static readonly TimeSpan _resetRequestCooldown = TimeSpan.FromMinutes(1);
 
         public AuthService(
             UserManager<User> userManager,
@@ -53,7 +53,7 @@ namespace ServerAPI.Services.AuthService
         public async Task<AuthResult> LoginAsync(LoginModel model)
         {
             var user = await _userManager.FindByEmailAsync(model.Email);
-            if (user == null)
+            if (user == null || user.IsDeleted)
             {
                 return new AuthResult
                 {
@@ -62,7 +62,17 @@ namespace ServerAPI.Services.AuthService
                 };
             }
 
-            var result = await _signInManager.PasswordSignInAsync(user.UserName, model.Password, false, false);
+            var result = await _signInManager.CheckPasswordSignInAsync(user, model.Password, lockoutOnFailure: true);
+            if (result.IsLockedOut)
+            {
+                _logger.LogWarning("Locked out login attempt for user {UserId}", user.Id);
+                return new AuthResult
+                {
+                    Success = false,
+                    Errors = new[] { "Account is temporarily locked due to multiple failed login attempts. Please try again later." }
+                };
+            }
+
             if (!result.Succeeded)
             {
                 return new AuthResult
@@ -74,39 +84,19 @@ namespace ServerAPI.Services.AuthService
 
             var roles = await _userManager.GetRolesAsync(user);
             var jwtToken = _jwtTokenService.GenerateJwtToken(user, roles);
-            
-            // Check if a refresh token already exists for the user
-            var existingRefreshToken = await _dbContext.RefreshTokens
-                .FirstOrDefaultAsync(rt => rt.UserId == user.Id);
-            
+
             _logger.LogInformation("Rotating refresh token on login for user {UserId}", user.Id);
-            RefreshToken refreshToken;
-            if (existingRefreshToken != null)
-            {
-                // Revoke the old refresh token if it exists
-                existingRefreshToken.Revoked = DateTime.UtcNow;
-                _dbContext.RefreshTokens.Update(existingRefreshToken);
-                refreshToken = GenerateRefreshToken();
-                refreshToken.UserId = user.Id;
-                _dbContext.RefreshTokens.Add(refreshToken);
-            }
-            else
-            {
-                // Generate a new refresh token if none exists
-                refreshToken = GenerateRefreshToken();
-                refreshToken.UserId = user.Id;
-                _dbContext.RefreshTokens.Add(refreshToken);
-            }
-            await _dbContext.SaveChangesAsync();
+            var rawRefreshToken = await RefreshTokenHelper.RotateUserRefreshTokensAsync(_dbContext, user.Id);
 
             return new AuthResult
             {
                 Success = true,
-                User = MapToUserDto(user, roles.FirstOrDefault()),
+                User = RefreshTokenHelper.MapToUserDto(user, roles.FirstOrDefault()),
                 Token = jwtToken,
-                RefreshToken = refreshToken.Token,
+                RefreshToken = rawRefreshToken,
             };
         }
+
         public async Task<AuthResult> SignUpAsync(SignUpModel model)
         {
             var user = new User
@@ -140,30 +130,30 @@ namespace ServerAPI.Services.AuthService
             }
 
             var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
-                var frontendUrl = _configuration["FrontendBaseUrl"];
-                var websiteUrl = _configuration["WebsiteUrl"] ?? frontendUrl;
-                var contactUrl = $"{websiteUrl}/contact";
-                
-                // Default to English if no language specified or if invalid
-                var language = IsValidLanguage(model.Language) ? model.Language : "en";
+            var frontendUrl = _configuration["FrontendBaseUrl"];
+            var websiteUrl = _configuration["WebsiteUrl"] ?? frontendUrl;
+            var contactUrl = $"{websiteUrl}/contact";
 
-                var verificationLink = $"{frontendUrl}/verify-email?userId={user.Id}&token={WebUtility.UrlEncode(token)}";
+            // Default to English if no language specified or if invalid
+            var language = IsValidLanguage(model.Language) ? model.Language : "en";
 
-                // Load email template
-                var emailContent = await PrepareEmailContent(language, "VerifyEmail", new
-                {
-                    Link = verificationLink,
-                    WebsiteUrl = websiteUrl,
-                    ContactUrl = contactUrl,
-                    FirstName = user.FirstName // Added first name for personalization
-                });
+            var verificationLink = $"{frontendUrl}/verify-email?userId={Uri.EscapeDataString(user.Id)}&token={Uri.EscapeDataString(token)}";
 
-                var emailSent = await _emailService.SendEmailAsync(
-                    user.Email, 
-                    emailContent.Subject, 
-                    emailContent.HtmlContent);
+            // Load email template
+            var emailContent = await PrepareEmailContent(language, "VerifyEmail", new
+            {
+                Link = verificationLink,
+                WebsiteUrl = websiteUrl,
+                ContactUrl = contactUrl,
+                FirstName = user.FirstName
+            });
 
-                _logger.LogInformation($"Verification email sent to {user.Email} in language {language}");
+            var emailSent = await _emailService.SendEmailAsync(
+                user.Email,
+                emailContent.Subject,
+                emailContent.HtmlContent);
+
+            _logger.LogInformation("Verification email sent for user {UserId} in language {Language}", user.Id, language);
 
             if (!emailSent)
             {
@@ -176,37 +166,14 @@ namespace ServerAPI.Services.AuthService
 
             var roles = await _userManager.GetRolesAsync(user);
             var jwtToken = _jwtTokenService.GenerateJwtToken(user, roles);
-            
-            // Check if a refresh token already exists for the user
-            var existingRefreshToken = await _dbContext.RefreshTokens
-                .FirstOrDefaultAsync(rt => rt.UserId == user.Id);
-            
-            RefreshToken refreshToken;
-            if (existingRefreshToken != null)
-            {
-                // Revoke the old refresh token if it exists
-                existingRefreshToken.Revoked = DateTime.UtcNow;
-                _dbContext.RefreshTokens.Update(existingRefreshToken);
-                refreshToken = GenerateRefreshToken();
-                refreshToken.UserId = user.Id;
-                _dbContext.RefreshTokens.Add(refreshToken);
-            }
-            else
-            {
-                // Generate a new refresh token if none exists
-                refreshToken = GenerateRefreshToken();
-                refreshToken.UserId = user.Id;
-                _dbContext.RefreshTokens.Add(refreshToken);
-            }
-
-            await _dbContext.SaveChangesAsync();
+            var rawRefreshToken = await RefreshTokenHelper.RotateUserRefreshTokensAsync(_dbContext, user.Id);
 
             return new AuthResult
             {
                 Success = true,
                 Token = jwtToken,
-                RefreshToken = refreshToken.Token,
-                User = MapToUserDto(user, roles.FirstOrDefault())
+                RefreshToken = rawRefreshToken,
+                User = RefreshTokenHelper.MapToUserDto(user, roles.FirstOrDefault())
             };
         }
 
@@ -250,7 +217,7 @@ namespace ServerAPI.Services.AuthService
                 return new AuthResult
                 {
                     Success = true,
-                    User = MapToUserDto(user, roles.FirstOrDefault())
+                    User = RefreshTokenHelper.MapToUserDto(user, roles.FirstOrDefault())
                 };
             }
             catch (FormatException)
@@ -288,29 +255,39 @@ namespace ServerAPI.Services.AuthService
             return new AuthResult
             {
                 Success = true,
-                User = MapToUserDto(user, roles.FirstOrDefault())
+                User = RefreshTokenHelper.MapToUserDto(user, roles.FirstOrDefault())
             };
         }
 
-
         public async Task<AuthResult> ForgotPasswordAsync(ForgotPasswordRequest request)
         {
-          
             if (string.IsNullOrWhiteSpace(request.Email))
             {
                 return new AuthResult { Success = false, Errors = new[] { "Email is required." } };
             }
 
-            // Check for recent duplicate request
-            if (_recentResetRequests.TryGetValue(request.Email, out var lastRequestTime) && 
-                DateTime.UtcNow - lastRequestTime < _resetRequestCooldown)
+            var normalizedEmail = request.Email.Trim();
+            var now = DateTime.UtcNow;
+
+            // Prune expired cooldown entries to keep the static map bounded
+            foreach (var entry in _recentResetRequests)
             {
-                _logger.LogWarning($"Password reset requested too soon for {request.Email}");
+                if (now - entry.Value >= _resetRequestCooldown)
+                {
+                    _recentResetRequests.TryRemove(entry.Key, out _);
+                }
+            }
+
+            // Check for recent duplicate request
+            if (_recentResetRequests.TryGetValue(normalizedEmail, out var lastRequestTime) &&
+                now - lastRequestTime < _resetRequestCooldown)
+            {
+                _logger.LogWarning("Password reset requested too soon for an account.");
                 return new AuthResult { Success = true }; // Return success for security
             }
 
-            var user = await _userManager.FindByEmailAsync(request.Email);
-            if (user == null)
+            var user = await _userManager.FindByEmailAsync(normalizedEmail);
+            if (user == null || user.IsDeleted)
             {
                 // For security, return success even if user doesn't exist
                 return new AuthResult { Success = true };
@@ -319,19 +296,18 @@ namespace ServerAPI.Services.AuthService
             try
             {
                 // Record this request
-                _recentResetRequests[request.Email] = DateTime.UtcNow;
-                
+                _recentResetRequests[normalizedEmail] = now;
+
                 var token = await _userManager.GeneratePasswordResetTokenAsync(user);
-                var encodedToken = System.Web.HttpUtility.UrlEncode(token);
                 _logger.LogInformation("Generated password reset token for user {UserId}", user.Id);
                 var frontendUrl = _configuration["FrontendBaseUrl"];
                 var websiteUrl = _configuration["WebsiteUrl"] ?? frontendUrl;
                 var contactUrl = $"{websiteUrl}/contact";
-                
+
                 // Default to English if no language specified or if invalid
                 var language = IsValidLanguage(request.Language) ? request.Language : "en";
 
-                var resetLink = $"{frontendUrl}/reset-password?token={WebUtility.UrlEncode(encodedToken)}&email={WebUtility.UrlEncode(request.Email)}";
+                var resetLink = $"{frontendUrl}/reset-password?token={Uri.EscapeDataString(token)}&email={Uri.EscapeDataString(normalizedEmail)}";
 
                 // Load email template
                 var emailContent = await PrepareEmailContent(language, "ResetPassword", new
@@ -339,48 +315,46 @@ namespace ServerAPI.Services.AuthService
                     Link = resetLink,
                     WebsiteUrl = websiteUrl,
                     ContactUrl = contactUrl,
-                    FirstName = user.FirstName // Added user name for personalization
+                    FirstName = user.FirstName
                 });
 
                 var emailSent = await _emailService.SendEmailAsync(
-                    request.Email, 
-                    emailContent.Subject, 
+                    normalizedEmail,
+                    emailContent.Subject,
                     emailContent.HtmlContent);
 
                 if (emailSent)
                 {
-                    _logger.LogInformation($"Password reset email sent to {request.Email} in {language}");
+                    _logger.LogInformation("Password reset email sent for user {UserId} in {Language}", user.Id, language);
                     return new AuthResult { Success = true };
                 }
-                
+
                 // Remove the request record if sending failed
-                _recentResetRequests.TryRemove(request.Email, out _);
-                return new AuthResult { 
-                    Success = false, 
-                    Errors = new[] { "Error sending password reset email." } 
+                _recentResetRequests.TryRemove(normalizedEmail, out _);
+                return new AuthResult
+                {
+                    Success = false,
+                    Errors = new[] { "Error sending password reset email." }
                 };
             }
             catch (Exception ex)
             {
                 // Remove the request record if an error occurred
-                _recentResetRequests.TryRemove(request.Email, out _);
+                _recentResetRequests.TryRemove(normalizedEmail, out _);
                 _logger.LogError(ex, "Error sending password reset email");
-                return new AuthResult { 
-                    Success = false, 
-                    Errors = new[] { "An error occurred while processing your request." } 
+                return new AuthResult
+                {
+                    Success = false,
+                    Errors = new[] { "An error occurred while processing your request." }
                 };
             }
         }
-
-
-       
-
 
         public async Task<AuthResult> ChangePasswordAsync(ResetPasswordRequest request)
         {
             var user = await _userManager.FindByIdAsync(request.Id);
             _logger.LogInformation("Attempting to change password for user {UserId}", request.Id);
-            if (user == null)
+            if (user == null || user.IsDeleted)
             {
                 return new AuthResult
                 {
@@ -400,14 +374,27 @@ namespace ServerAPI.Services.AuthService
                 };
             }
 
+            await RefreshTokenHelper.RevokeActiveRefreshTokensAsync(_dbContext, user.Id);
+            await _dbContext.SaveChangesAsync();
+
             return new AuthResult { Success = true };
         }
 
         public async Task<AuthResult> ResetPasswordAsync(ForgotPasswordResetRequest request)
         {
-            var user = await _userManager.FindByEmailAsync(request.Email);
+            if (string.IsNullOrWhiteSpace(request.Email) ||
+                string.IsNullOrWhiteSpace(request.Token) ||
+                string.IsNullOrWhiteSpace(request.NewPassword))
+            {
+                return new AuthResult
+                {
+                    Success = false,
+                    Errors = new[] { "Email, token, and new password are required." }
+                };
+            }
 
-            if (user == null)
+            var user = await _userManager.FindByEmailAsync(request.Email.Trim());
+            if (user == null || user.IsDeleted)
             {
                 return new AuthResult
                 {
@@ -415,8 +402,12 @@ namespace ServerAPI.Services.AuthService
                     Errors = new[] { "User not found." }
                 };
             }
-            var dercriptedToken = System.Web.HttpUtility.UrlDecode(request.Token);
-            var result = await _userManager.ResetPasswordAsync(user, dercriptedToken, request.NewPassword);
+
+            var normalizedToken = request.Token.Contains('%')
+                ? Uri.UnescapeDataString(request.Token)
+                : request.Token;
+
+            var result = await _userManager.ResetPasswordAsync(user, normalizedToken, request.NewPassword);
 
             if (!result.Succeeded)
             {
@@ -427,28 +418,32 @@ namespace ServerAPI.Services.AuthService
                 };
             }
 
+            await RefreshTokenHelper.RevokeActiveRefreshTokensAsync(_dbContext, user.Id);
+            await _dbContext.SaveChangesAsync();
+
             return new AuthResult { Success = true };
         }
-
 
         public async Task<AuthResult> ResendVerificationEmailAsync(ResendEmailRequest request)
         {
             // Validate input
             if (string.IsNullOrWhiteSpace(request.Email))
             {
-                return new AuthResult { 
-                    Success = false, 
-                    Errors = new[] { "Email is required." } 
+                return new AuthResult
+                {
+                    Success = false,
+                    Errors = new[] { "Email is required." }
                 };
             }
 
             var user = await _userManager.FindByEmailAsync(request.Email);
-            if (user == null || user.EmailConfirmed)
+            if (user == null || user.IsDeleted || user.EmailConfirmed)
             {
                 // Return generic message for security
-                return new AuthResult { 
-                    Success = false, 
-                    Errors = new[] { "Invalid request" } 
+                return new AuthResult
+                {
+                    Success = false,
+                    Errors = new[] { "Invalid request" }
                 };
             }
 
@@ -458,11 +453,11 @@ namespace ServerAPI.Services.AuthService
                 var frontendUrl = _configuration["FrontendBaseUrl"];
                 var websiteUrl = _configuration["WebsiteUrl"] ?? frontendUrl;
                 var contactUrl = $"{websiteUrl}/contact";
-                
+
                 // Default to English if no language specified or if invalid
                 var language = IsValidLanguage(request.Language) ? request.Language : "en";
-                _logger.LogInformation($"Resending verification email for user {user.Email} in language {language}");
-                var verificationLink = $"{frontendUrl}/verify-email?userId={user.Id}&token={WebUtility.UrlEncode(token)}";
+                _logger.LogInformation("Resending verification email for user {UserId} in language {Language}", user.Id, language);
+                var verificationLink = $"{frontendUrl}/verify-email?userId={Uri.EscapeDataString(user.Id)}&token={Uri.EscapeDataString(token)}";
 
                 // Load email template
                 var emailContent = await PrepareEmailContent(language, "VerifyEmail", new
@@ -470,132 +465,132 @@ namespace ServerAPI.Services.AuthService
                     Link = verificationLink,
                     WebsiteUrl = websiteUrl,
                     ContactUrl = contactUrl,
-                    FirstName = user.FirstName // Added first name for personalization
+                    FirstName = user.FirstName
                 });
 
                 var emailSent = await _emailService.SendEmailAsync(
-                    user.Email, 
-                    emailContent.Subject, 
+                    user.Email,
+                    emailContent.Subject,
                     emailContent.HtmlContent);
 
-                _logger.LogInformation($"Verification email sent to {user.Email} in language {language}");
-                
-                return emailSent 
+                _logger.LogInformation("Verification email sent for user {UserId} in language {Language}", user.Id, language);
+
+                return emailSent
                     ? new AuthResult { Success = true }
-                    : new AuthResult { 
-                        Success = false, 
-                        Errors = new[] { "Error sending verification email." } 
+                    : new AuthResult
+                    {
+                        Success = false,
+                        Errors = new[] { "Error sending verification email." }
                     };
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error sending verification email");
-                return new AuthResult { 
-                    Success = false, 
-                    Errors = new[] { "An error occurred while processing your request." } 
+                return new AuthResult
+                {
+                    Success = false,
+                    Errors = new[] { "An error occurred while processing your request." }
                 };
             }
         }
 
-        private UserDto MapToUserDto(User user, string role)
+        public async Task<AuthResult> LogoutAsync(string refreshToken, string userId = null)
         {
-            return new UserDto
+            if (!string.IsNullOrWhiteSpace(refreshToken))
             {
-                id = user.Id,
-                email = user.Email,
-                username = user.UserName,
-                firstname = user.FirstName,
-                lastname = user.LastName,
-                emailConfirmed = user.EmailConfirmed,
-                role = role
-            };
-        }
+                var tokenHash = RefreshTokenHelper.HashToken(refreshToken);
+                var matchingTokens = await _dbContext.RefreshTokens
+                    .Where(rt => rt.Token == tokenHash && rt.Revoked == null)
+                    .ToListAsync();
 
-        private static RefreshToken GenerateRefreshToken()
-        {
-            return new RefreshToken
-            {
-                Token = Convert.ToBase64String(RandomNumberGenerator.GetBytes(64)),
-                Expires = DateTime.UtcNow.AddDays(7),
-                Revoked = null
-            };
-        }
-        
-      public async Task<AuthResult> RefreshTokenAsync(string token)
-        {
-            _logger.LogInformation("Processing refresh token request");
-
-            using (var transaction = await _dbContext.Database.BeginTransactionAsync())
-            {
-                try
+                var now = DateTime.UtcNow;
+                foreach (var matchingToken in matchingTokens)
                 {
-                    var storedToken = await _dbContext.RefreshTokens
-                        .Include(rt => rt.User)
-                        .FirstOrDefaultAsync(x => x.Token == token);
+                    matchingToken.Revoked = now;
+                    matchingToken.Locked = false;
+                }
 
-                    if (storedToken == null || !storedToken.IsActive)
-                    {
-                        return new AuthResult { Success = false, Errors = new[] { "Invalid refresh token." } };
-                    }
-
-                    if (storedToken.Locked)
-                    {
-                        return new AuthResult { Success = false, Errors = new[] { "Refresh token is already being processed." } };
-                    }
-
-                    // Lock token during processing
-                    storedToken.Locked = true;
+                if (matchingTokens.Count > 0)
+                {
                     await _dbContext.SaveChangesAsync();
+                }
+            }
+            else if (!string.IsNullOrWhiteSpace(userId))
+            {
+                var revokedCount = await RefreshTokenHelper.RevokeActiveRefreshTokensAsync(_dbContext, userId);
+                if (revokedCount > 0)
+                {
+                    await _dbContext.SaveChangesAsync();
+                }
+            }
 
-                    var user = storedToken.User;
-                    var roles = await _userManager.GetRolesAsync(user);
+            return new AuthResult { Success = true };
+        }
 
-                    // Generate new JWT
-                    var newJwt = _jwtTokenService.GenerateJwtToken(user, roles);
+        public async Task<AuthResult> RefreshTokenAsync(string token)
+        {
+            if (string.IsNullOrWhiteSpace(token))
+            {
+                return new AuthResult { Success = false, Errors = new[] { "Invalid refresh token." } };
+            }
 
-                    string refreshTokenToReturn = storedToken.Token;
+            _logger.LogInformation("Processing refresh token request");
+            var tokenHash = RefreshTokenHelper.HashToken(token);
 
-                    // Decide whether to rotate refresh token
-                    bool shouldRotate = storedToken.Expires - DateTime.UtcNow < TimeSpan.FromDays(1);
-                    if (shouldRotate)
-                    {
-                        var newRefreshToken = GenerateRefreshToken();
-                        newRefreshToken.UserId = user.Id;
+            await using var transaction = await _dbContext.Database.BeginTransactionAsync();
+            try
+            {
+                var storedToken = await _dbContext.RefreshTokens
+                    .FromSqlInterpolated($"SELECT * FROM \"RefreshTokens\" WHERE \"Token\" = {tokenHash} FOR UPDATE NOWAIT")
+                    .FirstOrDefaultAsync();
 
-                        // Revoke old token
-                        storedToken.Revoked = DateTime.UtcNow;
+                if (storedToken == null || !storedToken.IsActive || storedToken.Locked)
+                {
+                    await transaction.RollbackAsync();
+                    return new AuthResult { Success = false, Errors = new[] { "Invalid refresh token." } };
+                }
 
-                        // Add new one
-                        _dbContext.RefreshTokens.Add(newRefreshToken);
-                        refreshTokenToReturn = newRefreshToken.Token;
-                    }
-
+                var user = await _userManager.FindByIdAsync(storedToken.UserId);
+                if (user == null || user.IsDeleted || await _userManager.IsLockedOutAsync(user))
+                {
+                    storedToken.Revoked = DateTime.UtcNow;
+                    storedToken.Locked = false;
                     await _dbContext.SaveChangesAsync();
                     await transaction.CommitAsync();
+                    return new AuthResult { Success = false, Errors = new[] { "User account is unavailable or locked." } };
+                }
 
-                    return new AuthResult
-                    {
-                        Success = true,
-                        Token = newJwt,
-                        RefreshToken = refreshTokenToReturn,
-                        User = MapToUserDto(user, roles.FirstOrDefault())
-                    };
-                }
-                catch (Exception ex)
+                storedToken.Revoked = DateTime.UtcNow;
+                storedToken.Locked = false;
+
+                var (newRefreshToken, rawNewRefreshToken) = RefreshTokenHelper.CreateRefreshToken(user.Id);
+                _dbContext.RefreshTokens.Add(newRefreshToken);
+
+                var roles = await _userManager.GetRolesAsync(user);
+                var newJwt = _jwtTokenService.GenerateJwtToken(user, roles);
+
+                await _dbContext.SaveChangesAsync();
+                await transaction.CommitAsync();
+
+                return new AuthResult
                 {
-                    _logger.LogError($"Error during refresh token process: {ex.Message}");
-                    await transaction.RollbackAsync();
-                    return new AuthResult { Success = false, Errors = new[] { "An error occurred while refreshing the token." } };
-                }
-                finally
-                {
-                    var storedToken = await _dbContext.RefreshTokens.FirstOrDefaultAsync(x => x.Token == token);
-                    if (storedToken != null)
-                    {
-                        storedToken.Locked = false;
-                        await _dbContext.SaveChangesAsync();
-                    }
-                }
+                    Success = true,
+                    Token = newJwt,
+                    RefreshToken = rawNewRefreshToken,
+                    User = RefreshTokenHelper.MapToUserDto(user, roles.FirstOrDefault())
+                };
+            }
+            catch (PostgresException ex) when (ex.SqlState == "55P03")
+            {
+                _logger.LogWarning("Concurrent refresh token request rejected due to row lock.");
+                await transaction.RollbackAsync();
+                return new AuthResult { Success = false, Errors = new[] { "Refresh token is already being processed." } };
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error during refresh token process");
+                await transaction.RollbackAsync();
+                return new AuthResult { Success = false, Errors = new[] { "An error occurred while refreshing the token." } };
             }
         }
 

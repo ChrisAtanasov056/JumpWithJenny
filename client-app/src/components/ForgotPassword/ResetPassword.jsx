@@ -26,6 +26,19 @@ const ResetPassword = () => {
     e.preventDefault();
     setFeedback({ message: '', isError: false });
 
+    if (
+      passwords.newPassword.length < 8 ||
+      !/[A-Z]/.test(passwords.newPassword) ||
+      !/[a-z]/.test(passwords.newPassword) ||
+      !/[0-9]/.test(passwords.newPassword)
+    ) {
+      setFeedback({
+        message: i18n.t('resetPassword.weakPassword'),
+        isError: true,
+      });
+      return;
+    }
+
     if (passwords.newPassword !== passwords.confirmPassword) {
       setFeedback({ 
         message: i18n.t('resetPassword.passwordsMismatch'), 

@@ -55,10 +55,8 @@ const Login = ({ onClose, onLoginSuccess }) => {
     try {
       const response = await login(credentials);
       if (response) {
-        const { token, refreshToken, user } = response; 
-        if (user?.id && user?.username && user?.firstname && 
-            user?.lastname && user?.email && user?.role && 
-            token && refreshToken) {
+        const { token, refreshToken, user } = response;
+        if (user?.id && user?.email && token && refreshToken) {
           authLogin({ ...user, token, refreshToken });
           onLoginSuccess({ ...user, token, refreshToken });
           onClose();
@@ -70,7 +68,12 @@ const Login = ({ onClose, onLoginSuccess }) => {
       }
     } catch (error) {
       console.error('Login error:', error);
-      setErrorMessage(error.response?.data?.message || t('login.credentialsError'));
+      const serverErrors = error.response?.data?.errors;
+      if (Array.isArray(serverErrors) && serverErrors.some((msg) => String(msg).toLowerCase().includes('locked'))) {
+        setErrorMessage(t('login.accountLocked'));
+      } else {
+        setErrorMessage(error.response?.data?.message || t('login.credentialsError'));
+      }
     } finally {
       setIsLoading(false);
     }

@@ -1,16 +1,15 @@
-import e from 'cors';
 import axios from '../api/axius';
 
 // Register a new user
 export const create = async (userData) => {
   try {
-    const response = await axios.post('/Account/signup',userData);
+    const response = await axios.post('/Account/signup', userData);
     return response.data;
   } catch (error) {
     if (error.response) {
-      console.error('🚨 Server responded with:', error.response.status, error.response.data);
+      console.error('Server responded with:', error.response.status, error.response.data);
     } else if (error.request) {
-      console.error('❌ No response received:', error.request);
+      console.error('No response received:', error.request);
     } else {
       console.error('Unexpected error:', error.message);
     }
@@ -25,7 +24,7 @@ export const login = async (userData) => {
       Password: userData.password,
     });
     if (response.data.token) {
-      localStorage.setItem('token', response.data.token);
+      localStorage.setItem('jwtToken', response.data.token);
     }
     if (response.data.refreshToken) {
       localStorage.setItem('refreshToken', response.data.refreshToken);
@@ -35,6 +34,10 @@ export const login = async (userData) => {
     console.error('Login error:', error);
     throw error;
   }
+};
+
+export const logoutUser = async (refreshToken) => {
+  await axios.post('/Account/logout', { refreshToken });
 };
 
 // Change Password
@@ -65,7 +68,6 @@ export const forgotPasswordEmail = async (userData) => {
   }
 };
 
-
 // Verify Email
 export const verifyEmail = async (userId, token, language) => {
   try {
@@ -74,10 +76,7 @@ export const verifyEmail = async (userId, token, language) => {
       token,
       language,
     });
-    if (response.status === 200) {
-      const statusResponse = await axios.get(`/verifyEmailStatus?userId=${userId}`);
-      return statusResponse.data.user;
-    }
+    return response.data.user;
   } catch (error) {
     console.error('Error during email verification:', error);
     throw error;
@@ -139,15 +138,15 @@ export const googleLogin = async (googleToken) => {
     });
 
     if (response.data.Success) {
-        if (response.data.Token) {
-          localStorage.setItem('token', response.Token);
-        }
-        if (response.data.RefreshToken) {
-          localStorage.setItem('refreshToken', response.RefreshToken);
-        }
+      if (response.data.Token) {
+        localStorage.setItem('jwtToken', response.data.Token);
+      }
+      if (response.data.RefreshToken) {
+        localStorage.setItem('refreshToken', response.data.RefreshToken);
+      }
       return response.data;
     } else {
-      throw new Error('Google login неуспешен');
+      throw new Error(response.data?.Errors?.[0] || 'Google login failed');
     }
   } catch (error) {
     console.error('Google login error:', error);
@@ -162,15 +161,15 @@ export const facebookLogin = async (accessToken) => {
     });
 
     if (response.data.Success) {
-        if (response.data.Token) {
-          localStorage.setItem('token', response.data.Token);
-        }
-        if (response.data.RefreshToken) {
-          localStorage.setItem('refreshToken', response.data.RefreshToken);
-        }
+      if (response.data.Token) {
+        localStorage.setItem('jwtToken', response.data.Token);
+      }
+      if (response.data.RefreshToken) {
+        localStorage.setItem('refreshToken', response.data.RefreshToken);
+      }
       return response.data;
     } else {
-      throw new Error('Facebook login неуспешен');
+      throw new Error(response.data?.Errors?.[0] || 'Facebook login failed');
     }
   } catch (error) {
     console.error('Facebook login error:', error);

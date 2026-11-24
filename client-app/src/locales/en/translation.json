@@ -127,7 +127,10 @@
           "credentialsError": "Invalid email or password. Please try again.",
           "incompleteDataError": "Incomplete data from the server. Please try again.",
           "noDataError": "An error occurred during login. No data received.",
-          "googleLoginFailed": "Google login failed. Please try again."
+          "googleLoginFailed": "Google login failed. Please try again.",
+          "facebookLoginFailed": "Facebook login failed. Please try again.",
+          "accountLocked": "Account is temporarily locked due to too many failed attempts. Please try again later.",
+          "oauthUnverifiedAccount": "An unverified account with this email already exists. Please verify your email first."
         },
         "register": {
           "firstNameLabel": "First Name",
@@ -144,7 +147,9 @@
           "successMessage": "Registration successful! Please check your email for a confirmation link.",
           "passwordLength": "Minimum 8 characters",
           "passwordUppercase": "At least one uppercase letter",
+          "passwordLowercase": "At least one lowercase letter",
           "passwordNumber": "At least one number",
+          "weakPasswordError": "Password must be at least 8 characters and include uppercase, lowercase, and a number.",
           "invalidEmailError": "Please enter a valid email address.",
           "invalidUsernameError": "The username must contain only Latin letters, numbers, hyphens (-), and underscores (_)."
         },
@@ -183,7 +188,8 @@
             "resetting": "Resetting...",
             "resetPassword": "Reset Password",
             "successMessage": "Password reset successfully!",
-            "goHome": "Go to Home Page"
+            "goHome": "Go to Home Page",
+            "weakPassword": "Password must be at least 8 characters and include uppercase, lowercase, and a number."
           },
         
         "Email Verification": "Email Verification",
@@ -204,7 +210,8 @@
               "success": "Password changed successfully!",
               "errors": {
                 "all_required": "All fields are required.",
-                "min_length": "Password must be at least 6 characters.",
+                "min_length": "Password must be at least 8 characters.",
+                "weak_password": "Password must include uppercase, lowercase, and a number.",
                 "not_matching": "New passwords do not match.",
                 "failed": "Password change failed. Please try again."
               }

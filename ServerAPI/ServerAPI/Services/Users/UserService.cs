@@ -5,6 +5,7 @@
     using ServerAPI.Data;
     using ServerAPI.Data.Common.Repositories;
     using ServerAPI.Models;
+    using ServerAPI.Services.AuthService;
     using ServerAPI.ViewModels.Users;
     using System;
     using System.Collections.Generic;
@@ -160,7 +161,18 @@
             }
 
             var result = await this.userManager.ChangePasswordAsync(user, currentPassword, newPassword);
-            return result.Succeeded;
+            if (!result.Succeeded)
+            {
+                return false;
+            }
+
+            if (this._context != null)
+            {
+                await RefreshTokenHelper.RevokeActiveRefreshTokensAsync(this._context, user.Id);
+                await this._context.SaveChangesAsync();
+            }
+
+            return true;
         }
 
         public async Task<User> ChangeEmailAsync(string userId, string newEmail)

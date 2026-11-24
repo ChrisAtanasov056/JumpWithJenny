@@ -133,14 +133,6 @@ public partial class Program
             .AddDefaultTokenProviders();
 
         services.AddHttpContextAccessor();
-        services.Configure<IdentityOptions>(options =>
-        {
-            options.Password.RequireNonAlphanumeric = false;
-            options.Password.RequireDigit = false;
-            options.Password.RequireLowercase = false;
-            options.Password.RequireUppercase = false;
-            options.Password.RequiredLength = 5;
-        });
 
         var jwtSection = configuration.GetSection("Jwt");
         services.Configure<JwtSettings>(jwtSection);
@@ -217,7 +209,7 @@ public partial class Program
         services.AddScoped<IEmailService, EmailService>();
         services.AddScoped<IEmailTemplateService, EmailTemplateService>();
         services.AddScoped<IContactService, ContactService>();
-        services.AddScoped<IFacebookAuthService, FacebookAuthService>();
+        services.AddHttpClient<IFacebookAuthService, FacebookAuthService>();
         services.AddScoped<IShoesService, ShoesService>();
 
         // Logging and Swagger
@@ -228,12 +220,6 @@ public partial class Program
             c.SwaggerDoc("v1", new OpenApiInfo { Title = "My API", Version = "v1" });
         });
         AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
-
-        // Email Service Configuration
-        services.AddScoped<IEmailTemplateService, EmailTemplateService>();
-        services.AddScoped<IEmailService, EmailService>();
-        services.AddScoped<IContactService, ContactService>();
-        services.AddScoped<IGoogleAuthService, GoogleAuthService>();
 
 
         services.ConfigureApplicationCookie(options =>

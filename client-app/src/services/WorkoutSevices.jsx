@@ -1,16 +1,6 @@
-import api from './api';
+import api from '../api/axius';
 
 const WorkoutService = {
-   getAllWorkouts: async () => {
-    try {
-      const response = await api.get('/api/Schedule');
-      return response.data;
-    } catch (error) {
-      console.error('Error fetching workouts:', error);
-      throw error;
-    }
-  },
-
   getAllWorkouts: async () => {
     try {
       const response = await api.get('/api/workouts/all');

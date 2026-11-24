@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import { useAuth } from './AuthContext';
 import { useTranslation } from 'react-i18next';
 import './VerifyEmail.css';
-import api from './api';
+import api from '../api/axius';
 
 const VerifyEmail = () => {
     const { search } = useLocation();
@@ -46,7 +46,11 @@ const VerifyEmail = () => {
                 }
             } catch (error) {
                 console.error("Verification error:", error);
-                setMessage(error.response?.data?.title || t('Error confirming email. Please try again.'));
+                setMessage(
+                    error.response?.data?.errors?.[0] ||
+                    error.response?.data?.title ||
+                    t('Error confirming email. Please try again.')
+                );
                 setIsError(true);
             } finally {
                 setIsLoading(false);

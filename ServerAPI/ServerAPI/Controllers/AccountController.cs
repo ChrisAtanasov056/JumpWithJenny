@@ -173,6 +173,22 @@
                 user = result.User
             });
         }
+
+        [HttpPost("logout")]
+        public async Task<IActionResult> Logout([FromBody] RefreshTokenRequest request = null)
+        {
+            var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var refreshToken = request?.RefreshToken;
+
+            if (string.IsNullOrWhiteSpace(refreshToken) && string.IsNullOrWhiteSpace(currentUserId))
+            {
+                return Ok(new { message = "Logged out." });
+            }
+
+            await _authService.LogoutAsync(refreshToken, currentUserId);
+            return Ok(new { message = "Logged out successfully." });
+        }
+
         [EnableRateLimiting("EmailPolicy")]
         [HttpPost("resend-verification")]
         public async Task<IActionResult> ResendVerificationEmail([FromBody] ResendEmailRequest request)
