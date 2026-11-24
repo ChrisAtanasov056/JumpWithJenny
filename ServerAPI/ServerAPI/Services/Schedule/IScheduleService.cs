@@ -4,11 +4,12 @@
     using System.Threading.Tasks;
     using ServerAPI.Models;
     using ServerAPI.Models.Enums;
+    using ServerAPI.Models.Schedule;
 
     public interface IScheduleService
     {
-        Task<List<T>> GetAllWorkoutsAsync<T>();
-        Task<T> GetWorkoutByIdAsync<T>(string id);
+        Task<List<WorkoutViewModels>> GetAllWorkoutsAsync();
+        Task<WorkoutViewModels> GetWorkoutByIdAsync(string id);
         Task<Workout> ApplyForWorkoutAsync(string workoutId, ShoesSize? shoeSize, CardType cardType, string userId, bool usesOwnShoes);
         Task<bool> IsUserRegisteredAsync(string workoutId, string userId);
         Task<bool> CancelRegistrationAsync(string workoutId, string userId);

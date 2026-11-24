@@ -6,7 +6,7 @@ namespace ServerAPI.Models
     public class WorkoutShoes : BaseDeletableModel
     {
         [Key]
-        public string Id { get; set; } = Guid.NewGuid().ToString();
+        public new string Id { get; set; } = Guid.NewGuid().ToString();
 
         [Required]
         public string WorkoutId { get; set; }

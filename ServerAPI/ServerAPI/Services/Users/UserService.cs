@@ -1,12 +1,10 @@
 ﻿namespace ServerAPI.Services.Users
 {
-    using AutoMapper;
     using Microsoft.AspNetCore.Identity;
     using Microsoft.EntityFrameworkCore;
     using ServerAPI.Data;
     using ServerAPI.Data.Common.Repositories;
     using ServerAPI.Models;
-    using ServerAPI.Services.Mapper;
     using ServerAPI.ViewModels.Users;
     using System;
     using System.Collections.Generic;
@@ -18,8 +16,6 @@
     {
         private readonly IDeletableEntityRepository<User> usersRepository;
         private readonly UserManager<User> userManager;
-
-        private readonly RoleManager<IdentityRole> roleManager;
 
         private readonly JumpWithJennyDbContext _context;
 
@@ -68,18 +64,6 @@
                 Console.WriteLine($"Error deleting user: {ex.Message}");
                 return false;
             }
-        }
-
-
-        private async Task<bool> CheckUserDependenciesAsync(string userId)
-        {
-            // Implement checks for any user relationships
-            // Example (you'll need to access your DbContext):
-            // return await _context.Appointments.AnyAsync(a => a.UserId == userId) ||
-            //        await _context.Payments.AnyAsync(p => p.UserId == userId);
-            
-            // For now return false since we don't have access to other DbSets
-            return false;
         }
 
        public async Task<List<T>> GetAllUsersAsync<T>(int? count = null) where T : class, new()
@@ -165,15 +149,6 @@
                 LastName = user.LastName,
                 Role = roles.FirstOrDefault(),
             };
-        }
-
-        public async Task<T> GetUserByIdAsync<T>(string id)
-        {
-            return await this.usersRepository
-                .AllWithDeleted()
-                .Where(u => u.Id == id)
-                .To<T>()
-                .FirstOrDefaultAsync();
         }
 
         public async Task<bool> ChangePasswordAsync(string id, string currentPassword, string newPassword)

@@ -2,7 +2,7 @@
 using ServerAPI.Data.Common.Repositories;
 using ServerAPI.Models;
 using ServerAPI.Models.Enums;
-using ServerAPI.Services.Mapper;
+using ServerAPI.Models.Schedule;
 
 namespace ServerAPI.Services.Schedule
 {
@@ -105,35 +105,72 @@ namespace ServerAPI.Services.Schedule
             }
         }
 
-        public async Task<List<T>> GetAllWorkoutsAsync<T>()
+        public async Task<List<WorkoutViewModels>> GetAllWorkoutsAsync()
         {
             var today = DateTime.UtcNow.Date;
 
             var workouts = await _workoutRepository
-                .All()
+                .AllAsNoTracking()
                 .Where(w => w.Date >= today)
                 .Include(w => w.WorkoutShoes)
-                .ThenInclude(ws => ws.Shoe)
-                .Include(w => w.Appointments)
-                .To<T>()
+                    .ThenInclude(ws => ws.Shoe)
                 .ToListAsync();
 
-            return workouts ?? new List<T>();
+            return workouts.Select(MapToWorkoutViewModel).ToList();
         }
 
-
-        public async Task<T> GetWorkoutByIdAsync<T>(string id)
+        public async Task<WorkoutViewModels> GetWorkoutByIdAsync(string id)
         {
             var workout = await _workoutRepository
-                .All()
+                .AllAsNoTracking()
                 .Where(w => w.Id == id)
                 .Include(w => w.WorkoutShoes)
-                .ThenInclude(ws => ws.Shoe)
-                .Include(w => w.Appointments)
-                .To<T>()
+                    .ThenInclude(ws => ws.Shoe)
                 .FirstOrDefaultAsync();
 
-            return workout ?? throw new KeyNotFoundException($"Workout with ID {id} not found.");
+            if (workout == null)
+            {
+                throw new KeyNotFoundException($"Workout with ID {id} not found.");
+            }
+
+            return MapToWorkoutViewModel(workout);
+        }
+
+        private static WorkoutViewModels MapToWorkoutViewModel(Workout workout)
+        {
+            return new WorkoutViewModels
+            {
+                Id = workout.Id,
+                Day = workout.Day,
+                Time = workout.Time,
+                Status = workout.Status,
+                AvailableSpots = workout.AvailableSpots,
+                Date = workout.Date,
+                WorkoutShoes = workout.WorkoutShoes
+                    .Select(ws => new WorkoutShoes
+                    {
+                        Id = ws.Id,
+                        WorkoutId = ws.WorkoutId,
+                        ShoeId = ws.ShoeId,
+                        IsTaken = ws.IsTaken,
+                        CreatedOn = ws.CreatedOn,
+                        ModifiedOn = ws.ModifiedOn,
+                        IsDeleted = ws.IsDeleted,
+                        DeletedOn = ws.DeletedOn,
+                        Shoe = ws.Shoe == null
+                            ? null
+                            : new Shoes
+                            {
+                                Id = ws.Shoe.Id,
+                                Size = ws.Shoe.Size,
+                                CreatedOn = ws.Shoe.CreatedOn,
+                                ModifiedOn = ws.Shoe.ModifiedOn,
+                                IsDeleted = ws.Shoe.IsDeleted,
+                                DeletedOn = ws.Shoe.DeletedOn,
+                            },
+                    })
+                    .ToList(),
+            };
         }
 
        public async Task<bool> IsUserRegisteredAsync(string workoutId, string userId)

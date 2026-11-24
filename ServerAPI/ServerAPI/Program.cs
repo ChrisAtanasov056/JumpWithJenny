@@ -14,7 +14,6 @@ using ServerAPI.Models;
 using ServerAPI.Services;
 using ServerAPI.Services.AuthService;
 using ServerAPI.Services.Contacts;
-using ServerAPI.Services.Mapper;
 using ServerAPI.Services.Schedule;
 using ServerAPI.Services.Users;
 using ServerAPI.Services.Workouts;
@@ -174,10 +173,6 @@ public partial class Program
         services.AddScoped<IContactService, ContactService>();
         services.AddScoped<IGoogleAuthService, GoogleAuthService>();
 
-
-        // AutoMapper configuration
-        services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
-        AutoMapperConfig.RegisterMappings(AppDomain.CurrentDomain.GetAssemblies()); // Make sure this is invoked
 
         services.ConfigureApplicationCookie(options =>
         {

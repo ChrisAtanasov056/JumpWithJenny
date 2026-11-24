@@ -1,4 +1,3 @@
-using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using ServerAPI.Data.Common.Repositories;
 using ServerAPI.Models;
@@ -15,7 +14,6 @@ namespace ServerAPI.Services.Workouts
         private readonly IDeletableEntityRepository<Appointment> _appointmentRepository;
         private readonly IDeletableEntityRepository<Shoes> _shoesRepository;
         private readonly IDeletableEntityRepository<WorkoutShoes> _workoutShoesRepository;
-        private readonly IMapper _mapper;
         private readonly ILogger<Workout> _logger;
 
         public WorkoutServices(
@@ -23,15 +21,13 @@ namespace ServerAPI.Services.Workouts
             IDeletableEntityRepository<Appointment> appointmentRepository,
             IDeletableEntityRepository<Shoes> shoesRepository,
             IDeletableEntityRepository<WorkoutShoes> workoutShoesRepository,
-            ILogger<Workout> logger,
-            IMapper mapper)
+            ILogger<Workout> logger)
         {
             _workoutRepository = workoutRepository;
             _appointmentRepository = appointmentRepository;
             _shoesRepository = shoesRepository;
             _workoutShoesRepository = workoutShoesRepository;
             _logger = logger;
-            _mapper = mapper;
         }
 
         public async Task<WorkoutCreateModel> CreateWorkoutAsync(WorkoutCreateModel dto)

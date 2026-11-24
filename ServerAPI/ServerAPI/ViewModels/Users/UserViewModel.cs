@@ -1,9 +1,6 @@
 ﻿namespace ServerAPI.ViewModels.Users
 {
-    using ServerAPI.Models;
-    using ServerAPI.Services.Mapper;
-
-    public class UserViewModel : IMapFrom<User>
+    public class UserViewModel
     {
         public string Id { get; set; }
         public string Username { get; set; }

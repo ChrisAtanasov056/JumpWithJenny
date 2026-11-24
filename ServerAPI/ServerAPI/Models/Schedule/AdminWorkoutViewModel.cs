@@ -1,11 +1,8 @@
-
-using AutoMapper;
 using ServerAPI.Models.Enums;
-using ServerAPI.Services.Mapper;
 
 namespace ServerAPI.Models.Schedule
 {
-    public class AdminWorkoutViewModel : IHaveCustomMappings
+    public class AdminWorkoutViewModel
 {
     public string Id { get; set; }
     public string Day { get; set; }
@@ -19,12 +16,5 @@ namespace ServerAPI.Models.Schedule
 
     public ICollection<WorkoutShoes> WorkoutShoes { get; set; } = new List<WorkoutShoes>();
     public ICollection<AppointmentViewModel> Appointments { get; set; } = new List<AppointmentViewModel>();
-
-    public void CreateMappings(IProfileExpression configuration)
-    {
-        configuration.CreateMap<Workout, AdminWorkoutViewModel>()
-            .ForMember(dest => dest.WorkoutShoes, opt => opt.MapFrom(src => src.WorkoutShoes))
-            .ForMember(dest => dest.Appointments, opt => opt.MapFrom(src => src.Appointments));
-    }
 }
 }

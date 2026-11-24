@@ -1,8 +1,6 @@
-using ServerAPI.Services.Mapper;
-
 namespace ServerAPI.Models.Authentication
 {
-    public class UserDto : IMapFrom<User>
+    public class UserDto
     {
         public string id { get; set; }
         public string email { get; set; }

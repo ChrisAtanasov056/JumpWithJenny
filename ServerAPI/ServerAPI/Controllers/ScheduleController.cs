@@ -28,7 +28,7 @@ namespace ServerAPI.Controllers
         {
             try
             {
-                var workouts = await _scheduleService.GetAllWorkoutsAsync<WorkoutViewModels>();
+                var workouts = await _scheduleService.GetAllWorkoutsAsync();
                 return Ok(workouts);
             }
             catch (Exception ex)
@@ -43,7 +43,7 @@ namespace ServerAPI.Controllers
         {
             try
             {
-                var workout = await _scheduleService.GetWorkoutByIdAsync<WorkoutViewModels>(id);
+                var workout = await _scheduleService.GetWorkoutByIdAsync(id);
                 if (workout == null)
                 {
                     return NotFound($"Workout with ID {id} not found.");

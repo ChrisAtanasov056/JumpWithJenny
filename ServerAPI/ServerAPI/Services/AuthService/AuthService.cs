@@ -261,7 +261,7 @@ namespace ServerAPI.Services.AuthService
                     Errors = new[] { "Invalid token format." }
                 };
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 return new AuthResult
                 {

@@ -21,8 +21,6 @@
 
         public Task<UserAdminViewModel> GetUserByIdAsync(string id);
 
-        public Task<T> GetUserByIdAsync<T>(string id);
-
         public Task<bool> ChangePasswordAsync(string Id, string currentPassword, string newPassword);
         public  Task<bool> DeleteUserAsync(string Id); 
 

@@ -95,7 +95,7 @@ namespace ServerAPI.Controllers
         {
             try
             {
-                var workout = await _scheduleService.GetWorkoutByIdAsync<WorkoutViewModels>(id);
+                var workout = await _scheduleService.GetWorkoutByIdAsync(id);
                 return Ok(workout);
             }
             catch (KeyNotFoundException ex)

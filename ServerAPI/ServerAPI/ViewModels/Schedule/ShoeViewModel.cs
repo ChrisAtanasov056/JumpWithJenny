@@ -1,10 +1,9 @@
 using ServerAPI.Models;
 using ServerAPI.Models.Enums;
-using ServerAPI.Services.Mapper;
 
 namespace ServerAPI.ViewModels.Schedule
 {
-    public class ShoeViewModel :  IMapFrom<Shoes>
+    public class ShoeViewModel
     {
         
         public ShoesSize Size { get; set; } // Enum for shoe sizes (S, M, L, XL)
