@@ -21,6 +21,17 @@ jobs:
           cache: 'npm'
           cache-dependency-path: client-app/package-lock.json
 
+      - name: Create client-app .env.production
+        working-directory: client-app
+        env:
+          VITE_ENV_PRODUCTION: ${{ secrets.VITE_ENV_PRODUCTION }}
+        run: |
+          if [ -z "$VITE_ENV_PRODUCTION" ]; then
+            echo "Error: VITE_ENV_PRODUCTION secret is not set or empty." >&2
+            exit 1
+          fi
+          printf '%s\n' "$VITE_ENV_PRODUCTION" > .env.production
+
       - name: Build client-app
         working-directory: client-app
         run: |
@@ -56,6 +67,7 @@ jobs:
           rsync -avz --delete \
             --exclude 'appsettings.json' \
             --exclude 'appsettings.Production.json' \
+            --exclude 'wwwroot/' \
             -e "ssh -p ${{ secrets.VPS_PORT }}" \
             ./publish/api/ \
             ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:/var/www/jumpwithjenny/ServerAPI/publish/
