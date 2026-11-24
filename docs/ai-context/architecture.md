@@ -7,7 +7,9 @@
 - `docs/ai-context/` — системна документация (`architecture.md`, `database-and-api.md`, `auth-and-flows.md`).
 - `ServerAPI/` — .NET solution (`ServerAPI.sln`) и ASP.NET Core Web API проект.
 - `client-app/` — React + Vite SPA клиентско приложение.
-- `.roorules`, `.rooignore` — локални правила и изключения за AI инструменти.
+- `.github/workflows/deploy.yml` — CI/CD пайплайн: `verify` за PR/push към `main` и `deploy` към VPS с EF Core migration bundle, атомарна замяна и автоматичен rollback.
+- `deploy/nginx/jumpwithjenny.conf` — продукционна Nginx конфигурация за `jumpwithjenny.com` и `api.jumpwithjenny.com`.
+- `.aiignore`, `.gitignore` — правила за игнориране на файлове за AI инструменти и Git.
 - `README.md`, `LICENSE` — общ README (шаблонен) и MIT лиценз.
 
 ---
@@ -17,34 +19,34 @@
 ServerAPI/
 ├── ServerAPI.sln                         # Visual Studio / dotnet solution файл
 └── ServerAPI/
-    ├── Program.cs                        # Входна точка, DI контейнер, CORS, JWT, Identity, AutoMapper, CSP, seed
-    ├── ServerAPI.csproj                  # Target net9.0 и NuGet зависимости
+    ├── Program.cs                        # Входна точка, DI контейнер, CORS, ForwardedHeaders, RateLimiting (AuthPolicy/EmailPolicy), ProblemDetails + GlobalExceptionHandler, JWT, Identity, CSP, /health и seed
+    ├── ServerAPI.csproj                  # Target net9.0 и изравнени .NET 9 (9.0.4) NuGet зависимости
     ├── Properties/
     │   └── launchSettings.json           # Профили за локално стартиране (7024 HTTPS / 5024 HTTP)
     ├── Common/
-    │   └── GlobalConstants.cs            # Роли ("Administrator", "User"), кеш ключове, seed акаунт константи
-    ├── Controllers/                      # REST API контролери (10 броя)
-    │   ├── AccountController.cs          # Регистрация, вход, потвърждение на имейл, пароли, refresh token
-    │   ├── AdminController.cs            # Админ операции за потребители, участници и справки
-    │   ├── AuthController.cs             # Вход с Google OAuth 2.0 и Facebook Login
-    │   ├── ContactController.cs          # Изпращане на контактната форма по имейл
-    │   ├── GalleryController.cs          # Публична галерия и админ качване/изтриване на снимки
-    │   ├── ScheduleController.cs         # Публичен график, записване и отмяна на тренировки
-    │   ├── ShoesController.cs            # CRUD за Kangoo Jumps обувки
-    │   ├── UserController.cs             # Операции за потребители (all, get, change-password, delete)
-    │   ├── WorkoutController.cs          # CRUD за тренировки
-    │   └── WeatherForecastController.cs  # Остатъчен шаблонен контролер
+    │   ├── GlobalConstants.cs            # Роли ("Administrator", "User") и кеш ключове
+    │   └── BulgariaTimeHelper.cs         # Помощник за часова зона Europe/Sofia (нормализиране на стенен час, конвертиране Sofia ↔ UTC, GetNextUpcomingSofiaDate)
+    ├── Controllers/                      # REST API контролери (9 броя)
+    │   ├── AccountController.cs          # Регистрация, вход, изход (logout), потвърждение на имейл, пароли, refresh token; AuthPolicy и EmailPolicy rate limiting
+    │   ├── AdminController.cs            # Админ операции ([Authorize(Roles = "Administrator")]) за потребители, участници и справки с пагинация
+    │   ├── AuthController.cs             # Вход с Google OAuth 2.0 и Facebook Login (AuthPolicy rate limiting)
+    │   ├── ContactController.cs          # Изпращане на контактната форма по имейл (EmailPolicy rate limiting)
+    │   ├── GalleryController.cs          # Публична галерия и админ ([Authorize(Roles = "Administrator")]) преглед/качване (до 10 MB, magic-bytes валидация)/изтриване
+    │   ├── ScheduleController.cs         # Публичен график (с пагинация), записване и отмяна на тренировки
+    │   ├── ShoesController.cs            # CRUD за Kangoo Jumps обувки ([Authorize(Roles = "Administrator")])
+    │   ├── UserController.cs             # [Authorize] на класа: админ операции (all, get, PUT /{id}, DELETE /{id}) с роля "Administrator" и PUT /User/change-password за собствения акаунт
+    │   └── WorkoutController.cs          # CRUD за тренировки ([Authorize(Roles = "Administrator")]) с пагинация
     ├── Data/
-    │   ├── JumpWithJennyDbContext.cs     # EF Core + IdentityDbContext, query filters, audit правила
-    │   ├── DesignTimeDbContextFactory.cs # Design-time фабрика за `dotnet ef` команди
-    │   ├── IdentityOptionsProvider.cs    # Настройки за пароли на ASP.NET Identity
+    │   ├── JumpWithJennyDbContext.cs     # EF Core + IdentityDbContext, query filters, audit правила, xmin optimistic concurrency за Workout и WorkoutShoes, частичен уникален индекс за обувки в Appointments, performance индекси
+    │   ├── DesignTimeDbContextFactory.cs # Design-time фабрика за `dotnet ef` (зарежда appsettings.{ENV}.json + environment променливи; изисква DevConnection в Production)
+    │   ├── IdentityOptionsProvider.cs    # Подсилена паролна политика (мин. 8 символа, цифра, малка/главна буква, уникален имейл) и lockout (5 опита → 15 мин)
     │   ├── DbQueryRunner.cs              # Изпълнение на сурови SQL заявки
     │   ├── EfExpressionHelper.cs         # Помощни изрази за търсене по ключ
-    │   ├── Common/                       # Интерфейси IDbQueryRunner, IRepository<T>, IDeletableEntityRepository<T>
-    │   ├── Repositories/                 # EfRepository<T> и EfDeletableEntityRepository<T> (soft delete)
+    │   ├── Common/                       # Интерфейси IDbQueryRunner, IRepository<T>, IDeletableEntityRepository<T> (вкл. AllAsSplitQuery, AllAsNoTrackingSplitQuery, AddRangeAsync с CancellationToken)
+    │   ├── Repositories/                 # EfRepository<T> и EfDeletableEntityRepository<T> (soft delete + split query методи)
     │   └── Seeding/                      # JumpWithJennyDbSeeder, RoleSeeder, ISeeder
-    │       └── CustomSeeders/            # AccountSeeder, ImageSeeder, ShoesSeeder, WorkoutCardSeeder, WorkoutSeeder
-    ├── Migrations/                       # 8 EF Core миграции (2025-03-19 до 2025-08-05) + ModelSnapshot
+    │       └── CustomSeeders/            # AccountSeeder (роли винаги; дефолтен админ само в Development от SeedAdmin:*), ImageSeeder, ShoesSeeder, WorkoutCardSeeder, WorkoutSeeder (с BulgariaTimeHelper)
+    ├── Migrations/                       # 10 EF Core миграции (2025-03-19 до 2026-11-24) + ModelSnapshot
     ├── Models/                           # EF Core ентитети и входни/изходни модели
     │   ├── User.cs, UserRole.cs          # Identity потребител и роля
     │   ├── Workout.cs, Shoes.cs          # Тренировки и обувки
@@ -52,30 +54,29 @@ ServerAPI/
     │   ├── Appointment.cs                # Резервация на потребител за тренировка
     │   ├── WorkoutCardType.cs            # Карти за тренировка
     │   ├── UserHistory.cs                # История на използвани обувки (ентитет в БД)
-    │   ├── RefreshToken.cs               # Refresh токени за подновяване на JWT
+    │   ├── RefreshToken.cs               # Refresh токени за подновяване на JWT (SHA-256 хеш)
     │   ├── ImageModel.cs                 # Снимки в галерията
     │   ├── EmailText.cs                  # Модел за локализирани имейл текстове
-    │   ├── Common/                       # BaseModel, BaseDeletableModel, IAuditInfo, IDeletableEntity
+    │   ├── Common/                       # BaseModel, BaseDeletableModel, IAuditInfo, IDeletableEntity, PagedResult<T>
     │   ├── Enums/                        # CardType, ShoesSize
     │   ├── Authentication/               # AuthResult, LoginModel, SignUpModel, Google/Facebook DTOs, UserDto и др.
-    │   ├── Contacts/                     # ContactFormDto
-    │   ├── DTOs/                         # ShoesDTO, ShoesDetailsDTO, UserDTO, WorkoutDTO, WorkoutShoesDTO
-    │   ├── Schedule/                     # WorkoutViewModels, AdminWorkoutViewModel, AppointmentViewModel, ApplyForWorkoutRequest и др.
-    │   └── Workout/                      # WorkoutCreateModel, WorkoutUpdateModel, GetParticipantsModel
-    ├── ViewModels/                       # Допълнителни ViewModel-и (Users/*, Schedule/ShoeViewModel, FacebookUserInfo)
+    │   ├── Contacts/                     # ContactFormDto (с DataAnnotations валидации)
+    │   ├── Schedule/                     # WorkoutViewModels, AdminWorkoutViewModel, AppointmentViewModel, ApplyForWorkoutRequest, ScheduleBookingException (BookingErrorCode) и др.
+    │   └── Workout/                      # WorkoutCreateModel, WorkoutUpdateModel (с Date и Status), GetParticipantsModel
+    ├── ViewModels/                       # Допълнителни ViewModel-и (Users/AllUsersViewModels с пагинация, Users/UserUpdateViewModel, Users/*, Schedule/ShoeViewModel, FacebookUserInfo)
     ├── Services/
-    │   ├── AuthService/                  # AuthService, GoogleAuthService, FacebookAuthService + интерфейси
+    │   ├── AuthService/                  # AuthService, GoogleAuthService, FacebookAuthService, RefreshTokenHelper + интерфейси
     │   ├── Contacts/                     # ContactService, IContactService
     │   ├── Schedule/                     # ScheduleService, IScheduleService
     │   ├── Shoes/                        # ShoesService, IShoesService
     │   ├── Users/                        # UserService, IUserService
     │   ├── Workouts/                     # WorkoutServices, IWorkoutServices
-    │   ├── Mapper/                       # AutoMapperConfig, IMapFrom<T>, IMapTo<T>, IHaveCustomMappings, QueryableMappingExtensions
     │   ├── JwtTokenService.cs            # Генериране на JWT токени
     │   ├── JwtSettings.cs                # POCO настройки за секция "Jwt"
     │   ├── EmailService.cs               # SMTP изпращане чрез MailKit (SSL 465 / STARTTLS 587)
     │   ├── EmailTemplateService.cs       # Зареждане на шаблони от Resources/emailTexts.{lang}.json
     │   ├── IEmailService.cs              # Интерфейс за имейл услуги
+    │   ├── GlobalExceptionHandler.cs     # IExceptionHandler → RFC 9110 ProblemDetails с traceId, message и опционален code
     │   └── CspNonceMiddleware.cs         # Middleware за CSP nonce и security headers в non-Development среда
     ├── Resources/                        # EmailTemplate.html, emailTemplates.json, emailTexts.{bg,en}.json
     ├── SeedData/Images/                  # Изходни изображения за начален seed на галерията
@@ -101,13 +102,15 @@ client-app/
     │   ├── bg/translation.json           # Български преводи (основен език)
     │   └── en/translation.json           # Английски преводи
     ├── api/
-    │   └── axius.js                      # Основен Axios инстанс (Bearer interceptor + 401 refresh interceptor)
+    │   └── axius.js                      # Основен Axios инстанс (API_BASE_URL, Bearer interceptor, FormData handling, single-flight 401 refresh с failedQueue и auth:logout събитие)
+    ├── utils/
+    │   └── workoutDate.js                # Парсване и форматиране на дати за тренировки в Europe/Sofia (parseWorkoutDate, formatWorkoutDateBg, formatWorkoutDateForInput)
     ├── services/
-    │   ├── api.jsx                       # Втори Axios инстанс (само Bearer interceptor, без 401 refresh)
-    │   ├── AuthContext.jsx               # Глобален Auth контекст (JWT/Refresh в localStorage, login/logout/OAuth)
+    │   ├── api.jsx                       # Тънък re-export на ../api/axius (единен Axios клиент)
+    │   ├── AuthContext.jsx               # Глобален Auth контекст (single-flight refreshAccessToken, AUTH_LOGOUT_EVENT listener, сървърен logout)
     │   ├── FacebookSDKContext.jsx        # Асинхронно зареждане и инициализация на Facebook JS SDK v23.0
     │   ├── UserContext.jsx               # Неизползван React контекст за user state
-    │   ├── authService.jsx               # Заявки за signup, login, OAuth, verify-email, reset/forgot password
+    │   ├── authService.jsx               # Заявки за signup, login, logout, OAuth, verify-email, reset/forgot password
     │   ├── WorkoutSevices.jsx            # Заявки за админ управление на тренировки и участници
     │   ├── ShoeService.jsx               # CRUD заявки към /api/shoes
     │   ├── UserServices.jsx              # Заявки за управление на потребители
@@ -160,7 +163,7 @@ client-app/
     - `/admin/photos`
     - `/admin/shoes`, `/admin/shoes/new`, `/admin/shoes/:id`, `/admin/shoes/details/:id`
 - **State Management**:
-  - `AuthContext` (`src/services/AuthContext.jsx`): управлява `isAuthenticated`, `isLoading`, `user`, `login`, `logout`, `googleLogin`, `facebookLogin`, `updateUser`. Запазва `jwtToken`, `refreshToken` и `user` в `localStorage`.
+  - `AuthContext` (`src/services/AuthContext.jsx`): управлява `isAuthenticated`, `isLoading`, `user`, `login`, `logout`, `googleLogin`, `facebookLogin`, `updateUser`. Запазва `jwtToken`, `refreshToken` и `user` в `localStorage` и слуша `auth:logout` за синхронно изчистване на сесията при провален refresh.
   - `FacebookSDKContext` (`src/services/FacebookSDKContext.jsx`): управлява `isFbSdkReady`.
   - Всички останали данни (тренировки, обувки, потребители, снимки, форми) се управляват с локален React state (`useState`, `useEffect`, `useCallback`) в съответните компоненти. Няма Redux или Zustand.
 - **Стилове**:
@@ -174,33 +177,42 @@ client-app/
 ## 3. Комуникация между фронтенд и бекенд
 
 - **Базов URL**:
-  - Дефиниран в `client-app/src/api/axius.js` и `client-app/src/services/api.jsx` като:
+  - Дефиниран в `client-app/src/api/axius.js` (и re-export-ван от `client-app/src/services/api.jsx` като единен Axios клиент):
     ```js
-    export const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://localhost:7024';
+    const rawApiBaseUrl = import.meta.env.VITE_API_URL?.trim();
+
+    export const API_BASE_URL = (
+      rawApiBaseUrl ||
+      (import.meta.env.PROD ? 'https://api.jumpwithjenny.com' : 'https://localhost:7024')
+    ).replace(/\/+$/, '');
     ```
   - Използва се и за зареждане на изображенията от сървъра: `${API_BASE_URL}${img.Url}` (напр. `/Images/...` или `/uploads/...` от `wwwroot`).
 - **Прокси**:
   - В `client-app/vite.config.js` **няма** конфигуриран dev proxy. При локална разработка браузърът на `http://localhost:3000` изпраща заявки директно към `https://localhost:7024` (или стойността в `VITE_API_URL`).
-  - В продукция Nginx рутира заявките към `https://jumpwithjenny.com` (SPA) и `https://api.jumpwithjenny.com` (ASP.NET Core API).
+  - В продукция Nginx (`deploy/nginx/jumpwithjenny.conf`) рутира заявките към `https://jumpwithjenny.com` (SPA + `/api/` proxy към `127.0.0.1:7024`) и `https://api.jumpwithjenny.com` (ASP.NET Core API на `127.0.0.1:7024`).
 - **CORS (`ServerAPI/ServerAPI/Program.cs`)**:
-  - Политика `"AllowOrigin"` с `AllowAnyHeader()`, `AllowAnyMethod()`, `AllowCredentials()` и изрично разрешени origins:
-    - `http://localhost:3000`
-    - `https://localhost:3000`
-    - `https://localhost:5001`
-    - `https://jumpwithjenny.com`
-- **Security Headers (`Program.cs`, `CspNonceMiddleware.cs`)**:
-  - Добавя се хедър `Cross-Origin-Opener-Policy: same-origin-allow-popups` (необходим за Google/Facebook OAuth popup прозорците).
-  - В non-Development среда `CspNonceMiddleware` добавя `Content-Security-Policy` (с `connect-src 'self' https://jumpwithjenny.com https://api.jumpwithjenny.com https://localhost:7024`), `X-Content-Type-Options`, `X-Frame-Options`, `X-XSS-Protection` и `Referrer-Policy`.
+  - Политика `"AllowOrigin"` с `AllowAnyHeader()`, `AllowAnyMethod()`, `AllowCredentials()`:
+    - Базови продукционни origins винаги: `https://jumpwithjenny.com` и `https://www.jumpwithjenny.com`.
+    - Допълнителни конфигурируеми origins от секция `AllowedOrigins`.
+    - Локални origins (`http://localhost:3000`, `https://localhost:3000`, `https://localhost:5001`, `http://localhost:5173`) се добавят **само в `Development`** среда.
+- **Security Headers, Rate Limiting и Middleware (`Program.cs`, `CspNonceMiddleware.cs`, `GlobalExceptionHandler.cs`, `deploy/nginx/jumpwithjenny.conf`)**:
+  - `UseForwardedHeaders()` (`XForwardedFor | XForwardedProto`) за коректна работа зад Nginx reverse proxy.
+  - `UseExceptionHandler()` (`GlobalExceptionHandler` → RFC 9110 `ProblemDetails` с `traceId`, `message` и опционален `code`) и `UseStatusCodePages()`.
+  - `UseRateLimiter()`: `AuthPolicy` (15 заявки / 1 минута по IP), `EmailPolicy` (5 заявки / 5 минути по IP), отговор `429 Too Many Requests` като `ProblemDetails`.
+  - `Cross-Origin-Opener-Policy: same-origin-allow-popups` (необходим за Google/Facebook OAuth popup прозорците).
+  - В non-Development среда: `UseHsts()` и `CspNonceMiddleware` (преди `UseStaticFiles()`), който добавя `Content-Security-Policy` (с `connect-src 'self' https://jumpwithjenny.com https://www.jumpwithjenny.com https://api.jumpwithjenny.com`), `X-Content-Type-Options: nosniff`, `X-Frame-Options: SAMEORIGIN`, `Permissions-Policy` и `Referrer-Policy`.
+  - Продукционният Nginx (`deploy/nginx/jumpwithjenny.conf`) обслужва HTTPS/apex редиректи (`www` → apex, HTTP → HTTPS), SPA CSP & security headers, 1-годишен кеш за хешираните `/assets/`, `expires -1` за `index.html`, кеширане на статични медии/SEO файлове и reverse proxy към `127.0.0.1:7024`.
 - **JSON формат**:
   - `AddNewtonsoftJson` с `DefaultContractResolver` (запазва PascalCase имената на C# свойствата) и `ReferenceLoopHandling.Ignore`.
 
 ---
 
-## 4. Команди за локално стартиране и билдване
+## 4. Команди за локално стартиране, билдване и CI/CD
 
 ### Изисквани Environment променливи (само ключове)
 - **Frontend (`client-app/.env`)**: `VITE_API_URL`, `VITE_GOOGLE_CLIENT_ID`, `VITE_APP_FACEBOOK_APP_ID`.
 - **Backend (`ServerAPI/ServerAPI/appsettings.json` или User Secrets / Env)**: `ConnectionStrings:DevConnection`, `Jwt:Secret`, `Jwt:Issuer`, `Jwt:Audience`, `Jwt:TokenLifetime`, `Authentication:Google:ClientId`, `Authentication:Google:ClientSecret`, `Authentication:Google:RedirectUri`, `Authentication:Facebook:AppSecret`, `EmailSettings:SmtpHost`, `EmailSettings:Username`, `EmailSettings:Password`, `EmailSettings:FromEmail`, `EmailSettings:FromName`, `FrontendBaseUrl`, `WebsiteUrl`.
+- **Опционални Backend ключове**: `AllowedOrigins` (масив от origins за CORS), `ContactSettings:RecipientEmail`, и (само за `Development`) `SeedAdmin:Email`, `SeedAdmin:Password`, `SeedAdmin:FirstName`, `SeedAdmin:LastName`.
 
 ### Backend (`ServerAPI/ServerAPI`)
 ```bash
@@ -239,3 +251,14 @@ npm run build
 # Локален преглед на production билда
 npm run preview
 ```
+
+### CI/CD деплой (`.github/workflows/deploy.yml`)
+- **Job `verify`** (изпълнява се при `push`/`pull_request` към `main` и `workflow_dispatch`):
+  - **Frontend** (Node 20): `npm ci`, опционален `lint`/`test`, `npm run build` с `VITE_API_URL=https://api.jumpwithjenny.com`, проверка на задължителните артефакти (`dist/index.html`, `manifest.json`, `robots.txt`, `favicon_v2.ico`, `brand_logo.png`) и проверка, че в `dist/assets/` липсва fallback към `localhost:7024`.
+  - **Backend** (.NET 9.0.x): `dotnet restore`, `dotnet build -c Release`, `dotnet test -c Release`.
+- **Job `deploy`** (при `push` към `main` или `workflow_dispatch`, след `verify`):
+  - Генерира `client-app/.env.production` от GitHub Secret `VITE_ENV_PRODUCTION` (валидира `VITE_API_URL=https://...`) и билдва `client-app/dist`.
+  - Публикува `ServerAPI` в `./publish/api` и генерира самостоятелен `linux-x64` EF Core migration bundle (`./publish/efbundle` с `dotnet-ef` 9.0.4).
+  - Свързва се по SSH с pinned `known_hosts`, качва артефактите чрез `rsync` в `.new` директории (`dist.new`, `publish.new`, `efbundle.new`).
+  - На VPS запазва продукционните `appsettings*.json` и `wwwroot/` от текущия `publish`, изпълнява `efbundle` (`ASPNETCORE_ENVIRONMENT=Production`), спира `jumpwithjenny.service`, прави атомарна замяна на `publish`/`dist` с `.prev` резервни копия и стартира услугата.
+  - Проверява локалния `http://127.0.0.1:7024/health` (с автоматичен rollback към `.prev` при неуспех), след което валидира публичните HTTPS ендпойнти (`https://api.jumpwithjenny.com/health`, `https://jumpwithjenny.com/`, `/manifest.json`, `/robots.txt`).
