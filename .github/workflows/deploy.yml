@@ -4,9 +4,71 @@ on:
   push:
     branches:
       - main
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
+  verify:
+    name: Build, Lint & Test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: client-app/package-lock.json
+
+      - name: Install, lint, test, and build client-app
+        working-directory: client-app
+        env:
+          VITE_API_URL: https://api.jumpwithjenny.com
+        run: |
+          npm ci
+          npm run lint --if-present
+          CI=true npm test --if-present
+          npm run build
+
+          for f in dist/index.html dist/manifest.json dist/robots.txt dist/favicon_v2.ico dist/brand_logo.png; do
+            if [ ! -f "$f" ]; then
+              echo "Missing expected build artifact: $f" >&2
+              exit 1
+            fi
+          done
+
+          if grep -rq "localhost:7024" dist/assets/; then
+            echo "Production bundle contains localhost:7024 fallback!" >&2
+            exit 1
+          fi
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '9.0.x'
+
+      - name: Restore, build, and test ServerAPI
+        run: |
+          dotnet restore ServerAPI/ServerAPI.sln
+          dotnet build ServerAPI/ServerAPI.sln -c Release --no-restore
+          dotnet test ServerAPI/ServerAPI.sln -c Release --no-build --verbosity normal
+
   deploy:
+    name: Deploy to VPS
+    needs: verify
+    if: (github.event_name == 'push' && github.ref == 'refs/heads/main') || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
 
     steps:
@@ -31,50 +93,188 @@ jobs:
             exit 1
           fi
           printf '%s\n' "$VITE_ENV_PRODUCTION" > .env.production
+          if ! grep -qE '^VITE_API_URL=https://' .env.production; then
+            echo "Error: .env.production must define VITE_API_URL=https://..." >&2
+            exit 1
+          fi
 
       - name: Build client-app
         working-directory: client-app
         run: |
           npm ci
           npm run build
+          if grep -rq "localhost:7024" dist/assets/; then
+            echo "Production bundle contains localhost:7024!" >&2
+            exit 1
+          fi
 
-      # 2. Publish ASP.NET Core 9 Backend
+      # 2. Publish ASP.NET Core 9 Backend & EF Core Migration Bundle
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '9.0.x'
 
-      - name: Publish ServerAPI
-        run: dotnet publish ServerAPI/ServerAPI/ServerAPI.csproj -c Release -o ./publish/api
+      - name: Publish ServerAPI and build EF Core migration bundle
+        run: |
+          dotnet publish ServerAPI/ServerAPI/ServerAPI.csproj -c Release -o ./publish/api
+          dotnet tool install --global dotnet-ef --version 9.0.4
+          export PATH="$HOME/.dotnet/tools:$PATH"
+          dotnet ef migrations bundle \
+            --project ServerAPI/ServerAPI/ServerAPI.csproj \
+            --startup-project ServerAPI/ServerAPI/ServerAPI.csproj \
+            --configuration Release \
+            --target-runtime linux-x64 \
+            --output ./publish/efbundle \
+            --force
 
-      # 3. Configure SSH
+      # 3. Configure SSH with pinned host key
       - name: Setup SSH
+        env:
+          VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+          VPS_SSH_KNOWN_HOSTS: ${{ secrets.VPS_SSH_KNOWN_HOSTS }}
+          VPS_HOST: ${{ secrets.VPS_HOST }}
+          VPS_PORT: ${{ secrets.VPS_PORT }}
+          VPS_USER: ${{ secrets.VPS_USER }}
         run: |
+          for var in VPS_SSH_KEY VPS_SSH_KNOWN_HOSTS VPS_HOST VPS_PORT VPS_USER; do
+            if [ -z "${!var}" ]; then
+              echo "Error: Required secret $var is not set." >&2
+              exit 1
+            fi
+          done
+
           mkdir -p ~/.ssh
-          echo "${{ secrets.VPS_SSH_KEY }}" > ~/.ssh/id_ed25519
+          chmod 700 ~/.ssh
+
+          printf '%s\n' "$VPS_SSH_KEY" > ~/.ssh/id_ed25519
           chmod 600 ~/.ssh/id_ed25519
-          ssh-keyscan -p ${{ secrets.VPS_PORT }} -H ${{ secrets.VPS_HOST }} >> ~/.ssh/known_hosts
 
-      # 4. Sync Frontend & Backend to VPS
-      - name: Deploy Frontend via rsync
-        run: |
-          rsync -avz --delete -e "ssh -p ${{ secrets.VPS_PORT }}" \
-            client-app/dist/ \
-            ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:/var/www/jumpwithjenny/client-app/dist/
+          printf '%s\n' "$VPS_SSH_KNOWN_HOSTS" > ~/.ssh/known_hosts
+          chmod 644 ~/.ssh/known_hosts
 
-      - name: Deploy Backend via rsync
-        run: |
-          rsync -avz --delete \
-            --exclude 'appsettings.json' \
-            --exclude 'appsettings.Development.json' \
-            --exclude 'appsettings.Production.json' \
-            --exclude 'wwwroot/' \
-            -e "ssh -p ${{ secrets.VPS_PORT }}" \
-            ./publish/api/ \
-            ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:/var/www/jumpwithjenny/ServerAPI/publish/
+          cat > ~/.ssh/config <<EOF
+          Host vps
+            HostName ${VPS_HOST}
+            Port ${VPS_PORT}
+            User ${VPS_USER}
+            IdentityFile ~/.ssh/id_ed25519
+            IdentitiesOnly yes
+            UserKnownHostsFile ~/.ssh/known_hosts
+            StrictHostKeyChecking yes
+          EOF
+          chmod 600 ~/.ssh/config
 
-      # 5. Restart Backend Service
-      - name: Restart ASP.NET Core Service
+      # 4. Stage Frontend, Backend & Migration Bundle via rsync
+      - name: Stage release artifacts on VPS
         run: |
-          ssh -p ${{ secrets.VPS_PORT }} ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} \
-            "systemctl restart jumpwithjenny.service && systemctl is-active jumpwithjenny.service"
+          rsync -avz --delete client-app/dist/ vps:/var/www/jumpwithjenny/client-app/dist.new/
+          rsync -avz --delete ./publish/api/ vps:/var/www/jumpwithjenny/ServerAPI/publish.new/
+          rsync -avz ./publish/efbundle vps:/var/www/jumpwithjenny/ServerAPI/efbundle.new
+
+      # 5. Run EF migrations, atomically swap releases, restart service & verify health
+      - name: Apply migrations, atomic swap, and health check
+        run: |
+          ssh vps 'bash -s' <<'EOF'
+            set -euo pipefail
+
+            FE_BASE="/var/www/jumpwithjenny/client-app"
+            FE_LIVE="${FE_BASE}/dist"
+            FE_NEW="${FE_BASE}/dist.new"
+            FE_PREV="${FE_BASE}/dist.prev"
+
+            BE_BASE="/var/www/jumpwithjenny/ServerAPI"
+            BE_LIVE="${BE_BASE}/publish"
+            BE_NEW="${BE_BASE}/publish.new"
+            BE_PREV="${BE_BASE}/publish.prev"
+            EF_BUNDLE="${BE_BASE}/efbundle.new"
+
+            # Preserve server-side configuration and user uploads in staged backend directory
+            for cfg in appsettings.json appsettings.Development.json appsettings.Production.json; do
+              if [ -f "${BE_LIVE}/${cfg}" ]; then
+                cp -a "${BE_LIVE}/${cfg}" "${BE_NEW}/${cfg}"
+              fi
+            done
+            if [ -d "${BE_LIVE}/wwwroot" ]; then
+              rm -rf "${BE_NEW}/wwwroot"
+              cp -a "${BE_LIVE}/wwwroot" "${BE_NEW}/wwwroot"
+            fi
+
+            # Run EF Core migrations before swapping live directories or restarting the service
+            chmod +x "${EF_BUNDLE}"
+            (
+              cd "${BE_NEW}"
+              ASPNETCORE_ENVIRONMENT=Production "${EF_BUNDLE}"
+            )
+            rm -f "${EF_BUNDLE}"
+
+            # Stop service and atomically swap backend and frontend directories
+            systemctl stop jumpwithjenny.service
+
+            rm -rf "${BE_PREV}"
+            if [ -d "${BE_LIVE}" ]; then
+              mv "${BE_LIVE}" "${BE_PREV}"
+            fi
+            mv "${BE_NEW}" "${BE_LIVE}"
+
+            rm -rf "${FE_PREV}"
+            if [ -d "${FE_LIVE}" ]; then
+              mv "${FE_LIVE}" "${FE_PREV}"
+            fi
+            mv "${FE_NEW}" "${FE_LIVE}"
+
+            systemctl start jumpwithjenny.service
+
+            rollback() {
+              echo "Health check failed; rolling back release..." >&2
+              journalctl -u jumpwithjenny.service -n 50 --no-pager >&2 || true
+              systemctl stop jumpwithjenny.service || true
+
+              if [ -d "${BE_PREV}" ]; then
+                rm -rf "${BE_LIVE}"
+                mv "${BE_PREV}" "${BE_LIVE}"
+              fi
+              if [ -d "${FE_PREV}" ]; then
+                rm -rf "${FE_LIVE}"
+                mv "${FE_PREV}" "${FE_LIVE}"
+              fi
+
+              systemctl start jumpwithjenny.service || true
+            }
+
+            for i in $(seq 1 15); do
+              if systemctl is-active --quiet jumpwithjenny.service && \
+                 curl -fsS --max-time 5 -H "X-Forwarded-Proto: https" http://127.0.0.1:7024/health > /dev/null; then
+                echo "Local backend health check passed on attempt ${i}."
+                exit 0
+              fi
+              sleep 2
+            done
+
+            rollback
+            exit 1
+          EOF
+
+      # 6. Public HTTP end-to-end health checks
+      - name: Verify public endpoints over HTTPS
+        run: |
+          check_url() {
+            local url="$1"
+            for i in $(seq 1 10); do
+              if curl -fsS --max-time 10 "$url" > /dev/null; then
+                echo "OK: $url"
+                return 0
+              fi
+              sleep 3
+            done
+            echo "FAILED: $url" >&2
+            return 1
+          }
+
+          check_url "https://api.jumpwithjenny.com/health"
+          check_url "https://jumpwithjenny.com/"
+          check_url "https://jumpwithjenny.com/manifest.json"
+          check_url "https://jumpwithjenny.com/robots.txt"
+
+      - name: Cleanup SSH credentials
+        if: always()
+        run: rm -f ~/.ssh/id_ed25519 ~/.ssh/known_hosts ~/.ssh/config

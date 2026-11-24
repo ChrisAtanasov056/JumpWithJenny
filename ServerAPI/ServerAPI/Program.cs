@@ -323,6 +323,19 @@ public partial class Program
 
         app.MapGet("/", () => Results.Ok(new { message = "JumpWithJenny API is running ✅" }));
 
+        app.MapGet("/health", async (JumpWithJennyDbContext dbContext, CancellationToken cancellationToken) =>
+        {
+            var canConnect = await dbContext.Database.CanConnectAsync(cancellationToken);
+            if (!canConnect)
+            {
+                return Results.Json(
+                    new { status = "unhealthy", database = "unreachable" },
+                    statusCode: StatusCodes.Status503ServiceUnavailable);
+            }
+
+            return Results.Ok(new { status = "healthy", database = "connected" });
+        }).AllowAnonymous();
+
         app.MapControllers();
 
         // Seed data on application startup

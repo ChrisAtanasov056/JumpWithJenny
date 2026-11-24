@@ -3,7 +3,7 @@ import { Link } from 'react-scroll';
 import { useTranslation } from 'react-i18next';
 import './Welcome.scss';
 
-const videoSource = "../../images/main_page.mp4"; 
+const videoSource = "/images/main_page.mp4";
 
 const Welcome = () => {
   const { t } = useTranslation();

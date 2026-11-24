@@ -1,7 +1,16 @@
 import axios from 'axios';
 
 // Use Vite's environment variables (import.meta.env)
-export const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://localhost:7024';
+const rawApiBaseUrl = import.meta.env.VITE_API_URL?.trim();
+
+if (import.meta.env.PROD && !rawApiBaseUrl) {
+  console.error('VITE_API_URL is not configured for production; falling back to https://api.jumpwithjenny.com');
+}
+
+export const API_BASE_URL = (
+  rawApiBaseUrl ||
+  (import.meta.env.PROD ? 'https://api.jumpwithjenny.com' : 'https://localhost:7024')
+).replace(/\/+$/, '');
 export const AUTH_LOGOUT_EVENT = 'auth:logout';
 
 const AUTH_BYPASS_PATHS = [

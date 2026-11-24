@@ -50,7 +50,7 @@ const AboutMe = () => {
         ref={imageRef}
         className={`about-image ${isVisible ? 'active' : ''}`}
       >
-        <img src="../../../images/jenny.jpg" alt={t('about.title')} />
+        <img src="/images/jenny.jpg" alt={t('about.title')} />
       </div>
     </section>
   );
