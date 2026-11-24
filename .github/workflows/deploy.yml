@@ -1,0 +1,67 @@
+name: Deploy Jump With Jenny
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # 1. Build React (Vite) Frontend
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: client-app/package-lock.json
+
+      - name: Build client-app
+        working-directory: client-app
+        run: |
+          npm ci
+          npm run build
+
+      # 2. Publish ASP.NET Core 9 Backend
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '9.0.x'
+
+      - name: Publish ServerAPI
+        run: dotnet publish ServerAPI/ServerAPI/ServerAPI.csproj -c Release -o ./publish/api
+
+      # 3. Configure SSH
+      - name: Setup SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.VPS_SSH_KEY }}" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          ssh-keyscan -p ${{ secrets.VPS_PORT }} -H ${{ secrets.VPS_HOST }} >> ~/.ssh/known_hosts
+
+      # 4. Sync Frontend & Backend to VPS
+      - name: Deploy Frontend via rsync
+        run: |
+          rsync -avz --delete -e "ssh -p ${{ secrets.VPS_PORT }}" \
+            client-app/dist/ \
+            ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:/var/www/jumpwithjenny/client-app/dist/
+
+      - name: Deploy Backend via rsync
+        run: |
+          rsync -avz --delete \
+            --exclude 'appsettings.json' \
+            --exclude 'appsettings.Production.json' \
+            -e "ssh -p ${{ secrets.VPS_PORT }}" \
+            ./publish/api/ \
+            ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:/var/www/jumpwithjenny/ServerAPI/publish/
+
+      # 5. Restart Backend Service
+      - name: Restart ASP.NET Core Service
+        run: |
+          ssh -p ${{ secrets.VPS_PORT }} ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} \
+            "systemctl restart jumpwithjenny.service && systemctl is-active jumpwithjenny.service"
