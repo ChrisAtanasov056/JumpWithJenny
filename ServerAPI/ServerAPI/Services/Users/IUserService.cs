@@ -3,27 +3,35 @@
     using Microsoft.AspNetCore.Identity;
     using ServerAPI.Models;
     using ServerAPI.ViewModels.Users;
+    using System.Collections.Generic;
+    using System.Threading;
+    using System.Threading.Tasks;
 
     public interface IUserService
     {
-        Task<List<T>> GetAllUsersAsync<T>(int? count = null) where T : class, new();
-        public Task<string> GetFirstNameAsync(string id);
+        Task<List<UserViewModel>> GetAllUsersAsync(int? count = null, CancellationToken cancellationToken = default);
 
-        public Task<string> GetLastNameAsync(string id);
+        Task<AllUsersViewModels> GetUsersPagedAsync(int page = 1, int pageSize = 50, string search = null, CancellationToken cancellationToken = default);
 
-        public Task<User> ChangeFirstNameAsync(string id, string firstName);
+        Task<string> GetFirstNameAsync(string id);
 
-        public Task<string> GetProfilePicAsync(string id);
+        Task<string> GetLastNameAsync(string id);
 
-        public Task<User> ChangeLastNameAsync(string id, string lastName);
+        Task<User> ChangeFirstNameAsync(string id, string firstName);
 
-        public Task<User> ChangeEmailAsync(string userId, string newEmail);
+        Task<string> GetProfilePicAsync(string id);
 
-        public Task<UserAdminViewModel> GetUserByIdAsync(string id);
+        Task<User> ChangeLastNameAsync(string id, string lastName);
 
-        public Task<bool> ChangePasswordAsync(string Id, string currentPassword, string newPassword);
-        public Task<UserAdminViewModel> UpdateUserAsync(string id, UserUpdateViewModel model, string actingUserId = null);
-        public Task<bool> DeleteUserAsync(string Id); 
+        Task<User> ChangeEmailAsync(string userId, string newEmail);
+
+        Task<UserAdminViewModel> GetUserByIdAsync(string id);
+
+        Task<bool> ChangePasswordAsync(string id, string currentPassword, string newPassword);
+
+        Task<UserAdminViewModel> UpdateUserAsync(string id, UserUpdateViewModel model, string actingUserId = null);
+
+        Task<bool> DeleteUserAsync(string id);
 
         Task<IEnumerable<UserSearchResultModel>> SearchUsersAsync(string query);
 

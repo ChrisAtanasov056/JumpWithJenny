@@ -11,7 +11,6 @@ using ServerAPI.Common;
 using ServerAPI.Data;
 using ServerAPI.Models;
 using ServerAPI.Models.Authentication;
-using ServerAPI.Services.Users;
 
 namespace ServerAPI.Services.AuthService
 {
@@ -20,7 +19,6 @@ namespace ServerAPI.Services.AuthService
         private const string ProviderName = "Google";
 
         private readonly UserManager<User> _userManager;
-        private readonly IUserService _userService;
         private readonly IConfiguration _configuration;
         private readonly JumpWithJennyDbContext _dbContext;
         private readonly JwtTokenService _jwtTokenService;
@@ -30,7 +28,6 @@ namespace ServerAPI.Services.AuthService
         public GoogleAuthService(
             JwtTokenService jwtTokenService,
             UserManager<User> userManager,
-            IUserService userService,
             JumpWithJennyDbContext dbContext,
             IConfiguration configuration,
             HttpClient httpClient,
@@ -38,7 +35,6 @@ namespace ServerAPI.Services.AuthService
         {
             _jwtTokenService = jwtTokenService;
             _userManager = userManager;
-            _userService = userService;
             _dbContext = dbContext;
             _configuration = configuration;
             _httpClient = httpClient;

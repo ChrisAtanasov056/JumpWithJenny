@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -19,17 +19,19 @@ using ServerAPI.Services.Contacts;
 using ServerAPI.Services.Schedule;
 using ServerAPI.Services.Users;
 using ServerAPI.Services.Workouts;
+using System.Diagnostics;
+using System.Net.Http.Headers;
 using System.Security.Claims;
 using System.Text;
-using System.Text.Json;
 using System.Threading.RateLimiting;
 
 public partial class Program
 {
     public static void Main(string[] args)
     {
+        AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
+
         var builder = WebApplication.CreateBuilder(args);
-        builder.Logging.AddConsole(); // This enables console logg
         ConfigureServices(builder.Services, builder.Configuration, builder.Environment);
         var app = builder.Build();
         Configure(app);
@@ -38,6 +40,7 @@ public partial class Program
 
     private static void ConfigureServices(IServiceCollection services, IConfiguration configuration, IWebHostEnvironment environment)
     {
+        AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
         var configuredOrigins = configuration.GetSection("AllowedOrigins").Get<string[]>() ?? Array.Empty<string>();
         var allowedOrigins = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
         {
@@ -83,10 +86,32 @@ public partial class Program
             options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
             options.OnRejected = async (context, cancellationToken) =>
             {
-                context.HttpContext.Response.ContentType = "application/json";
-                await context.HttpContext.Response.WriteAsync(
-                    "{\"error\":\"Too many requests. Please try again later.\"}",
-                    cancellationToken);
+                const string detail = "Too many requests. Please try again later.";
+                var problemDetails = new ProblemDetails
+                {
+                    Status = StatusCodes.Status429TooManyRequests,
+                    Title = "Too Many Requests",
+                    Detail = detail,
+                    Type = "https://tools.ietf.org/html/rfc6585#section-4",
+                    Instance = $"{context.HttpContext.Request.Method} {context.HttpContext.Request.Path}",
+                };
+                problemDetails.Extensions["traceId"] = Activity.Current?.Id ?? context.HttpContext.TraceIdentifier;
+                problemDetails.Extensions["message"] = detail;
+
+                context.HttpContext.Response.StatusCode = StatusCodes.Status429TooManyRequests;
+                var problemDetailsService = context.HttpContext.RequestServices.GetService<IProblemDetailsService>();
+                if (problemDetailsService != null &&
+                    await problemDetailsService.TryWriteAsync(new ProblemDetailsContext
+                    {
+                        HttpContext = context.HttpContext,
+                        ProblemDetails = problemDetails,
+                    }))
+                {
+                    return;
+                }
+
+                context.HttpContext.Response.ContentType = "application/problem+json";
+                await context.HttpContext.Response.WriteAsJsonAsync(problemDetails, cancellationToken);
             };
 
             options.AddPolicy("AuthPolicy", httpContext =>
@@ -110,8 +135,15 @@ public partial class Program
                     }));
         });
 
-        services.AddSingleton<IConfiguration>(configuration);
-
+        services.AddProblemDetails(options =>
+        {
+            options.CustomizeProblemDetails = ctx =>
+            {
+                ctx.ProblemDetails.Instance ??= $"{ctx.HttpContext.Request.Method} {ctx.HttpContext.Request.Path}";
+                ctx.ProblemDetails.Extensions.TryAdd("traceId", Activity.Current?.Id ?? ctx.HttpContext.TraceIdentifier);
+            };
+        });
+        services.AddExceptionHandler<GlobalExceptionHandler>();
 
         services.AddControllers()
             .AddNewtonsoftJson(options =>
@@ -201,25 +233,35 @@ public partial class Program
         services.AddScoped(typeof(IRepository<>), typeof(EfRepository<>));
 
         // App Services
-        services.AddTransient<IScheduleService, ScheduleService>();
-        services.AddTransient<IUserService, UserService>();
+        services.AddScoped<IScheduleService, ScheduleService>();
+        services.AddScoped<IUserService, UserService>();
         services.AddScoped<IAuthService, AuthService>();
         services.AddScoped<IWorkoutServices, WorkoutServices>();
-        services.AddHttpClient<IGoogleAuthService, GoogleAuthService>();
         services.AddScoped<IEmailService, EmailService>();
-        services.AddScoped<IEmailTemplateService, EmailTemplateService>();
+        services.AddSingleton<IEmailTemplateService, EmailTemplateService>();
         services.AddScoped<IContactService, ContactService>();
-        services.AddHttpClient<IFacebookAuthService, FacebookAuthService>();
         services.AddScoped<IShoesService, ShoesService>();
 
-        // Logging and Swagger
-        services.AddLogging();
+        services.AddHttpClient<IGoogleAuthService, GoogleAuthService>(client =>
+        {
+            client.BaseAddress = new Uri("https://oauth2.googleapis.com/");
+            client.Timeout = TimeSpan.FromSeconds(15);
+            client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+        });
+
+        services.AddHttpClient<IFacebookAuthService, FacebookAuthService>(client =>
+        {
+            client.BaseAddress = new Uri("https://graph.facebook.com/");
+            client.Timeout = TimeSpan.FromSeconds(15);
+            client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+        });
+
+        // Swagger
         services.AddEndpointsApiExplorer();
         services.AddSwaggerGen(c =>
         {
             c.SwaggerDoc("v1", new OpenApiInfo { Title = "My API", Version = "v1" });
         });
-        AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
 
 
         services.ConfigureApplicationCookie(options =>
@@ -240,10 +282,11 @@ public partial class Program
     private static void Configure(WebApplication app)
     {
         app.UseForwardedHeaders();
+        app.UseExceptionHandler();
+        app.UseStatusCodePages();
 
         if (app.Environment.IsDevelopment())
         {
-            app.UseDeveloperExceptionPage();
             app.UseSwagger();
             app.UseSwaggerUI(c =>
             {
@@ -253,24 +296,6 @@ public partial class Program
         }
         else
         {
-            app.UseExceptionHandler(errorApp =>
-            {
-                errorApp.Run(async context =>
-                {
-                    var exceptionHandlerPathFeature = context.Features.Get<IExceptionHandlerPathFeature>();
-                    var exception = exceptionHandlerPathFeature?.Error;
-
-                    var logger = context.RequestServices.GetRequiredService<ILogger<Program>>();
-                    logger.LogError(exception, "Unhandled exception");
-
-                    context.Response.StatusCode = 500;
-                    context.Response.ContentType = "application/json";
-
-                    var result = JsonSerializer.Serialize(new { error = "Internal Server Error" });
-                    await context.Response.WriteAsync(result);
-                });
-            });
-
             app.UseHsts();
         }
 

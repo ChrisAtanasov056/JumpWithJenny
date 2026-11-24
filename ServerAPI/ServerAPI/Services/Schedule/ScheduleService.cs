@@ -92,7 +92,7 @@ namespace ServerAPI.Services.Schedule
                     "Please confirm your email address before registering for a workout.");
             }
 
-            var workout = await _workoutRepository.All()
+            var workout = await _workoutRepository.AllAsSplitQuery()
                 .Include(w => w.WorkoutShoes)
                     .ThenInclude(ws => ws.Shoe)
                 .Include(w => w.Appointments)
@@ -233,18 +233,25 @@ namespace ServerAPI.Services.Schedule
             }
         }
 
-        public async Task<List<WorkoutViewModels>> GetAllWorkoutsAsync()
+        public async Task<List<WorkoutViewModels>> GetAllWorkoutsAsync(
+            int page = 1,
+            int pageSize = 50,
+            CancellationToken cancellationToken = default)
         {
+            page = Math.Max(1, page);
+            pageSize = Math.Clamp(pageSize, 1, 100);
             var nowSofia = BulgariaTimeHelper.GetCurrentSofiaTime();
 
             var workouts = await _workoutRepository
-                .AllAsNoTracking()
+                .AllAsNoTrackingSplitQuery()
                 .Where(w => w.Date > nowSofia)
                 .OrderBy(w => w.Date)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
                 .Include(w => w.WorkoutShoes)
                     .ThenInclude(ws => ws.Shoe)
                 .Include(w => w.Appointments)
-                .ToListAsync();
+                .ToListAsync(cancellationToken);
 
             return workouts.Select(MapToWorkoutViewModel).ToList();
         }
@@ -252,7 +259,7 @@ namespace ServerAPI.Services.Schedule
         public async Task<WorkoutViewModels> GetWorkoutByIdAsync(string id)
         {
             var workout = await _workoutRepository
-                .AllAsNoTracking()
+                .AllAsNoTrackingSplitQuery()
                 .Where(w => w.Id == id)
                 .Include(w => w.WorkoutShoes)
                     .ThenInclude(ws => ws.Shoe)

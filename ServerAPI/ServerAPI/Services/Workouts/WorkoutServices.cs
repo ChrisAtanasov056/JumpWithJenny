@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using ServerAPI.Common;
 using ServerAPI.Data.Common.Repositories;
 using ServerAPI.Models;
+using ServerAPI.Models.Common;
 using ServerAPI.Models.Enums;
 using ServerAPI.Models.Schedule;
 using ServerAPI.ViewModels;
@@ -23,14 +24,14 @@ namespace ServerAPI.Services.Workouts
         private readonly IDeletableEntityRepository<Appointment> _appointmentRepository;
         private readonly IDeletableEntityRepository<Shoes> _shoesRepository;
         private readonly IDeletableEntityRepository<WorkoutShoes> _workoutShoesRepository;
-        private readonly ILogger<Workout> _logger;
+        private readonly ILogger<WorkoutServices> _logger;
 
         public WorkoutServices(
             IDeletableEntityRepository<Workout> workoutRepository,
             IDeletableEntityRepository<Appointment> appointmentRepository,
             IDeletableEntityRepository<Shoes> shoesRepository,
             IDeletableEntityRepository<WorkoutShoes> workoutShoesRepository,
-            ILogger<Workout> logger)
+            ILogger<WorkoutServices> logger)
         {
             _workoutRepository = workoutRepository;
             _appointmentRepository = appointmentRepository;
@@ -91,20 +92,24 @@ namespace ServerAPI.Services.Workouts
             await _workoutRepository.AddAsync(workout);
             await _workoutRepository.SaveChangesAsync();
 
-            var existingShoes = await _shoesRepository.All().ToListAsync();
-            var workoutShoes = existingShoes.Select(shoe => new WorkoutShoes
-            {
-                WorkoutId = workout.Id,
-                ShoeId = shoe.Id,
-                IsTaken = string.Equals(workout.Status, "Booked", StringComparison.OrdinalIgnoreCase)
-            }).ToList();
+            var existingShoeIds = await _shoesRepository
+                .AllAsNoTracking()
+                .Select(shoe => shoe.Id)
+                .ToListAsync();
 
-            foreach (var workoutShoe in workoutShoes)
+            if (existingShoeIds.Count > 0)
             {
-                await _workoutShoesRepository.AddAsync(workoutShoe);
+                var isBooked = string.Equals(workout.Status, "Booked", StringComparison.OrdinalIgnoreCase);
+                var workoutShoes = existingShoeIds.Select(shoeId => new WorkoutShoes
+                {
+                    WorkoutId = workout.Id,
+                    ShoeId = shoeId,
+                    IsTaken = isBooked
+                });
+
+                await _workoutShoesRepository.AddRangeAsync(workoutShoes);
+                await _workoutShoesRepository.SaveChangesAsync();
             }
-
-            await _workoutShoesRepository.SaveChangesAsync();
 
             return new WorkoutCreateModel
             {
@@ -120,14 +125,8 @@ namespace ServerAPI.Services.Workouts
         public async Task<AdminWorkoutViewModel> GetWorkoutByIdAsync(string id)
         {
             var workout = await _workoutRepository
-                .AllAsNoTracking()
+                .AllAsNoTrackingSplitQuery()
                 .Where(w => w.Id == id)
-                .Include(w => w.WorkoutShoes)
-                    .ThenInclude(ws => ws.Shoe)
-                .Include(w => w.Appointments)
-                    .ThenInclude(a => a.User)
-                .Include(w => w.Appointments)
-                    .ThenInclude(a => a.Shoe)
                 .Select(w => new AdminWorkoutViewModel
                 {
                     Id = w.Id,
@@ -138,6 +137,26 @@ namespace ServerAPI.Services.Workouts
                     AvailableSpots = w.AvailableSpots,
                     WorkoutShoes = w.WorkoutShoes
                         .Where(ws => !ws.IsDeleted && ws.Shoe != null && !ws.Shoe.IsDeleted)
+                        .Select(ws => new WorkoutShoes
+                        {
+                            Id = ws.Id,
+                            WorkoutId = ws.WorkoutId,
+                            ShoeId = ws.ShoeId,
+                            IsTaken = ws.IsTaken,
+                            CreatedOn = ws.CreatedOn,
+                            ModifiedOn = ws.ModifiedOn,
+                            IsDeleted = ws.IsDeleted,
+                            DeletedOn = ws.DeletedOn,
+                            Shoe = new Shoes
+                            {
+                                Id = ws.Shoe.Id,
+                                Size = ws.Shoe.Size,
+                                CreatedOn = ws.Shoe.CreatedOn,
+                                ModifiedOn = ws.Shoe.ModifiedOn,
+                                IsDeleted = ws.Shoe.IsDeleted,
+                                DeletedOn = ws.Shoe.DeletedOn,
+                            }
+                        })
                         .ToList(),
                     Appointments = w.Appointments
                         .Where(a => !a.IsDeleted)
@@ -197,21 +216,18 @@ namespace ServerAPI.Services.Workouts
 
         public async Task<IEnumerable<GetParticipantsModel>> GetParticipantsAsync(string workoutId)
         {
-            var appointments = await _appointmentRepository.AllAsNoTracking()
+            return await _appointmentRepository.AllAsNoTracking()
                 .Where(a => a.WorkoutId == workoutId)
-                .Include(a => a.User)
-                .Include(a => a.Shoe)
+                .Select(a => new GetParticipantsModel
+                {
+                    Id = a.UserId,
+                    FirstName = a.User != null ? a.User.FirstName : null,
+                    LastName = a.User != null ? a.User.LastName : null,
+                    Email = a.User != null ? a.User.Email : null,
+                    ShoeSize = a.Shoe != null ? a.Shoe.Size : (ShoesSize?)null,
+                    UsesOwnShoes = a.UsesOwnShoes,
+                })
                 .ToListAsync();
-
-            return appointments.Select(a => new GetParticipantsModel
-            {
-                Id = a.UserId,
-                FirstName = a.User?.FirstName,
-                LastName = a.User?.LastName,
-                Email = a.User?.Email,
-                ShoeSize = a.Shoe?.Size,
-                UsesOwnShoes = a.UsesOwnShoes,
-            });
         }
 
         public async Task<WorkoutUpdateModel> UpdateWorkoutAsync(string id, WorkoutUpdateModel dto)
@@ -282,10 +298,50 @@ namespace ServerAPI.Services.Workouts
             };
         }
 
-        public async Task<IEnumerable<AdminWorkoutViewModel>> GetAllWorkoutsAsync()
+        public async Task<IEnumerable<AdminWorkoutViewModel>> GetAllWorkoutsAsync(CancellationToken cancellationToken = default)
         {
-            var workouts = await _workoutRepository.AllAsNoTracking()
-                .OrderBy(w => w.Date)
+            var paged = await GetWorkoutsPagedAsync(page: 1, pageSize: 100, cancellationToken: cancellationToken);
+            return paged.Items;
+        }
+
+        public async Task<PagedResult<AdminWorkoutViewModel>> GetWorkoutsPagedAsync(
+            int page = 1,
+            int pageSize = 20,
+            bool? upcomingOnly = null,
+            string search = null,
+            CancellationToken cancellationToken = default)
+        {
+            page = Math.Max(1, page);
+            pageSize = Math.Clamp(pageSize, 1, 100);
+
+            var query = _workoutRepository.AllAsNoTrackingSplitQuery();
+
+            if (upcomingOnly.HasValue)
+            {
+                var nowSofia = BulgariaTimeHelper.GetCurrentSofiaTime();
+                query = upcomingOnly.Value
+                    ? query.Where(w => w.Date > nowSofia)
+                    : query.Where(w => w.Date <= nowSofia);
+            }
+
+            if (!string.IsNullOrWhiteSpace(search))
+            {
+                var term = search.Trim().ToLower();
+                query = query.Where(w =>
+                    (w.Day != null && w.Day.ToLower().Contains(term)) ||
+                    (w.Time != null && w.Time.ToLower().Contains(term)) ||
+                    (w.Status != null && w.Status.ToLower().Contains(term)));
+            }
+
+            var totalCount = await query.CountAsync(cancellationToken);
+
+            var orderedQuery = upcomingOnly == false
+                ? query.OrderByDescending(w => w.Date)
+                : query.OrderBy(w => w.Date);
+
+            var workouts = await orderedQuery
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
                 .Select(w => new AdminWorkoutViewModel
                 {
                     Id = w.Id,
@@ -296,6 +352,26 @@ namespace ServerAPI.Services.Workouts
                     AvailableSpots = w.AvailableSpots,
                     WorkoutShoes = w.WorkoutShoes
                         .Where(ws => !ws.IsDeleted && ws.Shoe != null && !ws.Shoe.IsDeleted)
+                        .Select(ws => new WorkoutShoes
+                        {
+                            Id = ws.Id,
+                            WorkoutId = ws.WorkoutId,
+                            ShoeId = ws.ShoeId,
+                            IsTaken = ws.IsTaken,
+                            CreatedOn = ws.CreatedOn,
+                            ModifiedOn = ws.ModifiedOn,
+                            IsDeleted = ws.IsDeleted,
+                            DeletedOn = ws.DeletedOn,
+                            Shoe = new Shoes
+                            {
+                                Id = ws.Shoe.Id,
+                                Size = ws.Shoe.Size,
+                                CreatedOn = ws.Shoe.CreatedOn,
+                                ModifiedOn = ws.Shoe.ModifiedOn,
+                                IsDeleted = ws.Shoe.IsDeleted,
+                                DeletedOn = ws.Shoe.DeletedOn,
+                            }
+                        })
                         .ToList(),
                     Appointments = w.Appointments
                         .Where(a => !a.IsDeleted)
@@ -311,14 +387,20 @@ namespace ServerAPI.Services.Workouts
                             UsesOwnShoes = a.UsesOwnShoes
                         }).ToList()
                 })
-                .ToListAsync();
+                .ToListAsync(cancellationToken);
 
             foreach (var workout in workouts)
             {
                 workout.Date = BulgariaTimeHelper.SofiaToUtc(workout.Date);
             }
 
-            return workouts;
+            return new PagedResult<AdminWorkoutViewModel>
+            {
+                Items = workouts,
+                Page = page,
+                PageSize = pageSize,
+                TotalCount = totalCount,
+            };
         }
     }
 }

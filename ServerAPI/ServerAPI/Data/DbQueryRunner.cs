@@ -27,10 +27,7 @@
 
         protected virtual void Dispose(bool disposing)
         {
-            if (disposing)
-            {
-                this.Context?.Dispose();
-            }
+            // DbContext is managed and disposed by the scoped DI container.
         }
     }
 }

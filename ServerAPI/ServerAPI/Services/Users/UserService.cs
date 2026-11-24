@@ -11,7 +11,7 @@
     using System;
     using System.Collections.Generic;
     using System.Linq;
-    using System.Reflection;
+    using System.Threading;
     using System.Threading.Tasks;
 
     public class UserService : IUserService
@@ -51,8 +51,7 @@
 
                 if (await this.userManager.IsInRoleAsync(user, GlobalConstants.AdministratorRoleName))
                 {
-                    var admins = await this.userManager.GetUsersInRoleAsync(GlobalConstants.AdministratorRoleName);
-                    if (!admins.Any(a => !a.IsDeleted && a.Id != id))
+                    if (!await HasAnotherActiveAdministratorAsync(id))
                     {
                         throw new InvalidOperationException("Cannot delete the last administrator account.");
                     }
@@ -194,8 +193,7 @@
                     throw new InvalidOperationException("You cannot remove your own Administrator role.");
                 }
 
-                var admins = await this.userManager.GetUsersInRoleAsync(GlobalConstants.AdministratorRoleName);
-                if (!admins.Any(a => !a.IsDeleted && a.Id != id))
+                if (!await HasAnotherActiveAdministratorAsync(id))
                 {
                     throw new InvalidOperationException("Cannot demote the last administrator account.");
                 }
@@ -275,89 +273,111 @@
             }
         }
 
-       public async Task<List<T>> GetAllUsersAsync<T>(int? count = null) where T : class, new()
+        public async Task<List<UserViewModel>> GetAllUsersAsync(int? count = null, CancellationToken cancellationToken = default)
         {
-            var query = this.usersRepository.All();
+            var query = _context.Users
+                .AsNoTracking()
+                .OrderBy(u => u.UserName)
+                .Select(u => new UserViewModel
+                {
+                    Id = u.Id,
+                    Username = u.UserName,
+                    Email = u.Email,
+                    FirstName = u.FirstName,
+                    LastName = u.LastName,
+                    Role = _context.UserRoles
+                        .Where(ur => ur.UserId == u.Id)
+                        .Join(_context.Roles, ur => ur.RoleId, r => r.Id, (ur, r) => r.Name)
+                        .FirstOrDefault() ?? "No Role",
+                });
 
             if (count.HasValue)
             {
-                query = query.Take(count.Value);
+                query = query.Take(Math.Max(0, count.Value));
             }
 
-            _logger.LogInformation("Querying {Count} active users from the database.", count);
+            _logger.LogInformation("Querying active users (limit: {Count}) from the database.", count);
 
-            var users = await query
-                .OrderBy(u => u.UserName)
-                .ToListAsync();
-
-            var result = new List<T>();
-
-            foreach (var user in users)
-            {
-                var roles = await userManager.GetRolesAsync(user);
-                var role = roles.FirstOrDefault() ?? "No Role";
-
-                var obj = new T();
-                var userProperties = typeof(User).GetProperties();
-                var targetProperties = typeof(T).GetProperties();
-
-                foreach (var targetProp in targetProperties)
-                {
-                    if (targetProp.Name.Equals("Role", StringComparison.OrdinalIgnoreCase) &&
-                        targetProp.PropertyType == typeof(string))
-                    {
-                        targetProp.SetValue(obj, role);
-                        continue;
-                    }
-
-                    PropertyInfo sourceProp = null;
-
-                    // специално за Username
-                    if (targetProp.Name.Equals("Username", StringComparison.OrdinalIgnoreCase))
-                    {
-                        sourceProp = userProperties.FirstOrDefault(p => p.Name.Equals("UserName", StringComparison.OrdinalIgnoreCase));
-                    }
-                    else
-                    {
-                        sourceProp = userProperties.FirstOrDefault(p => p.Name == targetProp.Name &&
-                                                                        p.PropertyType == targetProp.PropertyType);
-                    }
-
-                    if (sourceProp != null)
-                    {
-                        var value = sourceProp.GetValue(user);
-                        targetProp.SetValue(obj, value);
-                    }
-                }
-
-
-                result.Add(obj);
-            }
-
-            return result;
+            return await query.ToListAsync(cancellationToken);
         }
 
+        public async Task<AllUsersViewModels> GetUsersPagedAsync(
+            int page = 1,
+            int pageSize = 50,
+            string search = null,
+            CancellationToken cancellationToken = default)
+        {
+            page = Math.Max(1, page);
+            pageSize = Math.Clamp(pageSize, 1, 100);
 
+            var baseQuery = _context.Users.AsNoTracking();
+
+            if (!string.IsNullOrWhiteSpace(search))
+            {
+                var term = search.Trim().ToLower();
+                baseQuery = baseQuery.Where(u =>
+                    (u.UserName != null && u.UserName.ToLower().Contains(term)) ||
+                    (u.Email != null && u.Email.ToLower().Contains(term)) ||
+                    (u.FirstName != null && u.FirstName.ToLower().Contains(term)) ||
+                    (u.LastName != null && u.LastName.ToLower().Contains(term)) ||
+                    _context.UserRoles
+                        .Where(ur => ur.UserId == u.Id)
+                        .Join(_context.Roles, ur => ur.RoleId, r => r.Id, (ur, r) => r.Name)
+                        .Any(roleName => roleName != null && roleName.ToLower().Contains(term)));
+            }
+
+            var totalCount = await baseQuery.CountAsync(cancellationToken);
+
+            var users = await baseQuery
+                .OrderBy(u => u.UserName)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .Select(u => new UserViewModel
+                {
+                    Id = u.Id,
+                    Username = u.UserName,
+                    Email = u.Email,
+                    FirstName = u.FirstName,
+                    LastName = u.LastName,
+                    Role = _context.UserRoles
+                        .Where(ur => ur.UserId == u.Id)
+                        .Join(_context.Roles, ur => ur.RoleId, r => r.Id, (ur, r) => r.Name)
+                        .FirstOrDefault() ?? "No Role",
+                })
+                .ToListAsync(cancellationToken);
+
+            return new AllUsersViewModels
+            {
+                Users = users,
+                Page = page,
+                PageSize = pageSize,
+                TotalCount = totalCount,
+            };
+        }
 
         public async Task<UserAdminViewModel> GetUserByIdAsync(string id)
         {
-            var user = await this.usersRepository.All().FirstOrDefaultAsync(u => u.Id == id);
-            if (user == null)
+            if (string.IsNullOrWhiteSpace(id))
             {
                 return null;
             }
 
-            var roles = await this.userManager.GetRolesAsync(user);
-
-            return new UserAdminViewModel
-            {
-                Id = user.Id,
-                Username = user.UserName,
-                Email = user.Email,
-                FirstName = user.FirstName,
-                LastName = user.LastName,
-                Role = roles.FirstOrDefault(),
-            };
+            return await _context.Users
+                .AsNoTracking()
+                .Where(u => u.Id == id)
+                .Select(u => new UserAdminViewModel
+                {
+                    Id = u.Id,
+                    Username = u.UserName,
+                    Email = u.Email,
+                    FirstName = u.FirstName,
+                    LastName = u.LastName,
+                    Role = _context.UserRoles
+                        .Where(ur => ur.UserId == u.Id)
+                        .Join(_context.Roles, ur => ur.RoleId, r => r.Id, (ur, r) => r.Name)
+                        .FirstOrDefault(),
+                })
+                .FirstOrDefaultAsync();
         }
 
         public async Task<bool> ChangePasswordAsync(string id, string currentPassword, string newPassword)
@@ -427,22 +447,28 @@
             return user;
         }
 
-        public async Task<string> GetFirstNameAsync(string id)
+        public Task<string> GetFirstNameAsync(string id)
         {
-            var user = await this.usersRepository.All().FirstOrDefaultAsync(u => u.Id == id);
-            return user?.FirstName;
+            return this.usersRepository.AllAsNoTracking()
+                .Where(u => u.Id == id)
+                .Select(u => u.FirstName)
+                .FirstOrDefaultAsync();
         }
 
-        public async Task<string> GetLastNameAsync(string id)
+        public Task<string> GetLastNameAsync(string id)
         {
-            var user = await this.usersRepository.All().FirstOrDefaultAsync(u => u.Id == id);
-            return user?.LastName;
+            return this.usersRepository.AllAsNoTracking()
+                .Where(u => u.Id == id)
+                .Select(u => u.LastName)
+                .FirstOrDefaultAsync();
         }
 
-        public async Task<string> GetProfilePicAsync(string id)
+        public Task<string> GetProfilePicAsync(string id)
         {
-            var user = await this.usersRepository.All().FirstOrDefaultAsync(u => u.Id == id);
-            return user?.ProfilePictureUrl;
+            return this.usersRepository.AllAsNoTracking()
+                .Where(u => u.Id == id)
+                .Select(u => u.ProfilePictureUrl)
+                .FirstOrDefaultAsync();
         }
 
         public async Task<IEnumerable<UserSearchResultModel>> SearchUsersAsync(string query)
@@ -454,10 +480,13 @@
 
             var term = query.Trim().ToLower();
 
-            return await userManager.Users
+            return await _context.Users
+                .AsNoTracking()
                 .Where(u => (u.FirstName != null && u.FirstName.ToLower().Contains(term)) ||
                             (u.LastName != null && u.LastName.ToLower().Contains(term)) ||
                             (u.Email != null && u.Email.ToLower().Contains(term)))
+                .OrderBy(u => u.FirstName)
+                .ThenBy(u => u.LastName)
                 .Select(u => new UserSearchResultModel
                 {
                     Id = u.Id,
@@ -498,6 +527,28 @@
             }
             return result;
         }
-    } 
+
+        private Task<bool> HasAnotherActiveAdministratorAsync(string excludedUserId)
+        {
+            var normalizedAdminRole = GlobalConstants.AdministratorRoleName.ToUpperInvariant();
+
+            return _context.UserRoles
+                .AsNoTracking()
+                .Join(
+                    _context.Roles,
+                    ur => ur.RoleId,
+                    r => r.Id,
+                    (ur, r) => new { ur.UserId, r.NormalizedName })
+                .Join(
+                    _context.Users,
+                    x => x.UserId,
+                    u => u.Id,
+                    (x, u) => new { u.Id, u.IsDeleted, x.NormalizedName })
+                .AnyAsync(x =>
+                    x.NormalizedName == normalizedAdminRole &&
+                    !x.IsDeleted &&
+                    x.Id != excludedUserId);
+        }
+    }
 
 }

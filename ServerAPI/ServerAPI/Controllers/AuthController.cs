@@ -26,51 +26,37 @@ public class AuthController : ControllerBase
     [HttpPost("google-login")]
     public async Task<IActionResult> GoogleLogin([FromBody] GoogleAuthCodeRequest request)
     {
-        try
+        _logger.LogInformation("Received Google login request with authorization code.");
+        var tokenResult = await _googleAuthService.ExchangeCodeForTokensAsync(request.Code);
+        if (!tokenResult.Success)
         {
-            _logger.LogInformation("Received Google login request with authorization code.");
-            var tokenResult = await _googleAuthService.ExchangeCodeForTokensAsync(request.Code);
-            if (!tokenResult.Success)
-            {
-                _logger.LogWarning("Failed to exchange code for tokens: {Errors}", string.Join(", ", tokenResult.Errors));
-                return BadRequest(new { errors = tokenResult.Errors });
-            }
-            var authResult = await _googleAuthService.ExternalLoginAsync(tokenResult.IdToken);
-            if (!authResult.Success)
-            {
-                _logger.LogWarning("Google external login failed: {Errors}", string.Join(", ", authResult.Errors));
-                return BadRequest(new { errors = authResult.Errors });
-            }
-            _logger.LogInformation("Successful Google login for user: {Email}", authResult.User?.email);
-            return Ok(authResult);
+            _logger.LogWarning("Failed to exchange code for tokens: {Errors}", string.Join(", ", tokenResult.Errors));
+            return BadRequest(new { errors = tokenResult.Errors });
         }
-        catch (Exception ex)
+
+        var authResult = await _googleAuthService.ExternalLoginAsync(tokenResult.IdToken);
+        if (!authResult.Success)
         {
-            _logger.LogError(ex, "An error occurred during Google login.");
-            return StatusCode(500, new { message = "An internal error occurred." });
+            _logger.LogWarning("Google external login failed: {Errors}", string.Join(", ", authResult.Errors));
+            return BadRequest(new { errors = authResult.Errors });
         }
+
+        _logger.LogInformation("Successful Google login for user: {Email}", authResult.User?.email);
+        return Ok(authResult);
     }
-    
+
     [HttpPost("facebook-login")]
     public async Task<IActionResult> FacebookLogin([FromBody] FacebookAuthCodeRequest request)
     {
-        try
-        {
-            _logger.LogInformation("Received Facebook login request with access token.");
+        _logger.LogInformation("Received Facebook login request with access token.");
 
-            var authResult = await _facebookAuthService.ExternalLoginAsync(request.AccessToken);
-
-            if (!authResult.Success)
-            {
-                _logger.LogWarning("Facebook external login failed: {Errors}", string.Join(", ", authResult.Errors));
-                return BadRequest(new { errors = authResult.Errors });
-            }
-            return Ok(authResult);
-        }
-        catch (Exception ex)
+        var authResult = await _facebookAuthService.ExternalLoginAsync(request.AccessToken);
+        if (!authResult.Success)
         {
-            _logger.LogError(ex, "An error occurred during Facebook login.");
-            return StatusCode(500, new { message = "An internal error occurred." });
+            _logger.LogWarning("Facebook external login failed: {Errors}", string.Join(", ", authResult.Errors));
+            return BadRequest(new { errors = authResult.Errors });
         }
+
+        return Ok(authResult);
     }
 }

@@ -1,6 +1,7 @@
 ﻿namespace ServerAPI.Controllers
 {
     using System.Security.Claims;
+    using System.Threading;
     using Microsoft.AspNetCore.Authorization;
     using Microsoft.AspNetCore.Cors;
     using Microsoft.AspNetCore.Mvc;
@@ -23,12 +24,13 @@
 
         [Authorize(Roles = GlobalConstants.AdministratorRoleName)]
         [HttpGet("all")]
-        public async Task<IActionResult> All()
+        public async Task<IActionResult> All(
+            [FromQuery] int page = 1,
+            [FromQuery] int pageSize = 50,
+            [FromQuery] string search = null,
+            CancellationToken cancellationToken = default)
         {
-            var users = new AllUsersViewModels
-            {
-                Users = await this.userService.GetAllUsersAsync<UserViewModel>()
-            };
+            var users = await this.userService.GetUsersPagedAsync(page, pageSize, search, cancellationToken);
             return Ok(users);
         }
 
@@ -83,23 +85,8 @@
             }
 
             var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            try
-            {
-                var updatedUser = await this.userService.UpdateUserAsync(id, model, currentUserId);
-                return Ok(updatedUser);
-            }
-            catch (KeyNotFoundException ex)
-            {
-                return NotFound(new { message = ex.Message });
-            }
-            catch (ArgumentException ex)
-            {
-                return BadRequest(new { message = ex.Message });
-            }
-            catch (InvalidOperationException ex)
-            {
-                return BadRequest(new { message = ex.Message });
-            }
+            var updatedUser = await this.userService.UpdateUserAsync(id, model, currentUserId);
+            return Ok(updatedUser);
         }
 
         [Authorize(Roles = GlobalConstants.AdministratorRoleName)]
@@ -112,20 +99,13 @@
                 return BadRequest(new { message = "You cannot delete your own account." });
             }
 
-            try
+            var result = await this.userService.DeleteUserAsync(id);
+            if (!result)
             {
-                var result = await this.userService.DeleteUserAsync(id);
-                if (!result)
-                {
-                    return NotFound(new { message = "User not found or could not be deleted." });
-                }
+                return NotFound(new { message = "User not found or could not be deleted." });
+            }
 
-                return Ok(new { message = "User deleted successfully." });
-            }
-            catch (InvalidOperationException ex)
-            {
-                return BadRequest(new { message = ex.Message });
-            }
+            return Ok(new { message = "User deleted successfully." });
         }
     }
 }

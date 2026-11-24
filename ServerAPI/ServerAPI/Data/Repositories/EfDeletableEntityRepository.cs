@@ -19,6 +19,10 @@
 
         public override IQueryable<TEntity> AllAsNoTracking() => base.AllAsNoTracking().Where(x => !x.IsDeleted);
 
+        public override IQueryable<TEntity> AllAsSplitQuery() => base.AllAsSplitQuery().Where(x => !x.IsDeleted);
+
+        public override IQueryable<TEntity> AllAsNoTrackingSplitQuery() => base.AllAsNoTrackingSplitQuery().Where(x => !x.IsDeleted);
+
         public IQueryable<TEntity> AllWithDeleted() => base.All().IgnoreQueryFilters();
 
         public IQueryable<TEntity> AllAsNoTrackingWithDeleted() => base.AllAsNoTracking().IgnoreQueryFilters();
@@ -45,9 +49,10 @@
             this.Update(entity);
         }
 
-        public Task<string> GetByIdAsync(string id)
+        public Task<TEntity> GetByIdAsync(params object[] id)
         {
-            throw new NotImplementedException();
+            var getByIdPredicate = EfExpressionHelper.BuildByIdPredicate<TEntity>(this.Context, id);
+            return this.All().FirstOrDefaultAsync(getByIdPredicate);
         }
     }
 }

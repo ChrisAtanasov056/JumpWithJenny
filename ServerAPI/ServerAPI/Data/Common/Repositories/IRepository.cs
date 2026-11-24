@@ -1,7 +1,9 @@
 ﻿namespace ServerAPI.Data.Common.Repositories
 {
     using System;
+    using System.Collections.Generic;
     using System.Linq;
+    using System.Threading;
     using System.Threading.Tasks;
 
     public interface IRepository<TEntity> : IDisposable
@@ -11,7 +13,13 @@
 
         IQueryable<TEntity> AllAsNoTracking();
 
-        Task AddAsync(TEntity entity);
+        IQueryable<TEntity> AllAsSplitQuery();
+
+        IQueryable<TEntity> AllAsNoTrackingSplitQuery();
+
+        Task AddAsync(TEntity entity, CancellationToken cancellationToken = default);
+
+        Task AddRangeAsync(IEnumerable<TEntity> entities, CancellationToken cancellationToken = default);
 
         void Update(TEntity entity);
 
@@ -21,6 +29,6 @@
         /// <param name="entity">The entity to be deleted.</param>
         void Delete(TEntity entity);
 
-        Task<int> SaveChangesAsync();
+        Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
     }
 }

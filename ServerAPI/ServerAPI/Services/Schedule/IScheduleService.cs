@@ -1,13 +1,14 @@
 ﻿namespace ServerAPI.Services.Schedule
 {
     using System.Collections.Generic;
+    using System.Threading;
     using System.Threading.Tasks;
     using ServerAPI.Models.Enums;
     using ServerAPI.Models.Schedule;
 
     public interface IScheduleService
     {
-        Task<List<WorkoutViewModels>> GetAllWorkoutsAsync();
+        Task<List<WorkoutViewModels>> GetAllWorkoutsAsync(int page = 1, int pageSize = 50, CancellationToken cancellationToken = default);
         Task<WorkoutViewModels> GetWorkoutByIdAsync(string id);
         Task<WorkoutViewModels> ApplyForWorkoutAsync(
             string workoutId,

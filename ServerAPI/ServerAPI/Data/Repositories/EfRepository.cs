@@ -1,7 +1,9 @@
 ﻿namespace ServerAPI.Data.Repositories
 {
     using System;
+    using System.Collections.Generic;
     using System.Linq;
+    using System.Threading;
     using System.Threading.Tasks;
     using Microsoft.EntityFrameworkCore;
     using ServerAPI.Data.Common.Repositories;
@@ -23,7 +25,15 @@
 
         public virtual IQueryable<TEntity> AllAsNoTracking() => this.DbSet.AsNoTracking();
 
-        public virtual Task AddAsync(TEntity entity) => this.DbSet.AddAsync(entity).AsTask();
+        public virtual IQueryable<TEntity> AllAsSplitQuery() => this.DbSet.AsSplitQuery();
+
+        public virtual IQueryable<TEntity> AllAsNoTrackingSplitQuery() => this.DbSet.AsNoTracking().AsSplitQuery();
+
+        public virtual Task AddAsync(TEntity entity, CancellationToken cancellationToken = default) =>
+            this.DbSet.AddAsync(entity, cancellationToken).AsTask();
+
+        public virtual Task AddRangeAsync(IEnumerable<TEntity> entities, CancellationToken cancellationToken = default) =>
+            this.DbSet.AddRangeAsync(entities, cancellationToken);
 
         public virtual void Update(TEntity entity)
         {
@@ -38,7 +48,8 @@
 
         public virtual void Delete(TEntity entity) => this.DbSet.Remove(entity);
 
-        public Task<int> SaveChangesAsync() => this.Context.SaveChangesAsync();
+        public Task<int> SaveChangesAsync(CancellationToken cancellationToken = default) =>
+            this.Context.SaveChangesAsync(cancellationToken);
 
         public void Dispose()
         {
@@ -48,10 +59,7 @@
 
         protected virtual void Dispose(bool disposing)
         {
-            if (disposing)
-            {
-                this.Context?.Dispose();
-            }
+            // DbContext is managed and disposed by the scoped DI container.
         }
     }
 }

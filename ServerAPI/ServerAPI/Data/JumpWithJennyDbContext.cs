@@ -52,10 +52,6 @@
                 method.Invoke(null, new object[] { builder });
             }
 
-            // Disable Cascade Delete
-            var foreignKeys = entityTypes
-                .SelectMany(e => e.GetForeignKeys().Where(f => f.DeleteBehavior == DeleteBehavior.Cascade));
-
             builder
                 .Entity<Appointment>()
                 .HasKey(k => new { k.UserId, k.WorkoutId });
@@ -65,11 +61,27 @@
                 .IsUnique()
                 .HasFilter("\"ShoeId\" IS NOT NULL AND \"IsDeleted\" = false");
 
+            builder.Entity<Appointment>()
+                .HasIndex(a => new { a.WorkoutId, a.IsDeleted });
+
             builder.Entity<Workout>()
-                .UseXminAsConcurrencyToken();
+                .Property<uint>("xmin")
+                .HasColumnType("xid")
+                .IsRowVersion();
+
+            builder.Entity<Workout>()
+                .HasIndex(w => w.Date);
+
+            builder.Entity<Workout>()
+                .HasIndex(w => new { w.IsDeleted, w.Date });
+
+            builder.Entity<Workout>()
+                .HasIndex(w => w.Status);
 
             builder.Entity<WorkoutShoes>()
-                .UseXminAsConcurrencyToken();
+                .Property<uint>("xmin")
+                .HasColumnType("xid")
+                .IsRowVersion();
 
             builder.Entity<WorkoutShoes>()
                 .HasKey(ws => new { ws.WorkoutId, ws.ShoeId }); // Composite primary key
@@ -83,6 +95,24 @@
                 .HasOne(ws => ws.Shoe)
                 .WithMany(s => s.Workouts)
                 .HasForeignKey(ws => ws.ShoeId);
+
+            builder.Entity<RefreshToken>()
+                .HasIndex(rt => rt.Token);
+
+            builder.Entity<RefreshToken>()
+                .HasIndex(rt => rt.UserId);
+
+            builder.Entity<RefreshToken>()
+                .HasIndex(rt => new { rt.UserId, rt.Revoked });
+
+            builder.Entity<Shoes>()
+                .HasIndex(s => new { s.IsDeleted, s.Size });
+
+            builder.Entity<User>()
+                .HasIndex(u => new { u.IsDeleted, u.UserName });
+
+            builder.Entity<ImageModel>()
+                .HasIndex(i => i.CreatedAt);
 
             builder.Entity<IdentityUserRole<string>>(entity =>
             {

@@ -18,53 +18,57 @@ namespace ServerAPI.Services
 
         public async Task<List<ShoesDTO>> GetAllShoesAsync()
         {
-            var shoes = await _context.Shoes
+            return await _context.Shoes
                 .AsNoTracking()
+                .OrderBy(s => s.Size)
+                .Select(s => new ShoesDTO
+                {
+                    Id = s.Id,
+                    Size = s.Size
+                })
                 .ToListAsync();
-
-            return shoes.Select(s => new ShoesDTO
-            {
-                Id = s.Id,
-                Size = s.Size
-            }).ToList();
         }
 
         public async Task<ShoesDetailsDTO> GetShoeDetailsAsync(string id)
         {
-            var shoe = await _context.Shoes
+            var shoeDetails = await _context.Shoes
                 .AsNoTracking()
-                .Include(s => s.Workouts)
-                    .ThenInclude(ws => ws.Workout)
-                .Include(s => s.UsersHistory)
-                    .ThenInclude(uh => uh.User)
-                .FirstOrDefaultAsync(s => s.Id == id);
+                .AsSplitQuery()
+                .Where(s => s.Id == id)
+                .Select(s => new ShoesDetailsDTO
+                {
+                    Id = s.Id,
+                    Size = s.Size,
+                    Workouts = s.Workouts
+                        .Where(ws => !ws.IsDeleted && ws.Workout != null && !ws.Workout.IsDeleted)
+                        .Select(ws => new WorkoutDTO
+                        {
+                            Id = ws.Workout.Id,
+                            Date = ws.Workout.Date,
+                            Day = ws.Workout.Day,
+                            Time = ws.Workout.Time,
+                        }).ToList(),
+                    Users = s.UsersHistory
+                        .Where(uh => uh.User != null)
+                        .Select(uh => new UserDTO
+                        {
+                            Id = uh.User.Id,
+                            Username = uh.User.UserName,
+                        }).ToList()
+                })
+                .FirstOrDefaultAsync();
 
-            if (shoe == null)
+            if (shoeDetails == null)
             {
                 return null;
             }
 
-            return new ShoesDetailsDTO
+            foreach (var workout in shoeDetails.Workouts)
             {
-                Id = shoe.Id,
-                Size = shoe.Size,
-                Workouts = shoe.Workouts
-                    .Where(ws => !ws.IsDeleted && ws.Workout != null && !ws.Workout.IsDeleted)
-                    .Select(ws => new WorkoutDTO
-                    {
-                        Id = ws.Workout.Id,
-                        Date = BulgariaTimeHelper.SofiaToUtc(ws.Workout.Date),
-                        Day = ws.Workout.Day,
-                        Time = ws.Workout.Time,
-                    }).ToList(),
-                Users = shoe.UsersHistory
-                    .Where(uh => uh.User != null)
-                    .Select(uh => new UserDTO
-                    {
-                        Id = uh.User.Id,
-                        Username = uh.User.UserName,
-                    }).ToList()
-            };
+                workout.Date = BulgariaTimeHelper.SofiaToUtc(workout.Date);
+            }
+
+            return shoeDetails;
         }
 
         public async Task<Shoes> AddShoeAsync(ShoesDTO newShoeDto)
@@ -85,15 +89,17 @@ namespace ServerAPI.Services
             await _context.SaveChangesAsync();
 
             var nowLocal = BulgariaTimeHelper.GetCurrentSofiaTime();
-            var upcomingWorkouts = await _context.Workouts
+            var upcomingWorkoutIds = await _context.Workouts
+                .AsNoTracking()
                 .Where(w => w.Date > nowLocal)
+                .Select(w => w.Id)
                 .ToListAsync();
 
-            if (upcomingWorkouts.Count > 0)
+            if (upcomingWorkoutIds.Count > 0)
             {
-                var workoutShoes = upcomingWorkouts.Select(workout => new WorkoutShoes
+                var workoutShoes = upcomingWorkoutIds.Select(workoutId => new WorkoutShoes
                 {
-                    WorkoutId = workout.Id,
+                    WorkoutId = workoutId,
                     ShoeId = newShoe.Id,
                     IsTaken = false
                 });

@@ -50,15 +50,8 @@ namespace ServerAPI.Controllers
                 return BadRequest(ModelState);
             }
 
-            try
-            {
-                var newShoe = await _shoesService.AddShoeAsync(newShoeDto);
-                return CreatedAtAction(nameof(GetShoeById), new { id = newShoe.Id }, newShoe);
-            }
-            catch (ArgumentException ex)
-            {
-                return BadRequest(new { message = ex.Message });
-            }
+            var newShoe = await _shoesService.AddShoeAsync(newShoeDto);
+            return CreatedAtAction(nameof(GetShoeById), new { id = newShoe.Id }, newShoe);
         }
 
         // PUT: api/shoes/{id}
@@ -75,44 +68,26 @@ namespace ServerAPI.Controllers
                 return BadRequest(new { message = "ID mismatch." });
             }
 
-            try
+            var result = await _shoesService.UpdateShoeAsync(id, updatedShoeDto);
+            if (!result)
             {
-                var result = await _shoesService.UpdateShoeAsync(id, updatedShoeDto);
-                if (!result)
-                {
-                    return NotFound();
-                }
+                return NotFound();
+            }
 
-                return NoContent();
-            }
-            catch (ArgumentException ex)
-            {
-                return BadRequest(new { message = ex.Message });
-            }
-            catch (InvalidOperationException ex)
-            {
-                return BadRequest(new { message = ex.Message });
-            }
+            return NoContent();
         }
 
         // DELETE: api/shoes/{id}
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteShoe(string id)
         {
-            try
+            var result = await _shoesService.DeleteShoeAsync(id);
+            if (!result)
             {
-                var result = await _shoesService.DeleteShoeAsync(id);
-                if (!result)
-                {
-                    return NotFound();
-                }
+                return NotFound();
+            }
 
-                return NoContent();
-            }
-            catch (InvalidOperationException ex)
-            {
-                return BadRequest(new { message = ex.Message });
-            }
+            return NoContent();
         }
     }
 }

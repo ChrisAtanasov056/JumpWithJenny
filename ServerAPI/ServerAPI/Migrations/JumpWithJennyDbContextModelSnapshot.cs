@@ -17,7 +17,7 @@ namespace ServerAPI.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "6.0.6")
+                .HasAnnotation("ProductVersion", "9.0.4")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -167,6 +167,8 @@ namespace ServerAPI.Migrations
 
                     b.HasIndex("ShoeId");
 
+                    b.HasIndex("WorkoutId", "IsDeleted");
+
                     b.HasIndex("WorkoutId", "ShoeId")
                         .IsUnique()
                         .HasFilter("\"ShoeId\" IS NOT NULL AND \"IsDeleted\" = false");
@@ -192,6 +194,8 @@ namespace ServerAPI.Migrations
                         .HasColumnType("text");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("CreatedAt");
 
                     b.ToTable("Images");
                 });
@@ -224,7 +228,11 @@ namespace ServerAPI.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("Token");
+
                     b.HasIndex("UserId");
+
+                    b.HasIndex("UserId", "Revoked");
 
                     b.ToTable("RefreshTokens");
                 });
@@ -250,6 +258,8 @@ namespace ServerAPI.Migrations
                         .HasColumnType("integer");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("IsDeleted", "Size");
 
                     b.ToTable("Shoes");
                 });
@@ -353,6 +363,8 @@ namespace ServerAPI.Migrations
                     b.HasIndex("NormalizedUserName")
                         .IsUnique()
                         .HasDatabaseName("UserNameIndex");
+
+                    b.HasIndex("IsDeleted", "UserName");
 
                     b.ToTable("AspNetUsers", (string)null);
                 });
@@ -464,9 +476,16 @@ namespace ServerAPI.Migrations
                     b.Property<uint>("xmin")
                         .IsConcurrencyToken()
                         .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("xid");
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("Date");
+
+                    b.HasIndex("Status");
+
+                    b.HasIndex("IsDeleted", "Date");
 
                     b.ToTable("Workouts");
                 });
@@ -530,7 +549,8 @@ namespace ServerAPI.Migrations
                     b.Property<uint>("xmin")
                         .IsConcurrencyToken()
                         .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("xid");
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
 
                     b.HasKey("WorkoutId", "ShoeId");
 
