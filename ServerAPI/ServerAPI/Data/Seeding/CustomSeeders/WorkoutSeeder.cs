@@ -12,10 +12,11 @@ public class WorkoutSeeder : ISeeder
         var logger = serviceProvider.GetRequiredService<ILogger<WorkoutSeeder>>();
         var environment = serviceProvider.GetRequiredService<IHostEnvironment>();
         var nowSofia = BulgariaTimeHelper.GetCurrentSofiaTime();
+        var legacyDateCutoff = new DateTime(1901, 1, 1, 0, 0, 0, DateTimeKind.Unspecified);
 
         // Repair any legacy workouts that were seeded before the Date column was populated.
         var uninitializedWorkouts = await dbContext.Workouts
-            .Where(w => w.Date.Year <= 1900)
+            .Where(w => w.Date < legacyDateCutoff)
             .ToListAsync();
 
         if (uninitializedWorkouts.Count > 0)
