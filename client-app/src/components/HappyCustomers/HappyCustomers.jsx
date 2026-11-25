@@ -3,86 +3,28 @@ import { FaStar, FaChevronLeft, FaChevronRight } from 'react-icons/fa';
 import { useTranslation } from 'react-i18next';
 import './HappyCustomers.scss';
 
-const testimonials = [
-  {
-    id: 1,
-    name: 'Мария Иванова',
-    comment: 'Най-доброто място за тренировки. Персонализиран подход към всеки клиент и видими резултати.',
-    rating: 5,
-  },
-  {
-    id: 2,
-    name: 'Стефка Николова',
-    comment: 'Уникално изживяване! Енергията и мотивацията на тренировките са заразителни.',
-    rating: 5,
-  },
-  {
-    id: 3,
-    name: 'Елена Василева',
-    comment: 'С всяка тренировка се чувствам все по-силна и уверена. Благодарение на Жени!',
-    rating: 5,
-  },
-  {
-    id: 4,
-    name: 'Антония Стоянова',
-    comment: 'Програмите са адаптирани към всякакво ниво. Чувствам се част от страхотна общност.',
-    rating: 5,
-  },
-  {
-    id: 5,
-    name: 'Десислава Георгиева',
-    comment: 'Всяка тренировка е истинско удоволствие! Жени, винаги знае как да ни мотивира.',
-    rating: 5,
-  },
-  {
-    id: 6,
-    name: 'Ива Пенева',
-    comment: 'Обичам енергията и положителното настроение на тренировките. Перфектно за разтоварване след работа!',
-    rating: 4,
-  },
-  {
-    id: 7,
-    name: 'Надежда Тодорова',
-    comment: 'След всеки час се чувствам заредена и вдъхновена.',
-    rating: 5,
-  },
-  {
-    id: 8,
-    name: 'Кристина Алексиева',
-    comment: 'От първата тренировка се влюбих в атмосферата и начина, по който Жени работи с нас.',
-    rating: 5,
-  },
-  {
-    id: 9,
-    name: 'Габриела Илиева',
-    comment: 'Страхотна комбинация от забавление и ефективна тренировка! Виждам реална промяна.',
-    rating: 5,
-  },
-  {
-    id: 10,
-    name: 'Ралица Николова',
-    comment: 'Това не е просто тренировка – това е начин на живот!',
-    rating: 5,
-  },
-];
-
 const HappyCustomers = () => {
   const { t } = useTranslation();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
   const touchStartRef = useRef({ x: null, y: null });
 
+  const translatedItems = t('testimonials.items', { returnObjects: true });
+  const testimonials = Array.isArray(translatedItems) && translatedItems.length > 0 ? translatedItems : [];
+
   const prefersReducedMotion =
     typeof window !== 'undefined' &&
     window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
 
   const nextSlide = useCallback(() => {
+    if (testimonials.length === 0) return;
     setCurrentIndex((prev) => (prev + 1) % testimonials.length);
-  }, []);
+  }, [testimonials.length]);
 
   const prevSlide = useCallback(() => {
+    if (testimonials.length === 0) return;
     setCurrentIndex((prev) => (prev - 1 + testimonials.length) % testimonials.length);
-  }, []);
+  }, [testimonials.length]);
 
   const handleTouchStart = (e) => {
     const touch = e.touches[0];
@@ -115,11 +57,18 @@ const HappyCustomers = () => {
     return () => clearInterval(timer);
   }, [isPaused, prefersReducedMotion, nextSlide]);
 
-  const visibleTestimonials = [
-    testimonials[(currentIndex + testimonials.length - 1) % testimonials.length],
-    testimonials[currentIndex],
-    testimonials[(currentIndex + 1) % testimonials.length],
-  ];
+  const safeIndex = testimonials.length > 0 ? currentIndex % testimonials.length : 0;
+  const visibleTestimonials = testimonials.length > 0
+    ? [
+        testimonials[(safeIndex + testimonials.length - 1) % testimonials.length],
+        testimonials[safeIndex],
+        testimonials[(safeIndex + 1) % testimonials.length],
+      ]
+    : [];
+
+  if (testimonials.length === 0) {
+    return null;
+  }
 
   return (
     <section

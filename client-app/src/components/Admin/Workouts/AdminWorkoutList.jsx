@@ -1,10 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
+import { FaSearch } from 'react-icons/fa';
 import WorkoutService from '../../../services/WorkoutSevices';
 import { parseWorkoutDate, formatWorkoutDateBg } from '../../../utils/workoutDate';
 import './AdminWorkoutList.scss';
 
 const AdminWorkoutsList = () => {
+  const { t } = useTranslation();
   const [workouts, setWorkouts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -36,14 +39,14 @@ const AdminWorkoutsList = () => {
 
         setWorkouts(filtered);
       } catch (err) {
-        setError(err.message || 'Failed to load workouts');
+        setError(err.message || t('admin.workouts.loadError'));
       } finally {
         setLoading(false);
       }
     };
 
     fetchWorkouts();
-  }, [showPast]);
+  }, [showPast, t]);
 
   useEffect(() => {
     const handleResize = () => {
@@ -55,46 +58,60 @@ const AdminWorkoutsList = () => {
   }, []);
 
   const handleDelete = async (id) => {
-    if (!window.confirm('Are you sure you want to delete this workout?')) return;
+    if (!window.confirm(t('admin.workouts.deleteConfirm'))) return;
 
     try {
       await WorkoutService.deleteWorkout(id);
       setWorkouts(workouts.filter(workout => workout.Id !== id));
-      setSuccessMessage('Workout deleted successfully');
+      setSuccessMessage(t('admin.workouts.deleteSuccess'));
       setTimeout(() => setSuccessMessage(''), 3000);
     } catch (error) {
-      setError(error.message || 'Failed to delete workout');
+      setError(error.message || t('admin.workouts.deleteError'));
     }
   };
 
-  const filteredWorkouts = workouts.filter(workout =>
-    workout.Day.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    workout.Time.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const getTranslatedDay = (day) => {
+    if (!day) return '';
+    return t(`days.${day.toLowerCase()}`, { defaultValue: day });
+  };
 
-  if (loading) return <div className="loading">Loading workouts...</div>;
-  if (error) return <div className="error">Error: {error}</div>;
+  const getTranslatedStatus = (status) => {
+    if (!status) return '';
+    return t(`admin.workouts.statuses.${status.toLowerCase()}`, { defaultValue: status });
+  };
+
+  const filteredWorkouts = workouts.filter(workout => {
+    const search = searchTerm.toLowerCase();
+    return (
+      (workout.Day || '').toLowerCase().includes(search) ||
+      getTranslatedDay(workout.Day).toLowerCase().includes(search) ||
+      (workout.Time || '').toLowerCase().includes(search)
+    );
+  });
+
+  if (loading) return <div className="loading">{t('admin.workouts.loading')}</div>;
+  if (error) return <div className="error">{t('admin.common.errorPrefix')} {error}</div>;
 
   return (
     <div className="admin-workouts">
       <div className="header">
-        <h2>Workout Management</h2>
+        <h2>{t('admin.workouts.title')}</h2>
         <div className="actions">
           <div className="search-box">
             <input
               type="text"
-              placeholder="Search workouts..."
+              placeholder={t('admin.workouts.searchPlaceholder')}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              aria-label="Search workouts"
+              aria-label={t('admin.workouts.searchAriaLabel')}
             />
-            <i className="search-icon">🔍</i>
+            <FaSearch className="search-icon" aria-hidden="true" />
           </div>
           <button
             className="btn-add"
             onClick={() => navigate('/admin/workouts/new')}
           >
-            + Add New Workout
+            {t('admin.workouts.addNew')}
           </button>
         </div>
       </div>
@@ -104,7 +121,7 @@ const AdminWorkoutsList = () => {
           <input type="checkbox" checked={showPast} onChange={() => setShowPast(!showPast)} />
           <span className="slider round"></span>
         </label>
-        <span>{showPast ? 'Изминали тренировки' : 'Текущи тренировки'}</span>
+        <span>{showPast ? t('admin.workouts.pastWorkouts') : t('admin.workouts.upcomingWorkouts')}</span>
       </div>
 
       {successMessage && <div className="success">{successMessage}</div>}
@@ -116,44 +133,44 @@ const AdminWorkoutsList = () => {
             filteredWorkouts.map(workout => (
               <div key={workout.Id} className="workout-card">
                 <div className="info-row">
-                  <span className="info-label">Дата:</span>
+                  <span className="info-label">{t('admin.workouts.table.date')}:</span>
                   <span>{formatWorkoutDateBg(workout.Date)}</span>
                 </div>
                 <div className="info-row">
-                  <span className="info-label">Ден:</span>
-                  <span>{workout.Day}</span>
+                  <span className="info-label">{t('admin.workouts.table.day')}:</span>
+                  <span>{getTranslatedDay(workout.Day)}</span>
                 </div>
                 <div className="info-row">
-                  <span className="info-label">Час:</span>
+                  <span className="info-label">{t('admin.workouts.table.time')}:</span>
                   <span>{workout.Time}</span>
                 </div>
                 <div className="info-row">
-                  <span className="info-label">Статус:</span>
+                  <span className="info-label">{t('admin.workouts.table.status')}:</span>
                   <span>
                     <span className={`status-badge ${workout.Status.toLowerCase()}`}>
-                      {workout.Status}
+                      {getTranslatedStatus(workout.Status)}
                     </span>
                   </span>
                 </div>
                 <div className="info-row">
-                  <span className="info-label">Свободни места:</span>
+                  <span className="info-label">{t('admin.workouts.table.availableSpots')}:</span>
                   <span>{workout.AvailableSpots}</span>
                 </div>
                 <div className="actions">
                   <Link to={`/admin/workouts/${workout.Id}/view`} className="btn-view">
-                    View
+                    {t('admin.common.view')}
                   </Link>
                   <Link to={`/admin/workouts/${workout.Id}`} className="btn-edit">
-                    Edit
+                    {t('admin.common.edit')}
                   </Link>
                   <button className="btn-delete" onClick={() => handleDelete(workout.Id)}>
-                    Delete
+                    {t('admin.common.delete')}
                   </button>
                 </div>
               </div>
             ))
           ) : (
-            <div className="no-results">No workouts found</div>
+            <div className="no-results">{t('admin.workouts.noWorkouts')}</div>
           )}
         </div>
       ) : (
@@ -161,12 +178,12 @@ const AdminWorkoutsList = () => {
           <table>
             <thead>
               <tr>
-                <th>Date</th>
-                <th>Day</th>
-                <th>Time</th>
-                <th>Status</th>
-                <th>Available Spots</th>
-                <th>Actions</th>
+                <th>{t('admin.workouts.table.date')}</th>
+                <th>{t('admin.workouts.table.day')}</th>
+                <th>{t('admin.workouts.table.time')}</th>
+                <th>{t('admin.workouts.table.status')}</th>
+                <th>{t('admin.workouts.table.availableSpots')}</th>
+                <th>{t('admin.workouts.table.actions')}</th>
               </tr>
             </thead>
             <tbody>
@@ -174,23 +191,23 @@ const AdminWorkoutsList = () => {
                 filteredWorkouts.map(workout => (
                   <tr key={workout.Id}>
                     <td>{formatWorkoutDateBg(workout.Date)}</td>
-                    <td>{workout.Day}</td>
+                    <td>{getTranslatedDay(workout.Day)}</td>
                     <td>{workout.Time}</td>
                     <td>
                       <span className={`status-badge ${workout.Status.toLowerCase()}`}>
-                        {workout.Status}
+                        {getTranslatedStatus(workout.Status)}
                       </span>
                     </td>
                     <td>{workout.AvailableSpots}</td>
                     <td className="actions">
                       <Link to={`/admin/workouts/${workout.Id}/view`} className="btn-view">
-                        View
+                        {t('admin.common.view')}
                       </Link>
                       <Link to={`/admin/workouts/${workout.Id}`} className="btn-edit">
-                        Edit
+                        {t('admin.common.edit')}
                       </Link>
                       <button className="btn-delete" onClick={() => handleDelete(workout.Id)}>
-                        Delete
+                        {t('admin.common.delete')}
                       </button>
                     </td>
                   </tr>
@@ -198,7 +215,7 @@ const AdminWorkoutsList = () => {
               ) : (
                 <tr>
                   <td colSpan="6" className="no-results">
-                    No workouts found
+                    {t('admin.workouts.noWorkouts')}
                   </td>
                 </tr>
               )}

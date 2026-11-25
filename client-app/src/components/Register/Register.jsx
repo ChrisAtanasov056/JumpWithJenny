@@ -3,8 +3,7 @@ import { useAuth } from '../../services/AuthContext';
 import { create } from '../../services/authService';
 import './Register.scss';
 import { useTranslation } from 'react-i18next';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faExclamationCircle, faCheckCircle, faTimesCircle } from '@fortawesome/free-solid-svg-icons';
+import { FaExclamationCircle, FaCheckCircle, FaTimesCircle } from 'react-icons/fa';
 import i18n from "../../i18n";
 
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -209,7 +208,7 @@ const Register = ({ onRegisterSuccess }) => {
           <div className="input-line" aria-hidden="true"></div>
           {usernameError && (
             <div className="error-message" role="alert">
-              <FontAwesomeIcon icon={faExclamationCircle} className="error-icon" aria-hidden="true" />
+              <FaExclamationCircle className="error-icon" aria-hidden="true" />
               <span className="error-text">{usernameError}</span>
             </div>
           )}
@@ -235,7 +234,7 @@ const Register = ({ onRegisterSuccess }) => {
           <div className="input-line" aria-hidden="true"></div>
           {emailError && (
             <div className="error-message" role="alert">
-              <FontAwesomeIcon icon={faExclamationCircle} className="error-icon" aria-hidden="true" />
+              <FaExclamationCircle className="error-icon" aria-hidden="true" />
               <span className="error-text">{emailError}</span>
             </div>
           )}
@@ -265,10 +264,11 @@ const Register = ({ onRegisterSuccess }) => {
               <ul>
                 {passwordCriteria.map((item, index) => (
                   <li key={index} className={item.isValid ? 'valid' : 'invalid'}>
-                    <FontAwesomeIcon
-                      icon={item.isValid ? faCheckCircle : faTimesCircle}
-                      aria-hidden="true"
-                    />
+                    {item.isValid ? (
+                      <FaCheckCircle aria-hidden="true" />
+                    ) : (
+                      <FaTimesCircle aria-hidden="true" />
+                    )}
                     <span>{item.label}</span>
                   </li>
                 ))}
@@ -298,7 +298,7 @@ const Register = ({ onRegisterSuccess }) => {
               className={`password-match-icon ${passwordsMatch ? 'valid' : 'invalid'}`}
               aria-hidden="true"
             >
-              <FontAwesomeIcon icon={passwordsMatch ? faCheckCircle : faTimesCircle} />
+              {passwordsMatch ? <FaCheckCircle /> : <FaTimesCircle />}
             </div>
           )}
         </div>
@@ -306,7 +306,7 @@ const Register = ({ onRegisterSuccess }) => {
 
       {errorMessage && (
         <div className="error-message" role="alert">
-          <FontAwesomeIcon icon={faExclamationCircle} className="error-icon" aria-hidden="true" />
+          <FaExclamationCircle className="error-icon" aria-hidden="true" />
           <span className="error-text">{errorMessage}</span>
         </div>
       )}

@@ -12,7 +12,7 @@ const Footer = () => {
       <div className="footer-container">
         <div className="jump-animation" aria-hidden="true">
           <div>
-            <img src="/images/brand_logo_2.png" alt="" className='kangoo-shoe-img'/>
+            <img src="/images/brand_logo_2.png" alt="" className='kangoo-shoe-img' loading="lazy" />
           </div>
           <div className="shadow"></div>
         </div>

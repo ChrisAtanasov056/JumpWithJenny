@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
+import { toast } from 'react-toastify';
 import ShoeService from '../../../services/ShoeService';
 import './AdminShoes.scss';
 
@@ -11,6 +13,7 @@ const shoeSizeLabels = {
 };
 
 const AdminShoesList = () => {
+  const { t } = useTranslation();
   const [shoes, setShoes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -24,37 +27,37 @@ const AdminShoesList = () => {
         setShoes(data);
       } catch (err) {
         const serverMessage = err.response?.data?.message || err.response?.data || err.message;
-        setError(typeof serverMessage === 'string' ? serverMessage : 'Failed to load shoes');
+        setError(typeof serverMessage === 'string' ? serverMessage : t('admin.shoes.loadError'));
       } finally {
         setLoading(false);
       }
     };
     fetchShoes();
-  }, []);
+  }, [t]);
 
   const handleDelete = async (id) => {
-    if (!window.confirm('Are you sure you want to delete this shoe?')) return;
+    if (!window.confirm(t('admin.shoes.deleteConfirm'))) return;
     setActionError(null);
 
     try {
       await ShoeService.deleteShoe(id);
       setShoes(prev => prev.filter(shoe => shoe.Id !== id));
-      alert('Shoe deleted successfully!');
+      toast.success(t('admin.shoes.deleteSuccess'));
     } catch (err) {
       const serverMessage = err.response?.data?.message || err.response?.data || err.message;
-      setActionError(typeof serverMessage === 'string' ? serverMessage : 'Failed to delete shoe');
+      setActionError(typeof serverMessage === 'string' ? serverMessage : t('admin.shoes.deleteError'));
     }
   };
 
-  if (loading) return <div>Loading shoes...</div>;
-  if (error) return <div>Error: {error}</div>;
+  if (loading) return <div>{t('admin.shoes.loading')}</div>;
+  if (error) return <div>{t('admin.common.errorPrefix')} {error}</div>;
 
   return (
     <div className="admin-shoes">
       <div className="header">
-        <h2>Shoes Management</h2>
+        <h2>{t('admin.shoes.title')}</h2>
         <button className="btn-add" onClick={() => navigate('/admin/shoes/new')}>
-          + Add New Shoe
+          {t('admin.shoes.addNew')}
         </button>
       </div>
 
@@ -64,9 +67,9 @@ const AdminShoesList = () => {
         <table>
           <thead>
             <tr>
-              <th>ID</th>
-              <th>Size</th>
-              <th>Actions</th>
+              <th>{t('admin.shoes.table.id')}</th>
+              <th>{t('admin.shoes.table.size')}</th>
+              <th>{t('admin.shoes.table.actions')}</th>
             </tr>
           </thead>
           <tbody>
@@ -74,23 +77,23 @@ const AdminShoesList = () => {
               shoes.map(shoe => (
                 <tr key={shoe.Id}>
                   <td>{shoe.Id}</td>
-                  <td>{shoeSizeLabels[Number(shoe.Size)] || 'N/A'}</td>
+                  <td>{shoeSizeLabels[Number(shoe.Size)] || t('admin.common.notAvailable')}</td>
                   <td className="actions">
                     <Link to={`/admin/shoes/details/${shoe.Id}`} className="btn-view">
-                      View Details
+                      {t('admin.common.viewDetails')}
                     </Link>
                     <Link to={`/admin/shoes/${shoe.Id}`} className="btn-edit">
-                      Edit
+                      {t('admin.common.edit')}
                     </Link>
                     <button className="btn-delete" onClick={() => handleDelete(shoe.Id)}>
-                      Delete
+                      {t('admin.common.delete')}
                     </button>
                   </td>
                 </tr>
               ))
             ) : (
               <tr>
-                <td colSpan="3" className="no-results">No shoes found</td>
+                <td colSpan="3" className="no-results">{t('admin.shoes.noShoes')}</td>
               </tr>
             )}
           </tbody>

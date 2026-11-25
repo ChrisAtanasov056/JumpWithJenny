@@ -14,8 +14,14 @@ i18n
       en: { translation: en },
       bg: { translation: bg },
     },
-    lng: 'bg',
-    fallbackLng: 'en',
+    fallbackLng: 'bg',
+    supportedLngs: ['bg', 'en'],
+    nonExplicitSupportedLngs: true,
+    load: 'languageOnly',
+    detection: {
+      order: ['localStorage', 'querystring', 'htmlTag'],
+      caches: ['localStorage'],
+    },
     interpolation: {
       escapeValue: false,
     },

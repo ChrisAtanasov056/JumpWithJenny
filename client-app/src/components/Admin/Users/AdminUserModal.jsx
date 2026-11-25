@@ -1,8 +1,10 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import useModalAccessibility from '../../../services/useModalAccessibility';
 import './AdminUserModal.scss';
 
 const AdminUserModal = ({ user, onClose, onSave, onDelete }) => {
+  const { t } = useTranslation();
   const [isEditing, setIsEditing] = useState(false);
   const [editedUser, setEditedUser] = useState({ ...user });
   const [errors, setErrors] = useState({});
@@ -55,17 +57,17 @@ const AdminUserModal = ({ user, onClose, onSave, onDelete }) => {
     const newErrors = {};
     
     if (!editedUser.Username?.trim()) {
-      newErrors.Username = 'Username is required';
+      newErrors.Username = t('admin.users.validation.usernameRequired');
     }
     
     if (!editedUser.Email?.trim()) {
-      newErrors.Email = 'Email is required';
+      newErrors.Email = t('admin.users.validation.emailRequired');
     } else if (!/^\S+@\S+\.\S+$/.test(editedUser.Email)) {
-      newErrors.Email = 'Invalid email format';
+      newErrors.Email = t('admin.users.validation.emailInvalid');
     }
     
     if (!editedUser.FirstName?.trim()) {
-      newErrors.FirstName = 'First name is required';
+      newErrors.FirstName = t('admin.users.validation.firstNameRequired');
     }
     
     setErrors(newErrors);
@@ -94,7 +96,7 @@ const AdminUserModal = ({ user, onClose, onSave, onDelete }) => {
         err?.response?.data?.message ||
         err?.response?.data?.Message ||
         err?.message;
-      setSaveError(serverMessage || 'Неуспешно запазване на промените.');
+      setSaveError(serverMessage || t('admin.users.saveError'));
     } finally {
       setIsSaving(false);
     }
@@ -111,7 +113,14 @@ const AdminUserModal = ({ user, onClose, onSave, onDelete }) => {
     return editedUser.Role.toLowerCase();
   };
 
-
+  const getRoleLabel = (role) => {
+    if (!role) return t('admin.roles.unknown');
+    const normalized = role.toLowerCase();
+    if (normalized === 'administrator') return t('admin.roles.administrator');
+    if (normalized === 'admin') return t('admin.roles.admin');
+    if (normalized === 'user') return t('admin.roles.user');
+    return role;
+  };
   
   return (
     <div className="admin-user-modal">
@@ -130,22 +139,22 @@ const AdminUserModal = ({ user, onClose, onSave, onDelete }) => {
       >
         {showDeleteConfirm ? (
           <div className="delete-confirmation">
-            <h3>Confirm Deletion</h3>
-            <p>Are you sure you want to delete {user.Username}?</p>
-            <p className="warning-text">This action cannot be undone.</p>
+            <h3>{t('admin.users.deleteModal.title')}</h3>
+            <p>{t('admin.users.deleteModal.prompt', { username: user.Username })}</p>
+            <p className="warning-text">{t('admin.users.deleteModal.warning')}</p>
             
             <div className="confirmation-actions">
               <button 
                 className="btn-cancel"
                 onClick={() => setShowDeleteConfirm(false)}
               >
-                Cancel
+                {t('admin.common.cancel')}
               </button>
               <button 
                 className="btn-delete-confirm"
                 onClick={handleDeleteConfirm}
               >
-                Delete User
+                {t('admin.users.deleteModal.confirm')}
               </button>
             </div>
           </div>
@@ -159,23 +168,23 @@ const AdminUserModal = ({ user, onClose, onSave, onDelete }) => {
                 setErrors({});
                 setSaveError('');
               } : onClose}
-              aria-label={isEditing ? "Cancel editing" : "Close modal"}
+              aria-label={isEditing ? t('admin.users.cancelEditAria') : t('admin.users.closeModalAria')}
             >
               &times;
             </button>
             
             <h3 id="modal-title">
-              {isEditing ? 'Edit User' : 'User Details'}
+              {isEditing ? t('admin.users.editTitle') : t('admin.users.detailsTitle')}
             </h3>
             
             <div className="user-details">
             <div className="detail-row">
-            <span className="detail-label">ID:</span>
-            <span className="detail-value">{user.Id || 'N/A'}</span>
+            <span className="detail-label">{t('admin.users.fields.id')}:</span>
+            <span className="detail-value">{user.Id || t('admin.common.notAvailable')}</span>
           </div>
           
           <div className="detail-row">
-            <span className="detail-label">Username:</span>
+            <span className="detail-label">{t('admin.users.fields.username')}:</span>
             {isEditing ? (
               <div className="edit-field">
                 <input
@@ -190,12 +199,12 @@ const AdminUserModal = ({ user, onClose, onSave, onDelete }) => {
                 )}
               </div>
             ) : (
-              <span className="detail-value">{editedUser.Username || 'N/A'}</span>
+              <span className="detail-value">{editedUser.Username || t('admin.common.notAvailable')}</span>
             )}
           </div>
           
           <div className="detail-row">
-            <span className="detail-label">Email:</span>
+            <span className="detail-label">{t('admin.users.fields.email')}:</span>
             {isEditing ? (
               <div className="edit-field">
                 <input
@@ -214,14 +223,14 @@ const AdminUserModal = ({ user, onClose, onSave, onDelete }) => {
                 {editedUser.Email ? (
                   <a href={`mailto:${editedUser.Email}`}>{editedUser.Email}</a>
                 ) : (
-                  'N/A'
+                  t('admin.common.notAvailable')
                 )}
               </span>
             )}
           </div>
           
           <div className="detail-row">
-            <span className="detail-label">First Name:</span>
+            <span className="detail-label">{t('admin.users.fields.firstName')}:</span>
             {isEditing ? (
               <div className="edit-field">
                 <input
@@ -236,12 +245,12 @@ const AdminUserModal = ({ user, onClose, onSave, onDelete }) => {
                 )}
               </div>
             ) : (
-              <span className="detail-value">{editedUser.FirstName || 'N/A'}</span>
+              <span className="detail-value">{editedUser.FirstName || t('admin.common.notAvailable')}</span>
             )}
           </div>
           
           <div className="detail-row">
-            <span className="detail-label">Last Name:</span>
+            <span className="detail-label">{t('admin.users.fields.lastName')}:</span>
             {isEditing ? (
               <div className="edit-field">
                 <input
@@ -252,12 +261,12 @@ const AdminUserModal = ({ user, onClose, onSave, onDelete }) => {
                 />
               </div>
             ) : (
-              <span className="detail-value">{editedUser.LastName || 'N/A'}</span>
+              <span className="detail-value">{editedUser.LastName || t('admin.common.notAvailable')}</span>
             )}
           </div>
           
           <div className="detail-row">
-            <span className="detail-label">Role:</span>
+            <span className="detail-label">{t('admin.users.fields.role')}:</span>
             {isEditing ? (
               <div className="edit-field">
                 <select
@@ -265,13 +274,13 @@ const AdminUserModal = ({ user, onClose, onSave, onDelete }) => {
                   value={editedUser.Role || 'User'}
                   onChange={handleInputChange}
                 >
-                  <option value="Administrator">Administrator</option>
-                  <option value="User">User</option>
+                  <option value="Administrator">{t('admin.roles.administrator')}</option>
+                  <option value="User">{t('admin.roles.user')}</option>
                 </select>
               </div>
             ) : (
               <span className={`detail-value role-badge ${getRoleClass()}`}>
-                {editedUser.Role || 'Unknown'}
+                {getRoleLabel(editedUser.Role)}
               </span>
             )}
           </div>
@@ -296,14 +305,14 @@ const AdminUserModal = ({ user, onClose, onSave, onDelete }) => {
                       setSaveError('');
                     }}
                   >
-                    Cancel
+                    {t('admin.common.cancel')}
                   </button>
                   <button 
                     className="btn-save"
                     disabled={isSaving}
                     onClick={handleSave}
                   >
-                    {isSaving ? 'Запазване...' : 'Save Changes'}
+                    {isSaving ? t('admin.common.saving') : t('admin.users.saveChanges')}
                   </button>
                 </>
               ) : (
@@ -312,19 +321,19 @@ const AdminUserModal = ({ user, onClose, onSave, onDelete }) => {
                     className="btn-delete"
                     onClick={() => setShowDeleteConfirm(true)}
                   >
-                    Delete User
+                    {t('admin.users.deleteButton')}
                   </button>
                   <button 
                     className="btn-edit"
                     onClick={() => setIsEditing(true)}
                   >
-                    Edit User
+                    {t('admin.users.editButton')}
                   </button>
                   <button 
                     className="btn-close"
                     onClick={onClose}
                   >
-                    Close
+                    {t('admin.common.close')}
                   </button>
                 </>
               )}

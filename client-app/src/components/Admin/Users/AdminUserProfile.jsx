@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import UserService from '../../../services/UserServices';
 import AdminUserModal from './AdminUserModal';
 import './AdminUserProfile.scss';
 
 const AdminUserProfile = () => {
+  const { t } = useTranslation();
   const { userId } = useParams();
   const navigate = useNavigate();
   const [user, setUser] = useState(null);
@@ -20,46 +22,55 @@ const AdminUserProfile = () => {
         const data = await UserService.getUserById(userId);
         setUser(data);
       } catch (err) {
-        setError(err.message || 'Неуспешно зареждане на данните за потребителя.');
+        setError(err.message || t('admin.users.loadProfileError'));
       } finally {
         setLoading(false);
       }
     };
 
     fetchUser();
-  }, [userId]);
+  }, [userId, t]);
 
   const handleSaveUser = async (updatedUser) => {
     setActionError('');
     const savedUser = await UserService.updateUser(updatedUser.Id, updatedUser);
     setUser(savedUser?.Id ? savedUser : updatedUser);
-    setSuccessMessage('Потребителят е обновен успешно!');
+    setSuccessMessage(t('admin.users.updateSuccess'));
     setTimeout(() => setSuccessMessage(''), 3000);
   };
 
   const handleDelete = async () => {
-    if (window.confirm('Сигурни ли сте, че искате да изтриете този потребител?')) {
+    if (window.confirm(t('admin.users.deleteConfirm'))) {
       setActionError('');
       try {
         await UserService.deleteUser(userId);
-        setSuccessMessage('Потребителят е изтрит успешно!');
+        setSuccessMessage(t('admin.users.deleteSuccess'));
         setTimeout(() => navigate('/admin/users'), 1500);
       } catch (err) {
         const serverMessage =
           err?.response?.data?.message ||
           err?.response?.data?.Message ||
           err?.message;
-        setActionError(serverMessage || 'Неуспешно изтриване на потребителя.');
+        setActionError(serverMessage || t('admin.users.deleteError'));
         setTimeout(() => setActionError(''), 5000);
       }
     }
+  };
+
+  const getRoleLabel = (role) => {
+    if (!role) return t('admin.roles.unknown');
+    const normalized = role.toLowerCase();
+    if (normalized === 'administrator') return t('admin.roles.administrator');
+    if (normalized === 'admin') return t('admin.roles.admin');
+    if (normalized === 'user') return t('admin.roles.user');
+    return role;
   };
 
   if (loading) {
     return (
       <div className="loading-state">
         <div className="spinner"></div>
-        <p>Loading user data...</p>
+        <p>{t('admin.users.loadingProfile')}</p>
       </div>
     );
   }
@@ -67,8 +78,8 @@ const AdminUserProfile = () => {
   if (error) {
     return (
       <div className="error-state">
-        <p>Error: {error}</p>
-        <button onClick={() => navigate('/admin/users')}>Back to Users</button>
+        <p>{t('admin.common.errorPrefix')} {error}</p>
+        <button onClick={() => navigate('/admin/users')}>{t('admin.users.backToUsers')}</button>
       </div>
     );
   }
@@ -76,9 +87,9 @@ const AdminUserProfile = () => {
   if (!user) {
     return (
       <div className="user-not-found">
-        <h3>User not found</h3>
+        <h3>{t('admin.users.notFound')}</h3>
         <Link to="/admin/users" className="back-button">
-          Back to Users
+          {t('admin.users.backToUsers')}
         </Link>
       </div>
     );
@@ -87,9 +98,9 @@ const AdminUserProfile = () => {
   return (
     <div className="admin-user-profile">
       <div className="profile-header">
-        <h2>User Details</h2>
+        <h2>{t('admin.users.detailsTitle')}</h2>
         <Link to="/admin/users" className="back-button">
-          &larr; Back to Users
+          &larr; {t('admin.users.backToUsers')}
         </Link>
       </div>
 
@@ -107,32 +118,32 @@ const AdminUserProfile = () => {
       
       <div className="profile-card">
         <div className="profile-section">
-          <h3>Basic Information</h3>
+          <h3>{t('admin.users.basicInfo')}</h3>
           <div className="info-grid">
             <div className="info-item">
-              <span className="info-label">User ID:</span>
+              <span className="info-label">{t('admin.users.fields.userId')}:</span>
               <span className="info-value">{user.Id}</span>
             </div>
             <div className="info-item">
-              <span className="info-label">Username:</span>
+              <span className="info-label">{t('admin.users.fields.username')}:</span>
               <span className="info-value">{user.Username}</span>
             </div>
             <div className="info-item">
-              <span className="info-label">Email:</span>
+              <span className="info-label">{t('admin.users.fields.email')}:</span>
               <span className="info-value">{user.Email}</span>
             </div>
             <div className="info-item">
-              <span className="info-label">First Name:</span>
+              <span className="info-label">{t('admin.users.fields.firstName')}:</span>
               <span className="info-value">{user.FirstName}</span>
             </div>
             <div className="info-item">
-              <span className="info-label">Last Name:</span>
+              <span className="info-label">{t('admin.users.fields.lastName')}:</span>
               <span className="info-value">{user.LastName}</span>
             </div>
             <div className="info-item">
-              <span className="info-label">Role:</span>
+              <span className="info-label">{t('admin.users.fields.role')}:</span>
               <span className={`info-value role ${(user.Role || '').toLowerCase()}`}>
-                {user.Role || 'Unknown'}
+                {getRoleLabel(user.Role)}
               </span>
             </div>
           </div>
@@ -140,10 +151,10 @@ const AdminUserProfile = () => {
 
         <div className="profile-actions">
           <button type="button" className="btn-edit" onClick={() => setIsModalOpen(true)}>
-            Edit User
+            {t('admin.users.editButton')}
           </button>
           <button className="btn-delete" onClick={handleDelete}>
-            Delete User
+            {t('admin.users.deleteButton')}
           </button>
         </div>
       </div>

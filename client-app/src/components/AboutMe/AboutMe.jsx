@@ -50,7 +50,17 @@ const AboutMe = () => {
           ))}
         </div>
         <div className={`about-image ${isVisible ? 'active' : ''}`}>
-          <img src="/images/jenny.jpg" alt={t('about.title')} loading="lazy" />
+          <picture>
+            <source srcSet="/images/jenny.webp" type="image/webp" />
+            <img
+              src="/images/jenny.jpg"
+              alt={t('about.title')}
+              loading="lazy"
+              decoding="async"
+              width={1200}
+              height={900}
+            />
+          </picture>
         </div>
       </div>
     </section>

@@ -5,8 +5,7 @@ import { useAuth } from '../../services/AuthContext';
 import { login } from '../../services/authService';
 import './Login.scss';
 import { useTranslation } from 'react-i18next';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faExclamationCircle } from '@fortawesome/free-solid-svg-icons';
+import { FaExclamationCircle } from 'react-icons/fa';
 
 const Login = ({ onClose, onLoginSuccess }) => {
   const { t } = useTranslation();
@@ -104,7 +103,7 @@ const Login = ({ onClose, onLoginSuccess }) => {
 
       {errorMessage && (
         <div className="error-message" role="alert">
-          <FontAwesomeIcon icon={faExclamationCircle} className="error-icon" aria-hidden="true" />
+          <FaExclamationCircle className="error-icon" aria-hidden="true" />
           <span className="error-text">{errorMessage}</span>
         </div>
       )}

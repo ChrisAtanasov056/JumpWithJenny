@@ -1,15 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import ShoeService from '../../../services/ShoeService';
 import './ShoeDetails.scss';
 
 const ShoeDetailsView = () => {
+  const { t } = useTranslation();
   const { id } = useParams();
   const navigate = useNavigate();
   const [shoe, setShoe] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [newUserId, setNewUserId] = useState("");
 
   const shoeSizeLabels = {
     1: 'S',
@@ -24,77 +25,57 @@ const ShoeDetailsView = () => {
         const response = await ShoeService.getShoeById(id);
         setShoe(response);
       } catch (err) {
-        setError(err.message || 'Failed to load shoe details');
+        setError(err.message || t('admin.shoes.details.loadError'));
       } finally {
         setLoading(false);
       }
     };
     fetchShoe();
-  }, [id]);
+  }, [id, t]);
 
-  // Добавяне на потребител към state (и по желание -> към бекенда)
-  const handleAddUser = async () => {
-    if (!newUserId.trim()) return;
-
-    try {
-      // по избор: извикваш бекенд service за добавяне
-      await ShoeService.addUserToShoe(shoe.Id, newUserId);
-
-      // локално обновяване на state
-      setShoe(prev => ({
-        ...prev,
-        Users: [...prev.Users, { Id: newUserId }]
-      }));
-
-      setNewUserId("");
-    } catch (err) {
-      alert("Error adding user: " + err.message);
-    }
-  };
-
-  if (loading) return <div className="loading">Loading shoe details...</div>;
-  if (error) return <div className="error">Error: {error}</div>;
-  if (!shoe) return <div className="not-found">Shoe not found.</div>;
+  if (loading) return <div className="loading">{t('admin.shoes.details.loading')}</div>;
+  if (error) return <div className="error">{t('admin.common.errorPrefix')} {error}</div>;
+  if (!shoe) return <div className="not-found">{t('admin.shoes.details.notFound')}</div>;
 
   return (
     <div className="shoe-details-container">
       <div className="shoe-details-card">
-        <h2>Shoe Details</h2>
+        <h2>{t('admin.shoes.details.title')}</h2>
         <div className="details-section">
-          <p><strong>ID:</strong> {shoe.Id}</p>
-          <p><strong>Size:</strong> {shoeSizeLabels[Number(shoe.Size)] || 'N/A'}</p>
+          <p><strong>{t('admin.shoes.table.id')}:</strong> {shoe.Id}</p>
+          <p><strong>{t('admin.shoes.table.size')}:</strong> {shoeSizeLabels[Number(shoe.Size)] || t('admin.common.notAvailable')}</p>
         </div>
 
         {/* Users */}
         <div className="details-section">
-          <h3>Associated Users</h3>
+          <h3>{t('admin.shoes.details.associatedUsers')}</h3>
           {shoe.Users && shoe.Users.length > 0 ? (
             <ul>
               {shoe.Users.map(user => (
-                <li key={user.Id}>User ID: {user.Id}</li>
+                <li key={user.Id}>{t('admin.shoes.details.userId')} {user.Id}</li>
               ))}
             </ul>
           ) : (
-            <p>No users associated with this shoe.</p>
+            <p>{t('admin.shoes.details.noUsers')}</p>
           )}
         </div>
 
         {/* Workouts */}
         <div className="details-section">
-          <h3>Associated Workouts</h3>
+          <h3>{t('admin.shoes.details.associatedWorkouts')}</h3>
           {shoe.Workouts && shoe.Workouts.length > 0 ? (
             <ul>
               {shoe.Workouts.map(workout => (
-                <li key={workout.Id}>Workout ID: {workout.Id}</li>
+                <li key={workout.Id}>{t('admin.shoes.details.workoutId')} {workout.Id}</li>
               ))}
             </ul>
           ) : (
-            <p>No workouts associated with this shoe.</p>
+            <p>{t('admin.shoes.details.noWorkouts')}</p>
           )}
         </div>
 
         <button className="btn-back" onClick={() => navigate(-1)}>
-          Back to List
+          {t('admin.common.backToList')}
         </button>
       </div>
     </div>

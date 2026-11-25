@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import UserService from '../../../services/UserServices';
 import AdminUserModal from './AdminUserModal';
 import './AdminUsers.scss';
 import { FaEdit, FaTrashAlt, FaSearch, FaPlus, FaSpinner } from 'react-icons/fa';
 
 const AdminUsersList = () => {
+  const { t } = useTranslation();
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -24,14 +26,14 @@ const AdminUsersList = () => {
         setUsers(usersData);
       } catch (err) {
         console.error('Error fetching users:', err);
-        setError(err.message || 'Failed to load users. Please try again.');
+        setError(err.message || t('admin.users.loadError'));
         setUsers([]);
       } finally {
         setLoading(false);
       }
     };
     fetchUsers();
-  }, []);
+  }, [t]);
 
   const handleViewUser = (user) => {
     setSelectedUser(user);
@@ -49,28 +51,37 @@ const AdminUsersList = () => {
     const mergedUser = savedUser?.Id ? savedUser : updatedUser;
     setUsers(prev => prev.map(user => (user.Id === mergedUser.Id ? mergedUser : user)));
     setSelectedUser(mergedUser);
-    setSuccessMessage('Потребителят е обновен успешно!');
+    setSuccessMessage(t('admin.users.updateSuccess'));
     setTimeout(() => setSuccessMessage(''), 3000);
   };
 
   const handleDeleteUser = async (userId) => {
-    if (!window.confirm("Сигурни ли сте, че искате да изтриете този потребител?")) {
+    if (!window.confirm(t('admin.users.deleteConfirm'))) {
       return;
     }
     setActionError('');
     try {
       await UserService.deleteUser(userId);
       setUsers(prev => prev.filter(user => user.Id !== userId));
-      setSuccessMessage('Потребителят е изтрит успешно!');
+      setSuccessMessage(t('admin.users.deleteSuccess'));
       setTimeout(() => setSuccessMessage(''), 3000);
     } catch (err) {
       const serverMessage =
         err?.response?.data?.message ||
         err?.response?.data?.Message ||
         err?.message;
-      setActionError(serverMessage || 'Неуспешно изтриване на потребителя.');
+      setActionError(serverMessage || t('admin.users.deleteError'));
       setTimeout(() => setActionError(''), 5000);
     }
+  };
+
+  const getRoleLabel = (role) => {
+    if (!role) return '-';
+    const normalized = role.toLowerCase();
+    if (normalized === 'administrator') return t('admin.roles.administrator');
+    if (normalized === 'admin') return t('admin.roles.admin');
+    if (normalized === 'user') return t('admin.roles.user');
+    return role;
   };
 
   const filteredUsers = users.filter(user => {
@@ -80,7 +91,8 @@ const AdminUsersList = () => {
       (user?.Email?.toLowerCase() || '').includes(search) ||
       (user?.FirstName?.toLowerCase() || '').includes(search) ||
       (user?.LastName?.toLowerCase() || '').includes(search) ||
-      (user?.Role?.toLowerCase() || '').includes(search) // Added filtering by role
+      (user?.Role?.toLowerCase() || '').includes(search) ||
+      getRoleLabel(user?.Role).toLowerCase().includes(search)
     );
   });
 
@@ -88,7 +100,7 @@ const AdminUsersList = () => {
     return (
       <div className="state-message loading-state">
         <FaSpinner className="spinner-icon" />
-        <p>Loading users...</p>
+        <p>{t('admin.users.loading')}</p>
       </div>
     );
   }
@@ -96,8 +108,8 @@ const AdminUsersList = () => {
   if (error) {
     return (
       <div className="state-message error-state">
-        <p>Error: {error}</p>
-        <button className="btn-reload" onClick={() => window.location.reload()}>Try Again</button>
+        <p>{t('admin.common.errorPrefix')} {error}</p>
+        <button className="btn-reload" onClick={() => window.location.reload()}>{t('admin.common.tryAgain')}</button>
       </div>
     );
   }
@@ -105,21 +117,21 @@ const AdminUsersList = () => {
   return (
     <div className="admin-users-container">
       <header className="page-header">
-        <h2 className="page-title">User Management</h2>
+        <h2 className="page-title">{t('admin.users.title')}</h2>
         <div className="actions-bar">
           <div className="search-group">
             <FaSearch className="search-icon" />
             <input
               type="text"
-              placeholder="Search by name, email, or role..." // Updated placeholder
+              placeholder={t('admin.users.searchPlaceholder')}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="search-input"
-              aria-label="Search users"
+              aria-label={t('admin.users.searchAriaLabel')}
             />
           </div>
           <Link to="/admin/users/new" className="btn-primary">
-            <FaPlus className="btn-icon" /> Add New User
+            <FaPlus className="btn-icon" /> {t('admin.users.addNew')}
           </Link>
         </div>
       </header>
@@ -140,33 +152,33 @@ const AdminUsersList = () => {
         <table className="users-table">
           <thead>
             <tr>
-              <th>Username</th>
-              <th>Email</th>
-              <th>Full Name</th>
-              <th>Role</th>
-              <th>Actions</th>
+              <th>{t('admin.users.table.username')}</th>
+              <th>{t('admin.users.table.email')}</th>
+              <th>{t('admin.users.table.fullName')}</th>
+              <th>{t('admin.users.table.role')}</th>
+              <th>{t('admin.users.table.actions')}</th>
             </tr>
           </thead>
           <tbody>
             {filteredUsers.length > 0 ? (
               filteredUsers.map(user => (
                 <tr key={user.Id} className="user-row">
-                  <td data-label="Username">{user.Username || '-'}</td>
-                  <td data-label="Email">{user.Email || '-'}</td>
-                  <td data-label="Full Name">{`${user.FirstName || ''} ${user.LastName || ''}`.trim() || '-'}</td>
-                  <td data-label="Role">{user.Role || '-'}</td>
-                  <td className="actions" data-label="Actions">
+                  <td data-label={t('admin.users.table.username')}>{user.Username || '-'}</td>
+                  <td data-label={t('admin.users.table.email')}>{user.Email || '-'}</td>
+                  <td data-label={t('admin.users.table.fullName')}>{`${user.FirstName || ''} ${user.LastName || ''}`.trim() || '-'}</td>
+                  <td data-label={t('admin.users.table.role')}>{getRoleLabel(user.Role)}</td>
+                  <td className="actions" data-label={t('admin.users.table.actions')}>
                     <button 
                       className="action-btn btn-edit"
                       onClick={() => handleViewUser(user)}
-                      aria-label="Edit user"
+                      aria-label={t('admin.users.editAriaLabel')}
                     >
                       <FaEdit />
                     </button>
                     <button 
                       className="action-btn btn-delete"
                       onClick={() => handleDeleteUser(user.Id)}
-                      aria-label="Delete user"
+                      aria-label={t('admin.users.deleteAriaLabel')}
                     >
                       <FaTrashAlt />
                     </button>
@@ -176,7 +188,7 @@ const AdminUsersList = () => {
             ) : (
               <tr>
                 <td colSpan="5" className="no-results-cell">
-                  {users.length === 0 ? 'No users found.' : 'No users match your search criteria.'}
+                  {users.length === 0 ? t('admin.users.noUsers') : t('admin.users.noMatchingUsers')}
                 </td>
               </tr>
             )}

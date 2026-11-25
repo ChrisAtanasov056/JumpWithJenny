@@ -3,7 +3,6 @@ import React, { useState, useRef, useEffect } from 'react';
 import './ForgotPasswordModal.scss';
 import { forgotPasswordEmail } from '../../services/authService';
 import { useTranslation } from 'react-i18next';
-import PropTypes from 'prop-types';
 import useOutsideClick from '../../services/useOutsideClick';
 import useModalAccessibility from '../../services/useModalAccessibility';
 
@@ -107,10 +106,6 @@ const ForgotPasswordModal = ({ onClose }) => {
       </div>
     </div>
   );
-};
-
-ForgotPasswordModal.propTypes = {
-  onClose: PropTypes.func.isRequired,
 };
 
 export default ForgotPasswordModal;

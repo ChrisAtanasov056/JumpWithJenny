@@ -3,9 +3,7 @@ import './AuthModal.scss';
 import Login from '../Login/Login';
 import Register from '../Register/Register';
 import SuccessModal from '../Register/SuccessModal';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faFacebook } from '@fortawesome/free-brands-svg-icons';
-import { faSpinner } from '@fortawesome/free-solid-svg-icons';
+import { FaFacebook, FaSpinner } from 'react-icons/fa';
 import ForgotPasswordModal from '../ForgotPassword/ForgotPasswordModal';
 import { useTranslation } from 'react-i18next';
 import { useGoogleLogin } from '@react-oauth/google';
@@ -49,7 +47,7 @@ const AuthModal = ({ initialMode = 'login', onClose, onLoginSuccess }) => {
 
   const socialPlatforms = [
     { platform: 'Google', className: 'google-btn' },
-    { platform: 'Facebook', icon: faFacebook, className: 'fb-btn' },
+    { platform: 'Facebook', Icon: FaFacebook, className: 'fb-btn' },
   ];
 
   const handleGoogleLoginSuccess = async (credentialResponse) => {
@@ -164,7 +162,7 @@ const AuthModal = ({ initialMode = 'login', onClose, onLoginSuccess }) => {
 
   const renderSocialButtons = () => (
     <div className="social-login-section">
-      {socialPlatforms.map(({ platform, icon, className }) => {
+      {socialPlatforms.map(({ platform, Icon, className }) => {
         if (platform === 'Google') {
           return (
             <button
@@ -199,11 +197,11 @@ const AuthModal = ({ initialMode = 'login', onClose, onLoginSuccess }) => {
             key={platform}
             aria-label={t('auth.continueWithFacebook')}
           >
-            <FontAwesomeIcon icon={icon} aria-hidden="true" />
+            <Icon aria-hidden="true" />
           </button>
         ) : (
           <div className="social-btn loading-btn" key={platform} aria-hidden="true">
-            <FontAwesomeIcon icon={faSpinner} spin />
+            <FaSpinner className="fa-spin" />
           </div>
         );
       })}

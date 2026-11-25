@@ -1,11 +1,13 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import WorkoutService from '../../../services/WorkoutSevices';
 import AddUserSearchModal from './AddUserSearchModal';
 import { formatWorkoutDateForInput } from '../../../utils/workoutDate';
 import './WorkoutForm.scss';
 
 const WorkoutForm = () => {
+  const { t } = useTranslation();
   const { id } = useParams();
   const navigate = useNavigate();
 
@@ -57,7 +59,7 @@ const WorkoutForm = () => {
       });
     } catch (err) {
       const serverMessage = err.response?.data?.message || err.message;
-      setError(serverMessage || 'Failed to remove participant');
+      setError(serverMessage || t('admin.workouts.removeParticipantError'));
     }
   };
 
@@ -71,12 +73,12 @@ const WorkoutForm = () => {
         });
       } catch (err) {
         const serverMessage = err.response?.data?.message || err.message;
-        setError(serverMessage || 'Failed to load workout');
+        setError(serverMessage || t('admin.workouts.loadSingleError'));
       }
     };
 
     if (id) fetchWorkout();
-  }, [id]);
+  }, [id, t]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -97,15 +99,15 @@ const WorkoutForm = () => {
     try {
       if (id) {
         await WorkoutService.updateWorkout(id, payload);
-        setSuccessMessage('Workout updated successfully');
+        setSuccessMessage(t('admin.workouts.updateSuccess'));
       } else {
         await WorkoutService.createWorkout(payload);
-        setSuccessMessage('Workout created successfully');
+        setSuccessMessage(t('admin.workouts.createSuccess'));
       }
       setTimeout(() => navigate('/admin/workouts'), 2000);
     } catch (err) {
       const serverMessage = err.response?.data?.message || err.message;
-      setError(serverMessage || 'Failed to save workout');
+      setError(serverMessage || t('admin.workouts.saveError'));
     } finally {
       setLoading(false);
     }
@@ -113,7 +115,7 @@ const WorkoutForm = () => {
 
   return (
     <div className="workout-form">
-      <h2>{id ? 'Edit Workout' : 'Add New Workout'}</h2>
+      <h2>{id ? t('admin.workouts.editTitle') : t('admin.workouts.addTitle')}</h2>
 
       {successMessage && <div className="success">{successMessage}</div>}
       {error && <div className="error">{error}</div>}
@@ -121,24 +123,25 @@ const WorkoutForm = () => {
       <form onSubmit={handleSubmit}>
         <div className="form-row">
           <div className="form-group">
-            <label>Day</label>
-            <select name="Day" value={workout.Day} onChange={handleChange} required>
+            <label htmlFor="workout-day">{t('admin.workouts.table.day')}</label>
+            <select id="workout-day" name="Day" value={workout.Day} onChange={handleChange} required>
               {['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'].map(day => (
-                <option key={day} value={day}>{day}</option>
+                <option key={day} value={day}>{t(`days.${day.toLowerCase()}`)}</option>
               ))}
             </select>
           </div>
 
           <div className="form-group">
-            <label>Time</label>
-            <input type="time" name="Time" value={workout.Time} onChange={handleChange} required />
+            <label htmlFor="workout-time">{t('admin.workouts.table.time')}</label>
+            <input id="workout-time" type="time" name="Time" value={workout.Time} onChange={handleChange} required />
           </div>
         </div>
 
         <div className="form-row">
           <div className="form-group">
-            <label>Date & Time</label>
+            <label htmlFor="workout-date">{t('admin.workouts.dateTime')}</label>
             <input
+              id="workout-date"
               type="datetime-local"
               name="Date"
               value={workout.Date}
@@ -150,17 +153,18 @@ const WorkoutForm = () => {
 
         <div className="form-row">
           <div className="form-group">
-            <label>Status</label>
-            <select name="Status" value={workout.Status} onChange={handleChange}>
+            <label htmlFor="workout-status">{t('admin.workouts.table.status')}</label>
+            <select id="workout-status" name="Status" value={workout.Status} onChange={handleChange}>
               {['Available', 'Booked', 'Completed', 'Cancelled'].map(status => (
-                <option key={status} value={status}>{status}</option>
+                <option key={status} value={status}>{t(`admin.workouts.statuses.${status.toLowerCase()}`)}</option>
               ))}
             </select>
           </div>
 
           <div className="form-group">
-            <label>Available Spots</label>
+            <label htmlFor="workout-spots">{t('admin.workouts.table.availableSpots')}</label>
             <input
+              id="workout-spots"
               type="number"
               name="AvailableSpots"
               min="0"
@@ -174,8 +178,8 @@ const WorkoutForm = () => {
 
         {id && (
           <div className="participants-section">
-            <h3>Participants</h3>
-            {workout.Appointments?.length === 0 && <p>No participants yet.</p>}
+            <h3>{t('admin.workouts.participants')}</h3>
+            {workout.Appointments?.length === 0 && <p>{t('admin.workouts.noParticipants')}</p>}
 
             {workout.Appointments?.map((appointment) => (
               <div key={appointment.Id || appointment.UserId} className="participant-display">
@@ -184,6 +188,7 @@ const WorkoutForm = () => {
                   type="button"
                   onClick={() => removeParticipant(appointment.UserId)}
                   className="btn-remove"
+                  aria-label={t('admin.workouts.removeParticipantAria')}
                 >
                   ×
                 </button>
@@ -196,7 +201,7 @@ const WorkoutForm = () => {
                 onClick={() => setShowUserSearch(true)}
                 className="btn-add-participant"
               >
-                + Add Participant
+                {t('admin.workouts.addParticipant')}
               </button>
             </div>
           </div>
@@ -204,14 +209,14 @@ const WorkoutForm = () => {
 
         <div className="form-actions">
           <button type="submit" disabled={loading} className="btn-save">
-            {loading ? 'Saving...' : 'Save Workout'}
+            {loading ? t('admin.common.saving') : t('admin.workouts.saveButton')}
           </button>
           <button
             type="button"
             onClick={() => navigate('/admin/workouts')}
             className="btn-cancel"
           >
-            Cancel
+            {t('admin.common.cancel')}
           </button>
         </div>
       </form>

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import axios, { API_BASE_URL } from "../../../api/axius";
 import "./PhotosManagement.scss";
 import { FaTrashAlt, FaImage, FaPlus, FaSpinner } from "react-icons/fa";
@@ -6,6 +7,7 @@ import { FaTrashAlt, FaImage, FaPlus, FaSpinner } from "react-icons/fa";
 import { toast } from "react-toastify";
 
 const PhotosManagement = () => {
+  const { t } = useTranslation();
   const [photos, setPhotos] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -27,38 +29,38 @@ const PhotosManagement = () => {
 
         setPhotos(formattedPhotos);
       } catch (err) {
-        setError("Възникна грешка при зареждането на снимките.");
+        setError(t("admin.photos.loadError"));
       } finally {
         setIsLoading(false);
       }
     };
 
     fetchPhotos();
-  }, []);
+  }, [t]);
 
   const handleDelete = (photoId) => {
     toast(
       ({ closeToast }) => (
         <div>
-          <p>Сигурни ли сте, че искате да изтриете тази снимка?</p>
+          <p>{t("admin.photos.deleteConfirm")}</p>
           <button
             onClick={async () => {
               try {
                 await axios.delete(`/Gallery/${photoId}`);
                 setPhotos((prev) => prev.filter((photo) => photo.id !== photoId));
-                toast.success("Снимката е изтрита успешно!");
+                toast.success(t("admin.photos.deleteSuccess"));
                 closeToast();
               } catch {
-                toast.error("Възникна грешка при изтриването на снимката.");
+                toast.error(t("admin.photos.deleteError"));
                 closeToast();
               }
             }}
             className="toast-btn"
           >
-            Да
+            {t("admin.common.yes")}
           </button>
           <button onClick={closeToast} className="toast-btn cancel">
-            Не
+            {t("admin.common.no")}
           </button>
         </div>
       ),
@@ -69,7 +71,7 @@ const PhotosManagement = () => {
   const handleUpload = async (e) => {
     e.preventDefault();
     if (!selectedFile) {
-      toast.warn("Моля изберете снимка!");
+      toast.warn(t("admin.photos.selectPhotoWarning"));
       return;
     }
 
@@ -93,31 +95,31 @@ const PhotosManagement = () => {
       setSelectedFile(null);
       setDescription("");
       e.target.reset();
-      toast.success("Снимката е качена успешно!");
+      toast.success(t("admin.photos.uploadSuccess"));
     } catch (err) {
-      toast.error("Възникна грешка при качването на снимката.");
+      toast.error(t("admin.photos.uploadError"));
     } finally {
       setIsUploading(false);
     }
   };
 
-  if (isLoading) return <p className="loading">Зареждане на снимките...</p>;
+  if (isLoading) return <p className="loading">{t("admin.photos.loading")}</p>;
   if (error) return <p className="error">{error}</p>;
 
   return (
     <div className="photos-management">
-      <h2>Управление на снимки</h2>
+      <h2>{t("admin.photos.title")}</h2>
 
       <form className="upload-form" onSubmit={handleUpload}>
         <input
           type="file"
           accept="image/*"
-          aria-label="Избери снимка за качване"
+          aria-label={t("admin.photos.uploadAriaLabel")}
           onChange={(e) => setSelectedFile(e.target.files[0])}
         />
         <button type="submit" disabled={isUploading}>
           {isUploading ? <FaSpinner className="spin" /> : <FaPlus />}
-          {isUploading ? " Качване..." : " Качи снимка"}
+          {isUploading ? ` ${t("admin.photos.uploading")}` : ` ${t("admin.photos.uploadButton")}`}
         </button>
       </form>
 
@@ -129,7 +131,7 @@ const PhotosManagement = () => {
               <div className="photo-info">
                 <p>{photo.name}</p>
                 <button onClick={() => handleDelete(photo.id)} className="delete-btn">
-                  <FaTrashAlt /> Изтрий
+                  <FaTrashAlt /> {t("admin.photos.deleteButton")}
                 </button>
               </div>
             </div>
@@ -138,7 +140,7 @@ const PhotosManagement = () => {
       ) : (
         <div className="no-photos">
           <FaImage size={40} aria-hidden="true" />
-          <p>Няма качени снимки.</p>
+          <p>{t("admin.photos.noPhotos")}</p>
         </div>
       )}
     </div>

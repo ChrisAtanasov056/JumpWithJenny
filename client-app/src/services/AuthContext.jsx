@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import jwtDecode from 'jwt-decode';
+import i18n from '../i18n';
 import { refreshAccessToken, clearStoredAuth, AUTH_LOGOUT_EVENT } from '../api/axius';
 import { logoutUser } from './authService';
 
@@ -169,9 +170,9 @@ export const AuthProvider = ({ children }) => {
     if (error) {
         return (
             <div className="error-fallback">
-                <h2>Something went wrong</h2>
+                <h2>{i18n.t('common.somethingWentWrong')}</h2>
                 <p>{error.message}</p>
-                <button onClick={() => window.location.reload()}>Try Again</button>
+                <button onClick={() => window.location.reload()}>{i18n.t('common.tryAgain')}</button>
             </div>
         );
     }

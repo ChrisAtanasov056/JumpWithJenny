@@ -2,7 +2,9 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import './Welcome.scss';
 
-const videoSource = "/images/main_page.mp4";
+const mp4Source = "/images/main_page.mp4";
+const webmSource = "/images/main_page.webm";
+const posterSource = "/images/main_page_poster.webp";
 
 const Welcome = () => {
   const { t } = useTranslation();
@@ -28,11 +30,14 @@ const Welcome = () => {
         loop
         muted
         playsInline
+        preload="metadata"
+        poster={posterSource}
         aria-hidden="true"
         className="background-video"
         data-nosnippet
       >
-        <source src={videoSource} type="video/mp4" />
+        <source src={webmSource} type="video/webm" />
+        <source src={mp4Source} type="video/mp4" />
       </video>
 
       <div className="overlay" aria-hidden="true"></div>

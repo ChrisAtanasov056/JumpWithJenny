@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import useOutsideClick from '../../../services/useOutsideClick';
 import useModalAccessibility from '../../../services/useModalAccessibility';
 import './AddUserSearchModal.scss';
@@ -9,6 +10,7 @@ const AddUserSearchModal = ({
   onConfirm,
   searchUsers,
 }) => {
+  const { t } = useTranslation();
   const [searchTerm, setSearchTerm] = useState('');
   const [searchResults, setSearchResults] = useState([]);
   const [selectedUser, setSelectedUser] = useState(null);
@@ -54,7 +56,7 @@ const AddUserSearchModal = ({
 
   const handleConfirm = async () => {
     if (!selectedUser || !cardType || (!usesOwnShoes && !shoeSize)) {
-      setError('Please select a card type and shoe size.');
+      setError(t('admin.workouts.addParticipantModal.validationError'));
       return;
     }
 
@@ -71,7 +73,7 @@ const AddUserSearchModal = ({
       handleClose();
     } catch (err) {
       const serverMessage = err.response?.data?.message || err.response?.data || err.message;
-      setError(typeof serverMessage === 'string' ? serverMessage : 'Failed to add participant.');
+      setError(typeof serverMessage === 'string' ? serverMessage : t('admin.workouts.addParticipantModal.addError'));
       setIsSubmitting(false);
     }
   };
@@ -88,13 +90,13 @@ const AddUserSearchModal = ({
         aria-labelledby="add-participant-title"
         onClick={(e) => e.stopPropagation()}
       >
-        <h3 id="add-participant-title">Add Participant</h3>
+        <h3 id="add-participant-title">{t('admin.workouts.addParticipantModal.title')}</h3>
         <button
           type="button"
           className="close-icon"
           onClick={handleClose}
           disabled={isSubmitting}
-          aria-label="Close modal"
+          aria-label={t('admin.workouts.addParticipantModal.closeAria')}
         >
           &times;
         </button>
@@ -102,8 +104,8 @@ const AddUserSearchModal = ({
           <>
             <input
               type="text"
-              placeholder="Search by name or email"
-              aria-label="Search by name or email"
+              placeholder={t('admin.workouts.addParticipantModal.searchPlaceholder')}
+              aria-label={t('admin.workouts.addParticipantModal.searchPlaceholder')}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
@@ -112,7 +114,7 @@ const AddUserSearchModal = ({
               {searchResults.map(user => (
                 <li key={user.Id}>
                   <span>{user.FullName} ({user.Email})</span>
-                  <button type="button" onClick={() => setSelectedUser(user)}>Select</button>
+                  <button type="button" onClick={() => setSelectedUser(user)}>{t('admin.workouts.addParticipantModal.selectButton')}</button>
                 </li>
               ))}
             </ul>
@@ -136,13 +138,13 @@ const AddUserSearchModal = ({
                     setError('');
                   }}
                 />
-                {' '}Participant uses own shoes
+                {' '}{t('admin.workouts.addParticipantModal.usesOwnShoes')}
               </label>
             </div>
 
             {!usesOwnShoes && (
               <div className="form-group">
-                <label htmlFor="add-user-shoe-size">Shoe Size</label>
+                <label htmlFor="add-user-shoe-size">{t('admin.workouts.addParticipantModal.shoeSize')}</label>
                 <select
                   id="add-user-shoe-size"
                   value={shoeSize}
@@ -151,7 +153,7 @@ const AddUserSearchModal = ({
                     setError('');
                   }}
                 >
-                  <option value="" disabled>Select size</option>
+                  <option value="" disabled>{t('admin.workouts.addParticipantModal.selectSize')}</option>
                   <option value="1">S</option>
                   <option value="2">M</option>
                   <option value="3">L</option>
@@ -161,7 +163,7 @@ const AddUserSearchModal = ({
             )}
 
             <div className="form-group">
-              <label htmlFor="add-user-card-type">Card Type</label>
+              <label htmlFor="add-user-card-type">{t('admin.workouts.addParticipantModal.cardType')}</label>
               <select
                 id="add-user-card-type"
                 value={cardType}
@@ -170,10 +172,10 @@ const AddUserSearchModal = ({
                   setError('');
                 }}
               >
-                <option value="" disabled>Select card type</option>
-                <option value="1">CoolFit</option>
-                <option value="2">PulseCard</option>
-                <option value="3">IndividualWorkout</option>
+                <option value="" disabled>{t('admin.workouts.addParticipantModal.selectCardType')}</option>
+                <option value="1">{t('admin.workouts.cardTypes.coolfit')}</option>
+                <option value="2">{t('admin.workouts.cardTypes.pulse')}</option>
+                <option value="3">{t('admin.workouts.cardTypes.individual')}</option>
               </select>
             </div>
 
@@ -181,10 +183,10 @@ const AddUserSearchModal = ({
 
             <div className="form-buttons">
               <button type="button" onClick={handleConfirm} disabled={isSubmitting}>
-                {isSubmitting ? 'Adding...' : 'Confirm'}
+                {isSubmitting ? t('admin.workouts.addParticipantModal.adding') : t('admin.workouts.addParticipantModal.confirm')}
               </button>
               <button type="button" onClick={handleClose} disabled={isSubmitting}>
-                Cancel
+                {t('admin.common.cancel')}
               </button>
             </div>
           </div>

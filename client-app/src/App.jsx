@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { Suspense, lazy, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './services/AuthContext';
 import Navbar from './components/NavBar/NavBar';
@@ -8,39 +8,33 @@ import Schedule from './components/Schedule/Schedule';
 import AboutMe from './components/AboutMe/AboutMe';
 import FAQ from './components/FAQ/FAQ';
 import Contacts from './components/Contacts/Contacts';
-import AOS from 'aos';
 import Profile from './components/Profile/Profile';
 import VerifyEmail from './services/VerifyEmail';
 import Gallery from './components/Gallery/Gallery';
 import ResetPassword from './components/ForgotPassword/ResetPassword';
-import WorkoutView from './components/Admin/Workouts/WorkoutView';
 import './i18n';
 import { useTranslation } from 'react-i18next';
 import { GoogleOAuthProvider } from '@react-oauth/google';
 import { FacebookSDKProvider } from './services/FacebookSDKContext.jsx';
-import AdminLayout from './components/Admin/AdminLayout';
-import AdminUsersList from './components/Admin/Users/AdminUsersList';
-import AdminUserProfile from './components/Admin/Users/AdminUserProfile';
-import AdminWorkoutsList from './components/Admin/Workouts/AdminWorkoutList';
-import WorkoutForm from './components/Admin/Workouts/WorkoutForm';
 import HappyCustomers from './components/HappyCustomers/HappyCustomers';
 import DataDeletion from './components/DataDeletionPage/DataDeletionPage.jsx';
 import { HelmetProvider, Helmet } from 'react-helmet-async';
-import PhotosManagement from './components/Admin/PhotosManagement/PhotosManagement';
-import { ToastContainer } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
-import AdminNewUser from './components/Admin/Users/AdminNewUser.jsx';
-import AdminShoesList from './components/Admin/Shoes/AdminShoesList';
-import AdminShoeForm from './components/Admin/Shoes/AdminShoeForm';
-import ShoeDetailsView from './components/Admin/Shoes/ShoeDetailsView';
 import NotFoundPage from './components/404/NotFoundPage';
+
+const AdminLayout = lazy(() => import('./components/Admin/AdminLayout'));
+const AdminUsersList = lazy(() => import('./components/Admin/Users/AdminUsersList'));
+const AdminNewUser = lazy(() => import('./components/Admin/Users/AdminNewUser.jsx'));
+const AdminUserProfile = lazy(() => import('./components/Admin/Users/AdminUserProfile'));
+const AdminWorkoutsList = lazy(() => import('./components/Admin/Workouts/AdminWorkoutList'));
+const WorkoutForm = lazy(() => import('./components/Admin/Workouts/WorkoutForm'));
+const WorkoutView = lazy(() => import('./components/Admin/Workouts/WorkoutView'));
+const PhotosManagement = lazy(() => import('./components/Admin/PhotosManagement/PhotosManagement'));
+const AdminShoesList = lazy(() => import('./components/Admin/Shoes/AdminShoesList'));
+const AdminShoeForm = lazy(() => import('./components/Admin/Shoes/AdminShoeForm'));
+const ShoeDetailsView = lazy(() => import('./components/Admin/Shoes/ShoeDetailsView'));
 
 function App() {
   const { i18n } = useTranslation();
-
-  useEffect(() => {
-    AOS.init({ duration: 1200, once: true });
-  }, []);
 
   useEffect(() => {
     const activeLang = (i18n.resolvedLanguage || i18n.language || 'bg').split('-')[0];
@@ -52,7 +46,6 @@ function App() {
       <AuthProvider>
         <FacebookSDKProvider>
           <HelmetProvider>
-            <ToastContainer position="top-right" autoClose={3000} />
             <Router>
               <AppContent />
             </Router>
@@ -180,7 +173,9 @@ const AppContent = () => {
         path="/admin"
         element={
           <ProtectedAdminRoute>
-            <AdminLayout />
+            <Suspense fallback={<div className="admin-loading" role="status">{t('admin.common.loading')}</div>}>
+              <AdminLayout />
+            </Suspense>
           </ProtectedAdminRoute>
         }
       >

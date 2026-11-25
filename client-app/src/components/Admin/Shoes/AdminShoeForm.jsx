@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import ShoeService from '../../../services/ShoeService';
 import './AdminShoes.scss';
 
 const AdminShoeForm = () => {
+  const { t } = useTranslation();
   const { id } = useParams();
   const [shoe, setShoe] = useState({ Id: id || '', Size: 1 });
   const [loading, setLoading] = useState(false);
@@ -22,14 +24,14 @@ const AdminShoeForm = () => {
           });
         } catch (err) {
           const serverMessage = err.response?.data?.message || err.response?.data || err.message;
-          setError(typeof serverMessage === 'string' ? serverMessage : 'Failed to load shoe data');
+          setError(typeof serverMessage === 'string' ? serverMessage : t('admin.shoes.form.loadError'));
         } finally {
           setLoading(false);
         }
       };
       fetchShoe();
     }
-  }, [id]);
+  }, [id, t]);
 
   const handleChange = (e) => {
     const nextSize = Number(e.target.value);
@@ -60,22 +62,22 @@ const AdminShoeForm = () => {
       navigate('/admin/shoes');
     } catch (err) {
       const serverMessage = err.response?.data?.message || err.response?.data || err.message;
-      setError(typeof serverMessage === 'string' ? serverMessage : 'Failed to save shoe');
+      setError(typeof serverMessage === 'string' ? serverMessage : t('admin.shoes.form.saveError'));
     } finally {
       setLoading(false);
     }
   };
 
-  if (loading) return <div>Loading form...</div>;
+  if (loading) return <div>{t('admin.shoes.form.loading')}</div>;
 
   return (
     <div className="admin-shoe-form">
-      <h2>{id ? 'Edit Shoe' : 'Add New Shoe'}</h2>
-      {error && <div className="error">Error: {error}</div>}
+      <h2>{id ? t('admin.shoes.form.editTitle') : t('admin.shoes.form.addTitle')}</h2>
+      {error && <div className="error">{t('admin.common.errorPrefix')} {error}</div>}
       <form onSubmit={handleSubmit}>
         <div className="form-group">
-          <label>Size</label>
-          <select name="Size" value={shoe.Size} onChange={handleChange} required>
+          <label htmlFor="shoe-size">{t('admin.shoes.form.sizeLabel')}</label>
+          <select id="shoe-size" name="Size" value={shoe.Size} onChange={handleChange} required>
             <option value={1}>S</option>
             <option value={2}>M</option>
             <option value={3}>L</option>
@@ -84,10 +86,10 @@ const AdminShoeForm = () => {
         </div>
         <div className="form-actions">
           <button type="submit" className="btn-save" disabled={loading}>
-            Save Shoe
+            {t('admin.shoes.form.saveButton')}
           </button>
           <button type="button" className="btn-cancel-form" onClick={() => navigate('/admin/shoes')}>
-            Cancel
+            {t('admin.common.cancel')}
           </button>
         </div>
       </form>

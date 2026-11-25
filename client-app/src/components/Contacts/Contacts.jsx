@@ -205,7 +205,7 @@ const Contacts = () => {
                 </li>
                 <li className="detail-item">
                   <span className="detail-icon" aria-hidden="true">🏢</span>
-                  <span>ж.к. Зорница, 75, партер, Бургас</span>
+                  <span>{t('contacts.address')}</span>
                 </li>
               </ul>
             </div>

@@ -3,8 +3,7 @@ import './NavBar.scss';
 import AuthModal from '../Modal/AuthModal';
 import ProfileModal from '../Profile/Profile';
 import { useAuth } from '../../services/AuthContext';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faUser } from '@fortawesome/free-solid-svg-icons';
+import { FaUser } from 'react-icons/fa';
 import { Link as RouterLink, useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import LanguageDropdown from '../lang/LanguageDropdown.tsx';
@@ -122,7 +121,7 @@ const Navbar = () => {
           <RouterLink to="/" className="navbar-logo-link" onClick={closeMenu}>
             <img
               src="/images/brand_logo_2.png"
-              alt="Jump With Jenny Logo"
+              alt={t('navbar.logoAlt')}
               className="navbar-logo"
             />
           </RouterLink>
@@ -177,7 +176,7 @@ const Navbar = () => {
                     onClick={openProfileModal}
                     aria-label={t('profile.title')}
                   >
-                    <FontAwesomeIcon icon={faUser} className="profile-icon" aria-hidden="true" />
+                    <FaUser className="profile-icon" aria-hidden="true" />
                   </button>
                 </li>
               </>

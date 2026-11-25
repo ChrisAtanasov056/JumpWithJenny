@@ -2,10 +2,12 @@
 
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import UserService from '../../../services/UserServices';
 import './AdminNewUser.scss'; 
 
 const AdminNewUser = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
     username: '',
@@ -37,10 +39,10 @@ const AdminNewUser = () => {
         Role: formData.role
       });
       // Redirect to the user list page after successful creation
-      navigate('/admin/users', { state: { message: 'User created successfully!' } });
+      navigate('/admin/users', { state: { message: t('admin.users.createSuccess') } });
     } catch (err) {
       console.error('Error creating user:', err);
-      setError(err.message || 'Failed to create user. Please try again.');
+      setError(err.message || t('admin.users.createError'));
     } finally {
       setLoading(false);
     }
@@ -48,12 +50,12 @@ const AdminNewUser = () => {
 
   return (
     <div className="new-user-container">
-      <h2 className="form-title">Add New User</h2>
+      <h2 className="form-title">{t('admin.users.addNew')}</h2>
       <form onSubmit={handleSubmit} className="new-user-form">
         {error && <div className="error-message">{error}</div>}
         
         <div className="form-group">
-          <label htmlFor="username">Username</label>
+          <label htmlFor="username">{t('admin.users.fields.username')}</label>
           <input
             type="text"
             id="username"
@@ -64,7 +66,7 @@ const AdminNewUser = () => {
           />
         </div>
         <div className="form-group">
-          <label htmlFor="email">Email</label>
+          <label htmlFor="email">{t('admin.users.fields.email')}</label>
           <input
             type="email"
             id="email"
@@ -75,7 +77,7 @@ const AdminNewUser = () => {
           />
         </div>
         <div className="form-group">
-          <label htmlFor="password">Password</label>
+          <label htmlFor="password">{t('admin.users.fields.password')}</label>
           <input
             type="password"
             id="password"
@@ -86,7 +88,7 @@ const AdminNewUser = () => {
           />
         </div>
         <div className="form-group">
-          <label htmlFor="firstName">First Name</label>
+          <label htmlFor="firstName">{t('admin.users.fields.firstName')}</label>
           <input
             type="text"
             id="firstName"
@@ -96,7 +98,7 @@ const AdminNewUser = () => {
           />
         </div>
         <div className="form-group">
-          <label htmlFor="lastName">Last Name</label>
+          <label htmlFor="lastName">{t('admin.users.fields.lastName')}</label>
           <input
             type="text"
             id="lastName"
@@ -106,20 +108,20 @@ const AdminNewUser = () => {
           />
         </div>
         <div className="form-group">
-          <label htmlFor="role">Role</label>
+          <label htmlFor="role">{t('admin.users.fields.role')}</label>
           <select
             id="role"
             name="role"
             value={formData.role}
             onChange={handleChange}
           >
-            <option value="User">User</option>
-            <option value="Administrator">Admin</option>
+            <option value="User">{t('admin.roles.user')}</option>
+            <option value="Administrator">{t('admin.roles.admin')}</option>
           </select>
         </div>
 
         <button type="submit" disabled={loading}>
-          {loading ? 'Creating...' : 'Create User'}
+          {loading ? t('admin.users.creating') : t('admin.users.createButton')}
         </button>
       </form>
     </div>

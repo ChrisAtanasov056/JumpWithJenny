@@ -1,9 +1,11 @@
 import React, { useMemo, useEffect, useRef } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import './NotFoundPage.scss';
 
 const NotFoundPage = () => {
+  const { t } = useTranslation();
   const containerRef = useRef(null);
 
   const particles = useMemo(
@@ -64,13 +66,13 @@ const NotFoundPage = () => {
         </div>
 
         <div className="text-content">
-          <h2 className="not-found-title">Страницата не беше намерена</h2>
+          <h2 className="not-found-title">{t('notFound.title')}</h2>
           <p className="not-found-message">
-            Изглежда, че търсеният от Вас адрес не съществува.
+            {t('notFound.message')}
           </p>
 
           <Link to="/" className="not-found-link">
-            <span className="link-text">Обратно към началната страница</span>
+            <span className="link-text">{t('notFound.backHome')}</span>
             <span className="link-arrow" aria-hidden="true">→</span>
           </Link>
         </div>

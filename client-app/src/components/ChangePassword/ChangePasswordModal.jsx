@@ -2,8 +2,7 @@ import React, { useState, useRef, useEffect } from "react";
 import { changePassword } from "../../services/authService";
 import "./ChangePasswordModal.scss";
 import { useTranslation } from "react-i18next";
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faTimes, faLock, faSpinner, faCheckCircle, faExclamationCircle } from '@fortawesome/free-solid-svg-icons';
+import { FaTimes, FaLock, FaSpinner, FaCheckCircle, FaExclamationCircle } from 'react-icons/fa';
 import useOutsideClick from '../../services/useOutsideClick';
 import useModalAccessibility from '../../services/useModalAccessibility';
 
@@ -93,19 +92,19 @@ const ChangePasswordModal = ({ onClose, userId }) => {
             disabled={isLoading}
             aria-label={t('close')}
           >
-            <FontAwesomeIcon icon={faTimes} aria-hidden="true" />
+            <FaTimes aria-hidden="true" />
           </button>
         </div>
 
         <div className="modal-body">
           {error && (
             <div className="alert error" role="alert">
-              <FontAwesomeIcon icon={faExclamationCircle} aria-hidden="true" /> {error}
+              <FaExclamationCircle aria-hidden="true" /> {error}
             </div>
           )}
           {successMessage && (
             <div className="alert success" role="status">
-              <FontAwesomeIcon icon={faCheckCircle} aria-hidden="true" /> {successMessage}
+              <FaCheckCircle aria-hidden="true" /> {successMessage}
             </div>
           )}
 
@@ -114,7 +113,7 @@ const ChangePasswordModal = ({ onClose, userId }) => {
               <div className="form-group">
                 <label htmlFor="cp-current">{t('change_password.current')}</label>
                 <div className="input-icon-container">
-                  <FontAwesomeIcon icon={faLock} className="input-icon" aria-hidden="true" />
+                  <FaLock className="input-icon" aria-hidden="true" />
                   <input
                     id="cp-current"
                     type="password"
@@ -130,7 +129,7 @@ const ChangePasswordModal = ({ onClose, userId }) => {
               <div className="form-group">
                 <label htmlFor="cp-new">{t('change_password.new')}</label>
                 <div className="input-icon-container">
-                  <FontAwesomeIcon icon={faLock} className="input-icon" aria-hidden="true" />
+                  <FaLock className="input-icon" aria-hidden="true" />
                   <input
                     id="cp-new"
                     type="password"
@@ -146,7 +145,7 @@ const ChangePasswordModal = ({ onClose, userId }) => {
               <div className="form-group">
                 <label htmlFor="cp-confirm">{t('change_password.confirm')}</label>
                 <div className="input-icon-container">
-                  <FontAwesomeIcon icon={faLock} className="input-icon" aria-hidden="true" />
+                  <FaLock className="input-icon" aria-hidden="true" />
                   <input
                     id="cp-confirm"
                     type="password"
@@ -167,7 +166,7 @@ const ChangePasswordModal = ({ onClose, userId }) => {
                 >
                   {isLoading ? (
                     <>
-                      <FontAwesomeIcon icon={faSpinner} className="fa-spin" aria-hidden="true" />
+                      <FaSpinner className="fa-spin" aria-hidden="true" />
                       {t('change_password.changing')}
                     </>
                   ) : (
