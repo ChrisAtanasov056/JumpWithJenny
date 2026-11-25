@@ -8,6 +8,8 @@ namespace ServerAPI.Services
 
         public string FullName { get; set; }
 
+        public string PhoneNumber { get; set; }
+
         public string WorkoutDay { get; set; }
 
         public string WorkoutTime { get; set; }
@@ -17,8 +19,6 @@ namespace ServerAPI.Services
         public ShoesSize? ShoeSize { get; set; }
 
         public bool UsesOwnShoes { get; set; }
-
-        public CardType CardType { get; set; }
 
         public string CancellationToken { get; set; }
 

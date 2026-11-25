@@ -62,12 +62,6 @@ const WorkoutView = () => {
     return <div className="error">{t('admin.workouts.view.notFound')}</div>;
   }
 
-  const cardTypeLabels = {
-    1: t('admin.workouts.cardTypes.coolfit'),
-    2: t('admin.workouts.cardTypes.pulse'),
-    3: t('admin.workouts.cardTypes.individual'),
-  };
-
   const translatedDay = workout.Day
     ? t(`days.${workout.Day.toLowerCase()}`, { defaultValue: workout.Day })
     : '';
@@ -85,10 +79,9 @@ const WorkoutView = () => {
         Id: a.Id,
         FullName: a.UserFullName,
         Email: a.UserEmail,
+        PhoneNumber: a.PhoneNumber,
         ShoeSize: a.ShoeSize,
         UsesOwnShoes: a.UsesOwnShoes,
-        CardType: a.CardType || 3,
-        IsSubscriptionCard: Boolean(a.IsSubscriptionCard),
       }));
 
   return (
@@ -141,41 +134,34 @@ const WorkoutView = () => {
           <h3>{t('admin.workouts.view.registeredClients')}</h3>
           {clientList.length > 0 ? (
             <div className="clients-list">
-              {clientList.map((participant) => {
-                const isCard = Boolean(
-                  participant.IsSubscriptionCard ||
-                  participant.CardType === 1 ||
-                  participant.CardType === 2
-                );
-                const cardLabel = cardTypeLabels[participant.CardType] || t('admin.workouts.cardTypes.individual');
-
-                return (
-                  <div key={participant.Id} className="client-card">
-                    <div className="client-info">
-                      <h4>{participant.FullName}</h4>
-                      <p>{t('admin.workouts.view.email')} {participant.Email}</p>
-                    </div>
-                    <div className="shoe-info">
-                      <span className="label">{t('admin.workouts.view.shoe')}</span>
-                      {participant.UsesOwnShoes ? (
-                        <span>{t('admin.workouts.view.ownShoes')}</span>
+              {clientList.map((participant) => (
+                <div key={participant.Id} className="client-card">
+                  <div className="client-info">
+                    <h4>{participant.FullName}</h4>
+                    <p>{t('admin.workouts.view.email')} {participant.Email}</p>
+                    <p>
+                      {t('admin.workouts.view.phone')}{' '}
+                      {participant.PhoneNumber ? (
+                        <a href={`tel:${participant.PhoneNumber.replace(/\s+/g, '')}`} className="phone-link">
+                          {participant.PhoneNumber}
+                        </a>
                       ) : (
-                        <span>
-                          {shoeSizeLabels[Number(participant.ShoeSize)] || t('admin.workouts.view.notAssigned')}
-                        </span>
+                        t('admin.common.notAvailable')
                       )}
-                    </div>
-                    <div className="shoe-info">
-                      <span className="label">{t('admin.workouts.view.visitType')}</span>
-                      <span className={`visit-badge ${isCard ? 'subscription-card' : 'single-visit'}`}>
-                        {isCard
-                          ? `${t('admin.workouts.view.subscriptionCard')} (${cardLabel})`
-                          : t('admin.workouts.view.singleVisit')}
-                      </span>
-                    </div>
+                    </p>
                   </div>
-                );
-              })}
+                  <div className="shoe-info">
+                    <span className="label">{t('admin.workouts.view.shoe')}</span>
+                    {participant.UsesOwnShoes ? (
+                      <span>{t('admin.workouts.view.ownShoes')}</span>
+                    ) : (
+                      <span>
+                        {shoeSizeLabels[Number(participant.ShoeSize)] || t('admin.workouts.view.notAssigned')}
+                      </span>
+                    )}
+                  </div>
+                </div>
+              ))}
             </div>
           ) : (
             <div className="no-clients">

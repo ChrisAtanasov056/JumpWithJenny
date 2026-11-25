@@ -78,7 +78,7 @@ namespace ServerAPI.Controllers
 
             _logger.LogInformation("Received public booking request for workout {WorkoutId}", request.WorkoutId);
 
-            var updatedWorkout = await _scheduleService.ApplyForWorkoutAsync(
+            var bookingResult = await _scheduleService.ApplyForWorkoutAsync(
                 request,
                 allowPastWorkout: false,
                 enforceBookingLimits: true,
@@ -87,7 +87,8 @@ namespace ServerAPI.Controllers
             return Ok(new
             {
                 message = "Successfully applied for the workout.",
-                workout = updatedWorkout
+                workout = bookingResult.Workout,
+                cancellationToken = bookingResult.CancellationToken
             });
         }
 

@@ -55,8 +55,8 @@
 ### Записване без регистрация и отмяна с 1 клик
 - Публичните потребители се записват директно през `Schedule.jsx` → `WorkoutModal.jsx` (`POST /api/Schedule/apply`, `[AllowAnonymous]`, `BookingPolicy` rate limit), без нужда от регистрация или вход.
 - Входът остава само за администратора през скрит маршрут `/admin/login` (`AuthService.LoginAsync` допуска само потребители с роля `Administrator`).
-- `ScheduleService.ApplyForWorkoutAsync` използва транзакция + `pg_advisory_xact_lock(hashtext(normalizedEmail))`: проверява за дублиране на имейл в същата тренировка (`ALREADY_REGISTERED`), лимит от максимум 3 активни предстоящи резервации на имейл (`MAX_ACTIVE_BOOKINGS`), свободни места и обувки по размер, генерира криптографски сигурен `CancellationToken` и изпраща потвърдителен имейл с линк `${FrontendBaseUrl}/cancel-booking/${cancellationToken}`.
-- Фронтендът пази въведените Име, Имейл, Размер обувки, `UsesOwnShoes` и `CardType` в `localStorage` (`jwj_booking_prefs_v1`) за автоматично попълване.
+- `ScheduleService.ApplyForWorkoutAsync` използва транзакция + `pg_advisory_xact_lock(hashtext(normalizedEmail))`: валидира `FullName`, `Email`, `PhoneNumber`, проверява за дублиране на имейл в същата тренировка (`ALREADY_REGISTERED`), лимит от максимум 3 активни предстоящи резервации на имейл (`MAX_ACTIVE_BOOKINGS`), свободни места и обувки по размер, генерира криптографски сигурен `CancellationToken` и изпраща потвърдителен имейл с линк `${FrontendBaseUrl}/cancel-booking/${cancellationToken}`.
+- Фронтендът пази въведените Име, Имейл, Телефон, Размер обувки и `UsesOwnShoes` в `localStorage` (`jwj_booking_prefs_v2`), както и локална карта с `cancellationToken` по `workoutId` (`jwj_my_bookings_v1`), така че в графика слотът показва „Записан си ✓“ и при клик `WorkoutModal` веднага показва статуса и бутон за отмяна с 1 клик.
 - Отварянето на `/cancel-booking/:token` зарежда детайлите (`GET /api/Schedule/cancel/{token}`) и при потвърждение (`POST /api/Schedule/cancel/{token}`) освобождава мястото и обувките.
 
 ---

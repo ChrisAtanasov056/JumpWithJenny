@@ -10,11 +10,11 @@ namespace ServerAPI.Models.Schedule
 
         public string Email { get; set; }
 
+        public string PhoneNumber { get; set; }
+
         public ShoesSize? ShoeSize { get; set; }
 
         public bool UsesOwnShoes { get; set; }
-
-        public CardType? CardType { get; set; }
 
         public string Language { get; set; }
     }

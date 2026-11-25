@@ -59,7 +59,8 @@ $box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
 }
 
 .add-user-modal input[type="text"],
-.add-user-modal input[type="email"] {
+.add-user-modal input[type="email"],
+.add-user-modal input[type="tel"] {
   width: 100%;
   padding: 10px;
   margin-bottom: 4px;

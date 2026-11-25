@@ -170,9 +170,10 @@ namespace ServerAPI.Services.Workouts
                             UserEmail = !string.IsNullOrWhiteSpace(a.Email)
                                 ? a.Email
                                 : (a.User != null ? a.User.Email : string.Empty),
+                            PhoneNumber = !string.IsNullOrWhiteSpace(a.PhoneNumber)
+                                ? a.PhoneNumber
+                                : (a.User != null ? a.User.PhoneNumber ?? string.Empty : string.Empty),
                             ShoeId = a.ShoeId,
-                            CardType = a.CardType ?? CardType.IndividualWorkout,
-                            IsSubscriptionCard = a.CardType == CardType.CoolFit || a.CardType == CardType.PulseCard,
                             ShoeSize = a.Shoe != null ? a.Shoe.Size : (ShoesSize?)null,
                             UsesOwnShoes = a.UsesOwnShoes,
                         }).ToList()
@@ -233,10 +234,11 @@ namespace ServerAPI.Services.Workouts
                     Email = !string.IsNullOrWhiteSpace(a.Email)
                         ? a.Email
                         : (a.User != null ? a.User.Email : string.Empty),
+                    PhoneNumber = !string.IsNullOrWhiteSpace(a.PhoneNumber)
+                        ? a.PhoneNumber
+                        : (a.User != null ? a.User.PhoneNumber ?? string.Empty : string.Empty),
                     ShoeSize = a.Shoe != null ? a.Shoe.Size : (ShoesSize?)null,
                     UsesOwnShoes = a.UsesOwnShoes,
-                    CardType = a.CardType ?? CardType.IndividualWorkout,
-                    IsSubscriptionCard = a.CardType == CardType.CoolFit || a.CardType == CardType.PulseCard,
                 })
                 .ToListAsync();
         }
@@ -396,8 +398,9 @@ namespace ServerAPI.Services.Workouts
                             UserEmail = !string.IsNullOrWhiteSpace(a.Email)
                                 ? a.Email
                                 : (a.User != null ? a.User.Email : string.Empty),
-                            CardType = a.CardType ?? CardType.IndividualWorkout,
-                            IsSubscriptionCard = a.CardType == CardType.CoolFit || a.CardType == CardType.PulseCard,
+                            PhoneNumber = !string.IsNullOrWhiteSpace(a.PhoneNumber)
+                                ? a.PhoneNumber
+                                : (a.User != null ? a.User.PhoneNumber ?? string.Empty : string.Empty),
                             ShoeId = a.ShoeId,
                             ShoeSize = a.Shoe != null ? a.Shoe.Size : (ShoesSize?)null,
                             UsesOwnShoes = a.UsesOwnShoes

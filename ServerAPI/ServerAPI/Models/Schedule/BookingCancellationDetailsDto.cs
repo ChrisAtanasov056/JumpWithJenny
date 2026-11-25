@@ -10,6 +10,8 @@ namespace ServerAPI.Models.Schedule
 
         public string Email { get; set; }
 
+        public string PhoneNumber { get; set; }
+
         public string WorkoutId { get; set; }
 
         public string WorkoutDay { get; set; }
@@ -21,8 +23,6 @@ namespace ServerAPI.Models.Schedule
         public ShoesSize? ShoeSize { get; set; }
 
         public bool UsesOwnShoes { get; set; }
-
-        public CardType CardType { get; set; }
 
         public bool CanCancel { get; set; }
     }

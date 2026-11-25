@@ -4,6 +4,15 @@ import useOutsideClick from '../../../services/useOutsideClick';
 import useModalAccessibility from '../../../services/useModalAccessibility';
 import './AddUserSearchModal.scss';
 
+const isValidPhone = (phone) => {
+  const trimmed = phone.trim();
+  if (trimmed.length < 7 || trimmed.length > 30 || !/^\+?[0-9\s\-()]{7,30}$/.test(trimmed)) {
+    return false;
+  }
+  const digits = trimmed.replace(/\D/g, '');
+  return digits.length >= 7 && digits.length <= 15;
+};
+
 const AddUserSearchModal = ({
   visible,
   onClose,
@@ -12,8 +21,8 @@ const AddUserSearchModal = ({
   const { t } = useTranslation();
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
+  const [phoneNumber, setPhoneNumber] = useState('');
   const [shoeSize, setShoeSize] = useState('');
-  const [cardType, setCardType] = useState('3');
   const [usesOwnShoes, setUsesOwnShoes] = useState(false);
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -23,8 +32,8 @@ const AddUserSearchModal = ({
   const handleClose = useCallback(() => {
     setFullName('');
     setEmail('');
+    setPhoneNumber('');
     setShoeSize('');
-    setCardType('3');
     setUsesOwnShoes(false);
     setError('');
     setIsSubmitting(false);
@@ -41,6 +50,7 @@ const AddUserSearchModal = ({
   const handleConfirm = async () => {
     const trimmedName = fullName.trim();
     const trimmedEmail = email.trim();
+    const trimmedPhone = phoneNumber.trim();
 
     if (trimmedName.length < 2) {
       setError(t('bookingForm.errorFullName'));
@@ -49,6 +59,11 @@ const AddUserSearchModal = ({
 
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmedEmail)) {
       setError(t('bookingForm.errorEmail'));
+      return;
+    }
+
+    if (!isValidPhone(trimmedPhone)) {
+      setError(t('bookingForm.errorPhone'));
       return;
     }
 
@@ -64,8 +79,8 @@ const AddUserSearchModal = ({
       await onConfirm({
         fullName: trimmedName,
         email: trimmedEmail,
+        phoneNumber: trimmedPhone,
         shoeSize: usesOwnShoes ? null : parseInt(shoeSize, 10),
-        cardType: parseInt(cardType || '3', 10),
         usesOwnShoes,
       });
       handleClose();
@@ -130,6 +145,21 @@ const AddUserSearchModal = ({
             />
           </div>
 
+          <div className="form-group">
+            <label htmlFor="add-participant-phone">{t('bookingForm.phoneLabel')}</label>
+            <input
+              id="add-participant-phone"
+              type="tel"
+              placeholder={t('bookingForm.phonePlaceholder')}
+              value={phoneNumber}
+              onChange={(e) => {
+                setPhoneNumber(e.target.value);
+                setError('');
+              }}
+              maxLength={30}
+            />
+          </div>
+
           <div className="form-group checkbox-group">
             <label htmlFor="add-user-own-shoes">
               <input
@@ -168,22 +198,6 @@ const AddUserSearchModal = ({
               </select>
             </div>
           )}
-
-          <div className="form-group">
-            <label htmlFor="add-user-card-type">{t('admin.workouts.addParticipantModal.cardType')}</label>
-            <select
-              id="add-user-card-type"
-              value={cardType}
-              onChange={(e) => {
-                setCardType(e.target.value);
-                setError('');
-              }}
-            >
-              <option value="3">{t('admin.workouts.cardTypes.individual')}</option>
-              <option value="1">{t('admin.workouts.cardTypes.coolfit')}</option>
-              <option value="2">{t('admin.workouts.cardTypes.pulse')}</option>
-            </select>
-          </div>
 
           {error && <div className="error" role="alert">{error}</div>}
 

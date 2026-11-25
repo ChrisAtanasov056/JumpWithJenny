@@ -4,6 +4,7 @@ import WorkoutModal from '../WorkoutModal/WorkoutModal';
 import { useTranslation } from 'react-i18next';
 import { useMediaQuery } from 'react-responsive';
 import { parseWorkoutDate } from '../../utils/workoutDate';
+import { loadMyBookings, saveMyBooking, removeMyBooking } from '../../utils/bookingStorage';
 import './Schedule.scss';
 
 const parseTimeToMinutes = (timeStr = '') => {
@@ -15,6 +16,7 @@ const Schedule = () => {
   const { t, i18n } = useTranslation();
 
   const [workouts, setWorkouts] = useState([]);
+  const [myBookings, setMyBookings] = useState(() => loadMyBookings());
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [isRegistering, setIsRegistering] = useState({});
@@ -67,9 +69,9 @@ const Schedule = () => {
         workoutId: workout.Id,
         fullName: bookingData.fullName,
         email: bookingData.email,
+        phoneNumber: bookingData.phoneNumber,
         shoeSize: bookingData.usesOwnShoes ? null : bookingData.shoeSize,
         usesOwnShoes: bookingData.usesOwnShoes,
-        cardType: bookingData.cardType,
         language: activeLang === 'en' ? 'en' : 'bg',
       };
 
@@ -77,6 +79,13 @@ const Schedule = () => {
 
       if (response.status === 200) {
         const updatedWorkout = response.data?.workout || response.data;
+        const cancellationToken = response.data?.cancellationToken;
+
+        if (cancellationToken) {
+          saveMyBooking(workout.Id, cancellationToken);
+          setMyBookings(loadMyBookings());
+        }
+
         setWorkouts((prev) =>
           prev.map((w) => (w.Id === updatedWorkout.Id ? updatedWorkout : w))
         );
@@ -93,6 +102,17 @@ const Schedule = () => {
       setIsRegistering((prev) => ({ ...prev, [workout.Id]: false }));
     }
   };
+
+  const handleClearStaleToken = useCallback((workoutId) => {
+    removeMyBooking(workoutId);
+    setMyBookings(loadMyBookings());
+  }, []);
+
+  const handleBookingCancelled = useCallback(async (workoutId) => {
+    removeMyBooking(workoutId);
+    setMyBookings(loadMyBookings());
+    await fetchWorkouts();
+  }, [fetchWorkouts]);
 
   const groupedWorkouts = useMemo(() => {
     return workouts.reduce((acc, workout) => {
@@ -158,10 +178,12 @@ const Schedule = () => {
                     {dayKeys.map((dayKey, dayIdx) => {
                       const workout = groupedWorkouts[dayKey]?.find((w) => w.Time === time);
                       const status = workout?.Status?.toLowerCase();
-                      const canOpenModal = status === 'available';
+                      const isBookedByMe = Boolean(workout?.Id && myBookings[workout.Id]?.token);
+                      const canOpenModal = status === 'available' || isBookedByMe;
 
-                      const statusText =
-                        status === 'available'
+                      const statusText = isBookedByMe
+                        ? t('schedule.registeredBadge')
+                        : status === 'available'
                           ? isRegistering[workout?.Id]
                             ? t('schedule.registering')
                             : t('schedule.available')
@@ -172,7 +194,7 @@ const Schedule = () => {
                       return (
                         <td
                           key={`${dayKey}-${time}`}
-                          className={`schedule-cell ${status || 'empty'} ${canOpenModal ? 'clickable' : ''}`}
+                          className={`schedule-cell ${status || 'empty'} ${isBookedByMe ? 'registered-by-me' : ''} ${canOpenModal ? 'clickable' : ''}`}
                         >
                           {canOpenModal ? (
                             <button
@@ -211,9 +233,12 @@ const Schedule = () => {
                   <h3 className="day-header">{translatedDay}</h3>
                   {dayWorkouts.map((workout) => {
                     const status = workout?.Status?.toLowerCase();
-                    const canOpenModal = status === 'available';
-                    const statusText =
-                      status === 'available'
+                    const isBookedByMe = Boolean(workout?.Id && myBookings[workout.Id]?.token);
+                    const canOpenModal = status === 'available' || isBookedByMe;
+
+                    const statusText = isBookedByMe
+                      ? t('schedule.registeredBadge')
+                      : status === 'available'
                         ? isRegistering[workout?.Id]
                           ? t('schedule.registering')
                           : t('schedule.available')
@@ -226,7 +251,7 @@ const Schedule = () => {
                         <button
                           key={workout.Id || `${dayKey}-${workout.Time}`}
                           type="button"
-                          className={`time-slot ${status || 'empty'} clickable`}
+                          className={`time-slot ${status || 'empty'} ${isBookedByMe ? 'registered-by-me' : ''} clickable`}
                           onClick={() => openModal(workout)}
                         >
                           <span>{workout.Time}</span>
@@ -257,6 +282,9 @@ const Schedule = () => {
         onClose={closeModal}
         selectedWorkout={selectedWorkout}
         onRegister={handleRegistration}
+        savedCancellationToken={selectedWorkout ? myBookings[selectedWorkout.Id]?.token : null}
+        onClearStaleToken={handleClearStaleToken}
+        onBookingCancelled={handleBookingCancelled}
       />
     </section>
   );

@@ -92,12 +92,6 @@ namespace ServerAPI.Services
             var shoesText = model.UsesOwnShoes
                 ? Text("OwnShoesValue")
                 : $"{Text("ShoeSizePrefix")} {FormatShoeSize(model.ShoeSize)}";
-            var cardText = model.CardType switch
-            {
-                CardType.CoolFit => Text("CardCoolFit"),
-                CardType.PulseCard => Text("CardPulse"),
-                _ => Text("CardIndividual"),
-            };
 
             var detailsBlock = $@"
                 <table cellpadding='8' cellspacing='0' border='0' width='100%' style='background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; margin: 18px 0;'>
@@ -118,8 +112,8 @@ namespace ServerAPI.Services
                         <td style='color: #333333;'>{WebUtility.HtmlEncode(shoesText)}</td>
                     </tr>
                     <tr>
-                        <td style='font-weight: bold; color: #2c3e50;'>{WebUtility.HtmlEncode(Text("VisitTypeLabel"))}:</td>
-                        <td style='color: #333333;'>{WebUtility.HtmlEncode(cardText)}</td>
+                        <td style='font-weight: bold; color: #2c3e50;'>{WebUtility.HtmlEncode(Text("PhoneLabel"))}:</td>
+                        <td style='color: #333333;'>{WebUtility.HtmlEncode(model.PhoneNumber ?? string.Empty)}</td>
                     </tr>
                     <tr>
                         <td style='font-weight: bold; color: #2c3e50;'>{WebUtility.HtmlEncode(Text("LocationLabel"))}:</td>

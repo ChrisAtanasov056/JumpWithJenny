@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { FaCalendarTimes, FaCheckCircle, FaExclamationTriangle, FaSpinner } from 'react-icons/fa';
 import axios from '../../api/axius';
 import { formatWorkoutDateBg } from '../../utils/workoutDate';
+import { removeMyBookingByToken } from '../../utils/bookingStorage';
 import './CancelBookingPage.scss';
 
 const SHOE_SIZE_LABELS = {
@@ -37,6 +38,7 @@ const CancelBookingPage = () => {
       setStatus('details');
     } catch (err) {
       if (err?.response?.status === 404) {
+        removeMyBookingByToken(token);
         setStatus('notFound');
       } else if (err?.response?.status === 429) {
         setErrorMessage(t('bookingErrors.RATE_LIMITED'));
@@ -60,10 +62,12 @@ const CancelBookingPage = () => {
 
     try {
       await axios.post(`/api/Schedule/cancel/${encodeURIComponent(token)}`);
+      removeMyBookingByToken(token);
       setStatus('cancelled');
     } catch (err) {
       const code = err?.response?.data?.code;
       if (err?.response?.status === 404 || code === 'BOOKING_NOT_FOUND') {
+        removeMyBookingByToken(token);
         setStatus('notFound');
       } else if (code === 'WORKOUT_PAST') {
         setErrorMessage(t('bookingErrors.WORKOUT_PAST'));
@@ -141,6 +145,12 @@ const CancelBookingPage = () => {
                 <span className="summary-label">{t('cancelBooking.participantLabel')}</span>
                 <span className="summary-value">{details.FullName}</span>
               </div>
+              {details.PhoneNumber && (
+                <div className="summary-row">
+                  <span className="summary-label">{t('cancelBooking.phoneLabel')}</span>
+                  <span className="summary-value">{details.PhoneNumber}</span>
+                </div>
+              )}
               <div className="summary-row">
                 <span className="summary-label">{t('cancelBooking.dayLabel')}</span>
                 <span className="summary-value">{translatedDay}</span>

@@ -104,12 +104,6 @@ const WorkoutForm = () => {
     }
   };
 
-  const cardTypeLabels = {
-    1: t('admin.workouts.cardTypes.coolfit'),
-    2: t('admin.workouts.cardTypes.pulse'),
-    3: t('admin.workouts.cardTypes.individual'),
-  };
-
   return (
     <div className="workout-form">
       <h2>{id ? t('admin.workouts.editTitle') : t('admin.workouts.addTitle')}</h2>
@@ -182,12 +176,11 @@ const WorkoutForm = () => {
               const shoeText = appointment.UsesOwnShoes
                 ? t('admin.workouts.view.ownShoes')
                 : (shoeSizeLabels[Number(appointment.ShoeSize)] || t('admin.workouts.view.notAssigned'));
-              const visitText = cardTypeLabels[appointment.CardType] || t('admin.workouts.cardTypes.individual');
 
               return (
                 <div key={appointment.Id} className="participant-display">
                   <span>
-                    {appointment.UserFullName} ({appointment.UserEmail}) — {shoeText} · {visitText}
+                    {appointment.UserFullName} ({appointment.UserEmail}{appointment.PhoneNumber ? ` · ${appointment.PhoneNumber}` : ''}) — {shoeText}
                   </span>
                   <button
                     type="button"

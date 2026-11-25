@@ -174,9 +174,18 @@ $mobile-breakpoint: 768px;
         color: $primary-color;
       }
       p {
-        margin: 0;
+        margin: 2px 0 0;
         font-size: 0.9rem;
         color: $text-color-light;
+      }
+      .phone-link {
+        color: $primary-color;
+        font-weight: 600;
+        text-decoration: none;
+
+        &:hover {
+          text-decoration: underline;
+        }
       }
 
       .shoe-info {
@@ -186,23 +195,6 @@ $mobile-breakpoint: 768px;
           font-weight: 600;
           color: $text-color-dark;
           margin-right: 5px;
-        }
-        .visit-badge {
-          display: inline-block;
-          padding: 2px 8px;
-          border-radius: 999px;
-          font-size: 0.8rem;
-          font-weight: 600;
-
-          &.subscription-card {
-            background: #e3f2fd;
-            color: #1565c0;
-          }
-
-          &.single-visit {
-            background: #e8f5e9;
-            color: #2e7d32;
-          }
         }
       }
     }

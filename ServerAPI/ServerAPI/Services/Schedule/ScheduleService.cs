@@ -1,4 +1,5 @@
 ﻿using System.Security.Cryptography;
+using System.Text.RegularExpressions;
 using Microsoft.EntityFrameworkCore;
 using MimeKit;
 using Npgsql;
@@ -14,6 +15,7 @@ namespace ServerAPI.Services.Schedule
     public class ScheduleService : IScheduleService
     {
         private const int MaxActiveUpcomingBookingsPerEmail = 3;
+        private static readonly Regex PhonePattern = new(@"^\+?[0-9\s\-()]{7,30}$", RegexOptions.Compiled);
 
         private readonly JumpWithJennyDbContext _context;
         private readonly IDeletableEntityRepository<Workout> _workoutRepository;
@@ -35,7 +37,7 @@ namespace ServerAPI.Services.Schedule
             _logger = logger;
         }
 
-        public async Task<WorkoutViewModels> ApplyForWorkoutAsync(
+        public async Task<ApplyForWorkoutResult> ApplyForWorkoutAsync(
             ApplyForWorkoutRequest request,
             bool allowPastWorkout = false,
             bool enforceBookingLimits = true,
@@ -67,14 +69,13 @@ namespace ServerAPI.Services.Schedule
                     "Please enter a valid email address.");
             }
 
-            var normalizedEmail = trimmedEmail.ToLowerInvariant();
-            var resolvedCardType = request.CardType ?? CardType.IndividualWorkout;
-            if (!Enum.IsDefined(typeof(CardType), resolvedCardType))
+            var trimmedPhone = request.PhoneNumber?.Trim() ?? string.Empty;
+            if (!IsValidPhoneNumber(trimmedPhone))
             {
                 throw new ScheduleBookingException(
-                    BookingErrorCode.InvalidCardType,
-                    "INVALID_CARD_TYPE",
-                    "Invalid workout card type.");
+                    BookingErrorCode.InvalidPhoneNumber,
+                    "INVALID_PHONE_NUMBER",
+                    "Please enter a valid phone number.");
             }
 
             if (!request.UsesOwnShoes && (!request.ShoeSize.HasValue || !Enum.IsDefined(typeof(ShoesSize), request.ShoeSize.Value)))
@@ -85,6 +86,7 @@ namespace ServerAPI.Services.Schedule
                     "Please select a valid shoe size.");
             }
 
+            var normalizedEmail = trimmedEmail.ToLowerInvariant();
             var workoutId = request.WorkoutId.Trim();
             var nowSofia = BulgariaTimeHelper.GetCurrentSofiaTime();
             var cancellationToken = GenerateCancellationToken();
@@ -197,8 +199,9 @@ namespace ServerAPI.Services.Schedule
                     existingAppointment.FullName = trimmedName;
                     existingAppointment.Email = trimmedEmail;
                     existingAppointment.NormalizedEmail = normalizedEmail;
+                    existingAppointment.PhoneNumber = trimmedPhone;
                     existingAppointment.CancellationToken = cancellationToken;
-                    existingAppointment.CardType = resolvedCardType;
+                    existingAppointment.CardType = null;
                     existingAppointment.ShoeId = assignedShoe?.Id;
                     existingAppointment.UsesOwnShoes = request.UsesOwnShoes;
                     existingAppointment.IsConfirmed = true;
@@ -217,8 +220,9 @@ namespace ServerAPI.Services.Schedule
                         FullName = trimmedName,
                         Email = trimmedEmail,
                         NormalizedEmail = normalizedEmail,
+                        PhoneNumber = trimmedPhone,
                         CancellationToken = cancellationToken,
-                        CardType = resolvedCardType,
+                        CardType = null,
                         ShoeId = assignedShoe?.Id,
                         UsesOwnShoes = request.UsesOwnShoes,
                         IsConfirmed = true,
@@ -289,12 +293,12 @@ namespace ServerAPI.Services.Schedule
                     {
                         ToEmail = trimmedEmail,
                         FullName = trimmedName,
+                        PhoneNumber = trimmedPhone,
                         WorkoutDay = workoutDay,
                         WorkoutTime = workoutTime,
                         WorkoutDateSofia = workoutDateSofia,
                         ShoeSize = request.UsesOwnShoes ? null : request.ShoeSize,
                         UsesOwnShoes = request.UsesOwnShoes,
-                        CardType = resolvedCardType,
                         CancellationToken = cancellationToken,
                         Language = request.Language,
                     });
@@ -310,7 +314,11 @@ namespace ServerAPI.Services.Schedule
                 }
             }
 
-            return resultViewModel;
+            return new ApplyForWorkoutResult
+            {
+                Workout = resultViewModel,
+                CancellationToken = cancellationToken,
+            };
         }
 
         public async Task<BookingCancellationDetailsDto> GetCancellationDetailsByTokenAsync(string token)
@@ -342,13 +350,13 @@ namespace ServerAPI.Services.Schedule
                 AppointmentId = appointment.Id,
                 FullName = appointment.FullName,
                 Email = appointment.Email,
+                PhoneNumber = appointment.PhoneNumber,
                 WorkoutId = appointment.WorkoutId,
                 WorkoutDay = appointment.Workout.Day,
                 WorkoutTime = appointment.Workout.Time,
                 WorkoutDate = BulgariaTimeHelper.SofiaToUtc(appointment.Workout.Date),
                 ShoeSize = appointment.Shoe?.Size,
                 UsesOwnShoes = appointment.UsesOwnShoes,
-                CardType = appointment.CardType ?? CardType.IndividualWorkout,
                 CanCancel = appointment.Workout.Date > BulgariaTimeHelper.GetCurrentSofiaTime(),
             };
         }
@@ -576,6 +584,17 @@ namespace ServerAPI.Services.Schedule
 
             var domainPart = email[(atIndex + 1)..];
             return domainPart.Contains('.') && !domainPart.StartsWith('.') && !domainPart.EndsWith('.');
+        }
+
+        private static bool IsValidPhoneNumber(string phone)
+        {
+            if (string.IsNullOrWhiteSpace(phone) || phone.Length > 30 || !PhonePattern.IsMatch(phone))
+            {
+                return false;
+            }
+
+            var digitCount = phone.Count(char.IsDigit);
+            return digitCount >= 7 && digitCount <= 15;
         }
     }
 }

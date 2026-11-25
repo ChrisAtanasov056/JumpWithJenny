@@ -15,6 +15,7 @@ namespace ServerAPI.Models.Schedule
         ConcurrencyConflict,
         InvalidFullName,
         InvalidEmail,
+        InvalidPhoneNumber,
         MaxActiveBookingsReached,
         BookingNotFound
     }

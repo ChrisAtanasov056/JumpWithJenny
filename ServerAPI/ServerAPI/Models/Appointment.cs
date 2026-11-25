@@ -29,6 +29,10 @@
         public string NormalizedEmail { get; set; }
 
         [Required]
+        [MaxLength(30)]
+        public string PhoneNumber { get; set; }
+
+        [Required]
         [MaxLength(128)]
         public string CancellationToken { get; set; }
 

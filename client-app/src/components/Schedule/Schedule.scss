@@ -152,6 +152,18 @@ $border-radius: 8px;
       }
     }
 
+    &.registered-by-me {
+      background-color: #1D6FA5;
+      color: $white;
+
+      @media (hover: hover) and (pointer: fine) {
+        &:hover {
+          background-color: color.adjust(#1D6FA5, $lightness: -7%);
+          box-shadow: 0 4px 12px rgba(29, 111, 165, 0.4);
+        }
+      }
+    }
+
     &.empty {
       background-color: #f7f7f7;
       color: #546678;
@@ -215,6 +227,15 @@ $border-radius: 8px;
       color: $white;
 
       &.clickable:active {
+        transform: scale(0.98);
+      }
+    }
+
+    &.registered-by-me {
+      background-color: #1D6FA5;
+      color: $white;
+
+      &:active {
         transform: scale(0.98);
       }
     }

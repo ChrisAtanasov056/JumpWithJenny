@@ -11,7 +11,7 @@
 
         Task<WorkoutViewModels> GetWorkoutByIdAsync(string id);
 
-        Task<WorkoutViewModels> ApplyForWorkoutAsync(
+        Task<ApplyForWorkoutResult> ApplyForWorkoutAsync(
             ApplyForWorkoutRequest request,
             bool allowPastWorkout = false,
             bool enforceBookingLimits = true,

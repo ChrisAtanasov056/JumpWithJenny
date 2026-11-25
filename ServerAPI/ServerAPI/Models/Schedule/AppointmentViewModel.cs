@@ -12,9 +12,7 @@ namespace ServerAPI.Models.Schedule
 
         public string UserEmail { get; set; }
 
-        public CardType? CardType { get; set; }
-
-        public bool IsSubscriptionCard { get; set; }
+        public string PhoneNumber { get; set; }
 
         public string ShoeId { get; set; }
 

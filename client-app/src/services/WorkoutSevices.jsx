@@ -54,13 +54,13 @@ const WorkoutService = {
     }
   },
 
-  addParticipantToWorkout: async (workoutId, { fullName, email, shoeSize, cardType, usesOwnShoes }) => {
+  addParticipantToWorkout: async (workoutId, { fullName, email, phoneNumber, shoeSize, usesOwnShoes }) => {
     const response = await api.post('/api/Admin/add/participant', {
       workoutId,
       fullName,
       email,
+      phoneNumber,
       shoeSize,
-      cardType,
       usesOwnShoes,
     });
     return response.data;

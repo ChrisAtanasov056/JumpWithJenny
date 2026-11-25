@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FaTimes, FaCheck, FaInfoCircle, FaCalendarAlt, FaShoePrints, FaCreditCard, FaUser } from 'react-icons/fa';
+import { FaTimes, FaCheck, FaInfoCircle, FaCalendarAlt, FaShoePrints, FaUser } from 'react-icons/fa';
+import axios from '../../api/axius';
 import './WorkoutModal.scss';
 import useOutsideClick from '../../services/useOutsideClick';
 import useModalAccessibility from '../../services/useModalAccessibility';
@@ -13,6 +14,13 @@ const SHOE_SIZE_MAP = {
   M: 2,
   L: 3,
   XL: 4,
+};
+
+const SHOE_SIZE_LABELS = {
+  1: 'S (36-38)',
+  2: 'M (39-41)',
+  3: 'L (42-44)',
+  4: 'XL (44-46)',
 };
 
 const SHOE_SIZE_RANGES = {
@@ -33,9 +41,10 @@ const BOOKING_ERROR_CODES = new Set([
   'NO_AVAILABLE_SPOTS',
   'NO_AVAILABLE_SHOES',
   'INVALID_SHOE_SIZE',
-  'INVALID_CARD_TYPE',
   'INVALID_FULL_NAME',
   'INVALID_EMAIL',
+  'INVALID_PHONE_NUMBER',
+  'BOOKING_NOT_FOUND',
   'CONCURRENCY_CONFLICT',
 ]);
 
@@ -59,24 +68,40 @@ const computeShoeAvailability = (workout) => {
   return counts;
 };
 
+const isValidPhone = (phone) => {
+  const trimmed = phone.trim();
+  if (trimmed.length < 7 || trimmed.length > 30 || !/^\+?[0-9\s\-()]{7,30}$/.test(trimmed)) {
+    return false;
+  }
+  const digits = trimmed.replace(/\D/g, '');
+  return digits.length >= 7 && digits.length <= 15;
+};
+
 const WorkoutModal = ({
   isOpen,
   onClose,
   selectedWorkout,
   onRegister,
+  savedCancellationToken,
+  onClearStaleToken,
+  onBookingCancelled,
 }) => {
   const { t } = useTranslation();
   const modalRef = useRef(null);
+  const justRegisteredRef = useRef(false);
 
   useOutsideClick(modalRef, onClose, isOpen);
   useModalAccessibility({ isOpen, onClose, modalRef });
 
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
+  const [phoneNumber, setPhoneNumber] = useState('');
   const [selectedSize, setSelectedSize] = useState('');
-  const [selectedCard, setSelectedCard] = useState('3');
   const [usesOwnShoes, setUsesOwnShoes] = useState(false);
   const [error, setError] = useState('');
+  const [isCheckingRegistration, setIsCheckingRegistration] = useState(false);
+  const [existingBooking, setExistingBooking] = useState(null);
+  const [cancelSuccess, setCancelSuccess] = useState(false);
   const [isRegistrationSuccess, setIsRegistrationSuccess] = useState(false);
   const [submittedEmail, setSubmittedEmail] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -108,28 +133,78 @@ const WorkoutModal = ({
   );
 
   useEffect(() => {
-    if (isOpen && selectedWorkoutId) {
-      const prefs = loadBookingPreferences();
-      const counts = computeShoeAvailability(selectedWorkout);
-      setFullName(prefs.fullName);
-      setEmail(prefs.email);
-      setUsesOwnShoes(prefs.usesOwnShoes);
-      setSelectedCard(prefs.cardType || '3');
-      setSelectedSize(
-        !prefs.usesOwnShoes && prefs.shoeSize && counts[prefs.shoeSize] > 0
-          ? prefs.shoeSize
-          : ''
-      );
+    if (!isOpen) {
+      justRegisteredRef.current = false;
       setError('');
-      setIsRegistrationSuccess(false);
-      setSubmittedEmail('');
-    } else if (!isOpen) {
-      setError('');
+      setIsCheckingRegistration(false);
+      setExistingBooking(null);
+      setCancelSuccess(false);
       setIsRegistrationSuccess(false);
       setSubmittedEmail('');
       setIsSubmitting(false);
+      return;
     }
-  }, [isOpen, selectedWorkoutId, selectedWorkout]);
+
+    if (!selectedWorkoutId) {
+      return;
+    }
+
+    // Keep showing the newly completed registration confirmation without re-fetching.
+    if (justRegisteredRef.current) {
+      return;
+    }
+
+    const prefs = loadBookingPreferences();
+    const counts = computeShoeAvailability(selectedWorkout);
+    setFullName(prefs.fullName);
+    setEmail(prefs.email);
+    setPhoneNumber(prefs.phoneNumber);
+    setUsesOwnShoes(prefs.usesOwnShoes);
+    setSelectedSize(
+      !prefs.usesOwnShoes && prefs.shoeSize && counts[prefs.shoeSize] > 0
+        ? prefs.shoeSize
+        : ''
+    );
+    setError('');
+    setCancelSuccess(false);
+    setIsRegistrationSuccess(false);
+    setSubmittedEmail('');
+    setExistingBooking(null);
+
+    if (!savedCancellationToken) {
+      setIsCheckingRegistration(false);
+      return;
+    }
+
+    let isCancelled = false;
+    setIsCheckingRegistration(true);
+
+    axios
+      .get(`/api/Schedule/cancel/${encodeURIComponent(savedCancellationToken)}`)
+      .then((response) => {
+        if (!isCancelled) {
+          setExistingBooking(response.data);
+        }
+      })
+      .catch((err) => {
+        if (isCancelled) return;
+        if (err?.response?.status === 404) {
+          onClearStaleToken?.(selectedWorkoutId);
+          setExistingBooking(null);
+        } else {
+          setError(getLocalizedBookingError(err, 'errorCheckingRegistration'));
+        }
+      })
+      .finally(() => {
+        if (!isCancelled) {
+          setIsCheckingRegistration(false);
+        }
+      });
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [isOpen, selectedWorkoutId, selectedWorkout, savedCancellationToken, onClearStaleToken, getLocalizedBookingError]);
 
   const handleSizeClick = (size) => {
     setSelectedSize(size);
@@ -143,6 +218,29 @@ const WorkoutModal = ({
       setSelectedSize('');
     }
     setError('');
+  };
+
+  const handleCancelExistingBooking = async () => {
+    if (!savedCancellationToken || isSubmitting) return;
+
+    setIsSubmitting(true);
+    setError('');
+
+    try {
+      await axios.post(`/api/Schedule/cancel/${encodeURIComponent(savedCancellationToken)}`);
+      setExistingBooking(null);
+      setCancelSuccess(true);
+      await onBookingCancelled?.(selectedWorkoutId);
+    } catch (err) {
+      if (err?.response?.status === 404) {
+        onClearStaleToken?.(selectedWorkoutId);
+        setExistingBooking(null);
+      } else {
+        setError(getLocalizedBookingError(err, 'errorCancelRegistration'));
+      }
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -160,37 +258,43 @@ const WorkoutModal = ({
       return;
     }
 
+    const trimmedPhone = phoneNumber.trim();
+    if (!isValidPhone(trimmedPhone)) {
+      setError(t('bookingForm.errorPhone'));
+      return;
+    }
+
     const parsedShoeSize = usesOwnShoes ? null : SHOE_SIZE_MAP[selectedSize] ?? null;
     if (!usesOwnShoes && !parsedShoeSize) {
       setError(t('errorSelectShoes'));
       return;
     }
 
-    const parsedCardType = Number(selectedCard) || 3;
-
     setIsSubmitting(true);
     setError('');
 
     try {
+      justRegisteredRef.current = true;
       await onRegister(selectedWorkout, {
         fullName: trimmedName,
         email: trimmedEmail,
+        phoneNumber: trimmedPhone,
         shoeSize: parsedShoeSize,
         usesOwnShoes,
-        cardType: parsedCardType,
       });
 
       saveBookingPreferences({
         fullName: trimmedName,
         email: trimmedEmail,
+        phoneNumber: trimmedPhone,
         shoeSize: usesOwnShoes ? undefined : selectedSize,
         usesOwnShoes,
-        cardType: String(parsedCardType),
       });
 
       setSubmittedEmail(trimmedEmail);
       setIsRegistrationSuccess(true);
     } catch (err) {
+      justRegisteredRef.current = false;
       console.error('Registration failed:', err);
       setIsRegistrationSuccess(false);
       setError(getLocalizedBookingError(err, 'registrationError'));
@@ -247,7 +351,50 @@ const WorkoutModal = ({
             </div>
 
             <div className="modal-body">
-              {isRegistrationSuccess ? (
+              {isCheckingRegistration ? (
+                <div className="status-message loading" role="status">
+                  <FaInfoCircle className="status-icon" aria-hidden="true" />
+                  <p>{t('checkingRegistration')}</p>
+                </div>
+              ) : cancelSuccess ? (
+                <div className="status-message success" role="status">
+                  <FaCheck className="status-icon" aria-hidden="true" />
+                  <p>{t('registrationCancelled')}</p>
+                  <button type="button" onClick={onClose} className="btn-close-prompt">
+                    {t('close')}
+                  </button>
+                </div>
+              ) : existingBooking ? (
+                <div className="status-message info existing-booking-panel">
+                  <FaInfoCircle className="status-icon" aria-hidden="true" />
+                  <p>{t('alreadyRegistered')}</p>
+                  <div className="existing-booking-summary">
+                    <div><strong>{t('bookingForm.fullNameLabel')}:</strong> {existingBooking.FullName}</div>
+                    {existingBooking.PhoneNumber && (
+                      <div><strong>{t('bookingForm.phoneLabel')}:</strong> {existingBooking.PhoneNumber}</div>
+                    )}
+                    <div>
+                      <strong>{t('cancelBooking.shoesLabel')}</strong>{' '}
+                      {existingBooking.UsesOwnShoes
+                        ? t('admin.workouts.view.ownShoes')
+                        : SHOE_SIZE_LABELS[Number(existingBooking.ShoeSize)] || t('admin.common.notAvailable')}
+                    </div>
+                  </div>
+                  {error && <div className="error-message" role="alert">{error}</div>}
+                  {existingBooking.CanCancel ? (
+                    <button
+                      type="button"
+                      onClick={handleCancelExistingBooking}
+                      disabled={isSubmitting}
+                      className="btn-cancel"
+                    >
+                      {isSubmitting ? t('cancelBooking.cancelling') : t('cancelRegistration')}
+                    </button>
+                  ) : (
+                    <p className="status-subtext">{t('cancelBooking.pastWorkoutNotice')}</p>
+                  )}
+                </div>
+              ) : isRegistrationSuccess ? (
                 <div className="status-message success" role="status">
                   <FaCheck className="status-icon" aria-hidden="true" />
                   <p>{t('registrationSuccess')}</p>
@@ -313,6 +460,23 @@ const WorkoutModal = ({
                               required
                             />
                           </div>
+                          <div className="input-group-field">
+                            <label htmlFor="booking-phone">{t('bookingForm.phoneLabel')}</label>
+                            <input
+                              id="booking-phone"
+                              name="tel"
+                              type="tel"
+                              autoComplete="tel"
+                              placeholder={t('bookingForm.phonePlaceholder')}
+                              value={phoneNumber}
+                              onChange={(e) => {
+                                setPhoneNumber(e.target.value);
+                                setError('');
+                              }}
+                              maxLength={30}
+                              required
+                            />
+                          </div>
                         </div>
                       </div>
 
@@ -364,30 +528,6 @@ const WorkoutModal = ({
                             </div>
                           )
                         )}
-                      </div>
-
-                      <div className="form-section">
-                        <h4 className="section-title">
-                          <FaCreditCard aria-hidden="true" /> {t('selectCardTitle')}
-                        </h4>
-                        <div className="card-select-wrapper">
-                          <label htmlFor="workout-card-select" className="visually-hidden">
-                            {t('selectCardTitle')}
-                          </label>
-                          <select
-                            id="workout-card-select"
-                            className="styled-select"
-                            value={selectedCard}
-                            onChange={(e) => {
-                              setSelectedCard(e.target.value);
-                              setError('');
-                            }}
-                          >
-                            <option value="3">{t('individualWorkout')}</option>
-                            <option value="1">{t('coolfitCard')}</option>
-                            <option value="2">{t('pulseCard')}</option>
-                          </select>
-                        </div>
                       </div>
 
                       {error && <div className="error-message" role="alert">{error}</div>}
