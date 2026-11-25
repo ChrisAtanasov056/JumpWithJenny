@@ -634,5 +634,64 @@
             "deleteButton": "Изтрий",
             "noPhotos": "Няма качени снимки."
         }
+    },
+    "altitude": {
+        "heroBadgeSport": "Kangoo Jumps",
+        "heroBadgeCity": "Бургас",
+        "heroHeadingLine1": "Скачай",
+        "heroHeadingLine2": "с Жени",
+        "heroCta": "Запази час",
+        "nextWorkoutLabel": "Следваща тренировка",
+        "countdownPrefix": "след {{days}}д {{hours}}ч {{minutes}}м",
+        "spotsAvailableSingular": "{{count}} свободно място",
+        "spotsAvailablePlural": "{{count}} свободни места",
+        "noUpcomingChip": "Виж графика за нови часове",
+        "altimeterUnit": "метра",
+        "marquee": {
+            "item1": "Ниско натоварване за ставите",
+            "item2": "Кардио, сила и гъвкавост",
+            "item3": "За всяко ниво на подготовка",
+            "item4": "Обувки Kangoo Jumps на място"
+        },
+        "schedule": {
+            "thisWeek": "Тази седмица",
+            "nextWeek": "Следваща седмица",
+            "weekRangeLabel": "Седмица {{range}}",
+            "allWorkouts": "Всички ({{count}})",
+            "allSubtitle": "Всички предстоящи дати",
+            "weekTabsAria": "Филтър по седмици",
+            "spotsOfMax": "{{available}} от {{max}} свободни места",
+            "fullClassBtn": "Групата е пълна",
+            "bookBtn": "Запази час",
+            "manageBookingBtn": "Моята резервация ✓",
+            "ownShoesOnlyTag": "Само със собствени обувки",
+            "altitudeMeters": "{{meters}} м"
+        },
+        "about": {
+            "lead": "Здравей, аз съм Жени — сертифициран Kangoo Jumps инструктор в Бургас. Вярвам, че тренировката трябва да носи усмивка, лекота и истински прилив на енергия.",
+            "highlights": [
+                {
+                    "title": "Щади ставите (до 80% по-малък удар)",
+                    "text": "Пружинната система обира натоварването при всяко приземяване, докато сърцето работи активно."
+                },
+                {
+                    "title": "Кардио, сила и баланс в 1 час",
+                    "text": "Високоенергийна хореография в ритъм, която стяга цялото тяло и разтоварва ума след работа."
+                },
+                {
+                    "title": "Подходящо за всяко ниво",
+                    "text": "Независимо дали стъпваш на Kangoo обувки за първи път или спортуваш редовно — темпото се адаптира към теб."
+                }
+            ]
+        },
+        "gallery": {
+            "openLightbox": "Отвори снимка {{index}} на цял екран",
+            "closeLightbox": "Затвори прегледа",
+            "counter": "{{current}} / {{total}}"
+        },
+        "reviews": {
+            "showMore": "Покажи още отзиви",
+            "showLess": "Покажи по-малко"
+        }
     }
 }

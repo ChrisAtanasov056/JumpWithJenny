@@ -8,63 +8,66 @@ const Footer = () => {
   const { t } = useTranslation();
 
   return (
-    <footer className="footer-animated">
-      <div className="footer-container">
-        <div className="jump-animation" aria-hidden="true">
-          <div>
-            <img src="/images/brand_logo_2.png" alt="" className='kangoo-shoe-img' loading="lazy" />
-          </div>
-          <div className="shadow"></div>
+    <footer className="alt-footer">
+      <div className="alt-wrap alt-footer__inner">
+        <div className="alt-footer__brand">
+          <img
+            src="/images/brand_logo_2.png"
+            alt=""
+            className="alt-footer__logo"
+            loading="lazy"
+          />
+          <span>
+            &copy; {new Date().getFullYear()} {t('footer.copyright')}
+          </span>
         </div>
-        
-        <div className="social-links">
+
+        <div className="alt-footer__socials">
           <a
             href="https://www.facebook.com/jumpwithjenny"
-            className="social-btn"
+            className="alt-footer__social"
             target="_blank"
             rel="noopener noreferrer"
           >
-            <FaFacebook className="icon" aria-hidden="true" />
-            <span className="label">Facebook</span>
+            <FaFacebook aria-hidden="true" />
+            <span>Facebook</span>
           </a>
-          
           <a
             href="https://www.tiktok.com/@jump.with.jenny"
-            className="social-btn"
+            className="alt-footer__social"
             target="_blank"
             rel="noopener noreferrer"
           >
-            <FaTiktok className="icon" aria-hidden="true" />
-            <span className="label">TikTok</span>
+            <FaTiktok aria-hidden="true" />
+            <span>TikTok</span>
           </a>
-          
           <a
             href="https://www.instagram.com/jump.with.jenny/"
-            className="social-btn"
+            className="alt-footer__social"
             target="_blank"
             rel="noopener noreferrer"
           >
-            <FaInstagram className="icon" aria-hidden="true" />
-            <span className="label">Instagram</span>
-          </a>
-        </div>
-        
-        <div className="footer-links-container">
-          <Link to="/data-deletion" className="link">
-            {t('footer.dataDeletion')}
-          </Link>
-          
-          <a href="https://www.iubenda.com/privacy-policy/60706541/cookie-policy" className="link" target="_blank" rel="noopener noreferrer">
-            {t('footer.cookiePolicy')}
-          </a>
-          
-          <a href="https://www.iubenda.com/privacy-policy/60706541" className="link" target="_blank" rel="noopener noreferrer">
-            {t('footer.privacyPolicy')}
+            <FaInstagram aria-hidden="true" />
+            <span>Instagram</span>
           </a>
         </div>
 
-        <div className="copyright">
-          &copy; {new Date().getFullYear()} {t('footer.copyright')}
+        <div className="alt-footer__legal">
+          <Link to="/data-deletion">{t('footer.dataDeletion')}</Link>
+          <a
+            href="https://www.iubenda.com/privacy-policy/60706541/cookie-policy"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            {t('footer.cookiePolicy')}
+          </a>
+          <a
+            href="https://www.iubenda.com/privacy-policy/60706541"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            {t('footer.privacyPolicy')}
+          </a>
         </div>
       </div>
     </footer>

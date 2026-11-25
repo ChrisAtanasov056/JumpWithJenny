@@ -3,12 +3,15 @@ const LEGACY_BOOKING_PREFS_KEY = 'jwj_booking_prefs_v1';
 const MY_BOOKINGS_KEY = 'jwj_my_bookings_v1';
 const BOOKING_RETENTION_MS = 60 * 24 * 60 * 60 * 1000; // 60 days
 
+const VALID_VISIT_TYPES = ['individual', 'coolfit', 'pulse'];
+
 const DEFAULT_PREFS = {
   fullName: '',
   email: '',
   phoneNumber: '',
   shoeSize: '',
   usesOwnShoes: false,
+  visitType: 'individual',
 };
 
 export const loadBookingPreferences = () => {
@@ -35,13 +38,14 @@ export const loadBookingPreferences = () => {
       phoneNumber: typeof parsed.phoneNumber === 'string' ? parsed.phoneNumber : '',
       shoeSize,
       usesOwnShoes: Boolean(parsed.usesOwnShoes),
+      visitType: VALID_VISIT_TYPES.includes(parsed.visitType) ? parsed.visitType : 'individual',
     };
   } catch {
     return { ...DEFAULT_PREFS };
   }
 };
 
-export const saveBookingPreferences = ({ fullName, email, phoneNumber, shoeSize, usesOwnShoes }) => {
+export const saveBookingPreferences = ({ fullName, email, phoneNumber, shoeSize, usesOwnShoes, visitType }) => {
   try {
     const existing = loadBookingPreferences();
     const payload = {
@@ -50,6 +54,7 @@ export const saveBookingPreferences = ({ fullName, email, phoneNumber, shoeSize,
       phoneNumber: typeof phoneNumber === 'string' ? phoneNumber.trim() : existing.phoneNumber,
       shoeSize: ['S', 'M', 'L', 'XL'].includes(shoeSize) ? shoeSize : existing.shoeSize,
       usesOwnShoes: Boolean(usesOwnShoes),
+      visitType: VALID_VISIT_TYPES.includes(visitType) ? visitType : existing.visitType,
     };
     window.localStorage.setItem(BOOKING_PREFS_KEY, JSON.stringify(payload));
   } catch {

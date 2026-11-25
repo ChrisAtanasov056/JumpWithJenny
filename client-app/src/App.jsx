@@ -17,6 +17,8 @@ import CancelBookingPage from './components/CancelBooking/CancelBookingPage';
 import AdminLoginPage from './components/Admin/Login/AdminLoginPage';
 import { HelmetProvider, Helmet } from 'react-helmet-async';
 import NotFoundPage from './components/404/NotFoundPage';
+import AltitudeShell from './components/AltitudeShell/AltitudeShell';
+import './styles/altitude-tokens.scss';
 
 const AdminLayout = lazy(() => import('./components/Admin/AdminLayout'));
 const AdminUsersList = lazy(() => import('./components/Admin/Users/AdminUsersList'));
@@ -29,6 +31,8 @@ const PhotosManagement = lazy(() => import('./components/Admin/PhotosManagement/
 const AdminShoesList = lazy(() => import('./components/Admin/Shoes/AdminShoesList'));
 const AdminShoeForm = lazy(() => import('./components/Admin/Shoes/AdminShoeForm'));
 const ShoeDetailsView = lazy(() => import('./components/Admin/Shoes/ShoeDetailsView'));
+const ConceptsDemo = lazy(() => import('./components/ConceptsDemo/ConceptsDemo'));
+const AltitudeDemo = lazy(() => import('./components/ConceptsDemo/AltitudeDemo'));
 
 function App() {
   const { i18n } = useTranslation();
@@ -72,6 +76,8 @@ const NO_INDEX_PAGES = [
   '/terms-of-service',
   '/reset-password',
   '/admin/login',
+  '/concepts-demo',
+  '/altitude-demo',
 ];
 
 const CanonicalLink = () => {
@@ -106,10 +112,29 @@ const AppContent = () => {
   const { t } = useTranslation();
   const location = useLocation();
   const isAdminRoute = location.pathname.startsWith('/admin');
+  const isDemoRoute =
+    location.pathname.startsWith('/concepts-demo') ||
+    location.pathname.startsWith('/altitude-demo');
 
   const routesElement = (
     <Routes>
       <Route path="/" element={<Home />} />
+      <Route
+        path="/concepts-demo"
+        element={
+          <Suspense fallback={<div className="admin-loading" role="status">{t('common.loading')}</div>}>
+            <ConceptsDemo />
+          </Suspense>
+        }
+      />
+      <Route
+        path="/altitude-demo"
+        element={
+          <Suspense fallback={<div className="admin-loading" role="status">{t('common.loading')}</div>}>
+            <AltitudeDemo />
+          </Suspense>
+        }
+      />
       <Route path="/about" element={<StandaloneSection><AboutMe /></StandaloneSection>} />
       <Route path="/gallery" element={<StandaloneSection><Gallery /></StandaloneSection>} />
       <Route path="/faq" element={<StandaloneSection><FAQ /></StandaloneSection>} />
@@ -154,14 +179,20 @@ const AppContent = () => {
     </Routes>
   );
 
+  const publicContent = (
+    <AltitudeShell showAltimeter={location.pathname === '/'}>
+      <Navbar />
+      <main id="main-content">{routesElement}</main>
+    </AltitudeShell>
+  );
+
   return (
     <>
       <CanonicalLink />
       <a href="#main-content" className="skip-to-content">
         {t('skipToContent')}
       </a>
-      {!isAdminRoute && <Navbar />}
-      {isAdminRoute ? routesElement : <main id="main-content">{routesElement}</main>}
+      {isAdminRoute || isDemoRoute ? routesElement : publicContent}
     </>
   );
 };

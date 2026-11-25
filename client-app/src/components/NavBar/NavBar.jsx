@@ -1,16 +1,16 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import './NavBar.scss';
-import { useAuth } from '../../services/AuthContext';
 import { Link as RouterLink, useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import LanguageDropdown from '../lang/LanguageDropdown.tsx';
+import { useAuth } from '../../services/AuthContext';
 import useOutsideClick from '../../services/useOutsideClick';
+import LanguageDropdown from '../lang/LanguageDropdown.tsx';
+import './NavBar.scss';
 
 const NAV_SECTIONS = [
   { id: 'welcome', key: 'navbar.home' },
+  { id: 'schedule', key: 'navbar.schedule' },
   { id: 'about', key: 'navbar.about' },
   { id: 'gallery', key: 'navbar.gallery' },
-  { id: 'schedule', key: 'navbar.schedule' },
   { id: 'faq', key: 'navbar.faq' },
   { id: 'contacts', key: 'navbar.contact' },
 ];
@@ -92,44 +92,27 @@ const Navbar = () => {
     <nav
       ref={navRef}
       aria-label={t('navbar.ariaLabel')}
-      className={`navbar navbar-expand-lg fixed-top ${menuActive ? 'menu-open' : ''}`}
+      className={`alt-navbar ${menuActive ? 'is-open' : ''}`}
     >
-      <div className="container">
-        <RouterLink to="/" className="navbar-logo-link" onClick={closeMenu}>
+      <div className="alt-navbar__inner">
+        <RouterLink to="/" className="alt-navbar__brand" onClick={closeMenu}>
           <img
             src="/images/brand_logo_2.png"
             alt={t('navbar.logoAlt')}
-            className="navbar-logo"
+            className="alt-navbar__logo"
           />
+          <span className="alt-navbar__title">{t('footer.copyright')}</span>
         </RouterLink>
-
-        <div className="navbar-actions">
-          <LanguageDropdown />
-          <button
-            type="button"
-            className={`navbar-toggler ${menuActive ? 'active' : ''}`}
-            onClick={toggleMenu}
-            aria-expanded={menuActive}
-            aria-controls="primary-navigation"
-            aria-label={t('navbar.toggleMenu')}
-          >
-            <span className="navbar-toggler-icon" aria-hidden="true">
-              <span className={`line ${menuActive ? 'active' : ''}`}></span>
-              <span className={`line ${menuActive ? 'active' : ''}`}></span>
-              <span className={`line ${menuActive ? 'active' : ''}`}></span>
-            </span>
-          </button>
-        </div>
 
         <ul
           id="primary-navigation"
-          className={`navbar-nav ${menuActive ? 'active' : ''}`}
+          className={`alt-navbar__links ${menuActive ? 'is-open' : ''}`}
         >
           {NAV_SECTIONS.map(({ id, key }) => (
-            <li className="nav-item" key={id}>
+            <li key={id}>
               <a
                 href={id === 'welcome' ? '/' : `/#${id}`}
-                className="nav-link"
+                className="alt-navbar__link"
                 onClick={(e) => handleSectionNav(e, id)}
               >
                 {t(key)}
@@ -138,13 +121,31 @@ const Navbar = () => {
           ))}
 
           {isAdmin && (
-            <li className="nav-item">
-              <RouterLink to="/admin" className="nav-link" onClick={closeMenu}>
+            <li>
+              <RouterLink to="/admin" className="alt-navbar__link alt-navbar__link--admin" onClick={closeMenu}>
                 {t('navbar.admin_panel')}
               </RouterLink>
             </li>
           )}
         </ul>
+
+        <div className="alt-navbar__actions">
+          <LanguageDropdown />
+          <button
+            type="button"
+            className={`alt-navbar__burger ${menuActive ? 'is-open' : ''}`}
+            onClick={toggleMenu}
+            aria-expanded={menuActive}
+            aria-controls="primary-navigation"
+            aria-label={t('navbar.toggleMenu')}
+          >
+            <span className="alt-navbar__burger-lines" aria-hidden="true">
+              <span />
+              <span />
+              <span />
+            </span>
+          </button>
+        </div>
       </div>
     </nav>
   );

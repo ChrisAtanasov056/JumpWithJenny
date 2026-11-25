@@ -1,15 +1,21 @@
-import React, { useState, useEffect, useRef } from "react";
-import axios, { API_BASE_URL } from "../../api/axius";
-import Slider from "react-slick";
-import { motion, useAnimation } from "framer-motion";
-import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
-import "slick-carousel/slick/slick.css";
-import "slick-carousel/slick/slick-theme.css";
-import "./Gallery.scss";
-import { useTranslation } from "react-i18next";
+import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
+import { FaChevronLeft, FaChevronRight, FaTimes } from 'react-icons/fa';
+import axios, { API_BASE_URL } from '../../api/axius';
+import useModalAccessibility from '../../services/useModalAccessibility';
+import './Gallery.scss';
 
-const baseUrl = API_BASE_URL;
 const PAGE_SIZE = 9;
+
+const getSlidePosition = (index, activeIndex, total) => {
+  if (total <= 1 || index === activeIndex) return '0';
+  if (total === 2) return '1';
+  let diff = (index - activeIndex + total) % total;
+  if (diff > total / 2) diff -= total;
+  if (diff === -1) return '-1';
+  if (diff === 1) return '1';
+  return 'far';
+};
 
 const Gallery = () => {
   const { t } = useTranslation();
@@ -17,46 +23,23 @@ const Gallery = () => {
   const [page, setPage] = useState(1);
   const [hasNextPage, setHasNextPage] = useState(false);
   const [isLoadingGallery, setIsLoadingGallery] = useState(true);
-  const [isCompactViewport, setIsCompactViewport] = useState(() =>
-    typeof window !== "undefined" ? window.innerWidth <= 768 : false
-  );
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [lightboxIndex, setLightboxIndex] = useState(null);
 
-  const controls = useAnimation();
-  const ref = useRef(null);
-  const sliderRef = useRef(null);
+  const touchStartRef = useRef({ x: null, y: null });
+  const lightboxRef = useRef(null);
 
-  const prefersReducedMotion =
-    typeof window !== "undefined" &&
-    window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+  const isLightboxOpen = lightboxIndex !== null && images.length > 0;
 
-  useEffect(() => {
-    const handleResize = () => {
-      setIsCompactViewport(window.innerWidth <= 768);
-    };
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
+  const closeLightbox = useCallback(() => {
+    setLightboxIndex(null);
   }, []);
 
-  useEffect(() => {
-    if (prefersReducedMotion || !("IntersectionObserver" in window)) {
-      controls.start("visible");
-      return;
-    }
-
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          controls.start("visible");
-          observer.disconnect();
-        }
-      },
-      { threshold: 0.1 }
-    );
-
-    if (ref.current) observer.observe(ref.current);
-    return () => observer.disconnect();
-  }, [controls, prefersReducedMotion]);
+  useModalAccessibility({
+    isOpen: isLightboxOpen,
+    onClose: closeLightbox,
+    modalRef: lightboxRef,
+  });
 
   useEffect(() => {
     let isCancelled = false;
@@ -70,15 +53,13 @@ const Gallery = () => {
         const hasMore = rows.length > PAGE_SIZE;
         const pageItems = rows.slice(0, PAGE_SIZE).map((img) => ({
           ...img,
-          url: `${baseUrl}${img.Url}`,
+          url: `${API_BASE_URL}${img.Url}`,
         }));
 
         setImages(pageItems);
         setHasNextPage(hasMore);
         setCurrentIndex(0);
-        if (sliderRef.current && typeof sliderRef.current.slickGoTo === "function") {
-          sliderRef.current.slickGoTo(0, true);
-        }
+        setLightboxIndex(null);
       })
       .catch((err) => {
         if (!isCancelled) {
@@ -96,127 +77,240 @@ const Gallery = () => {
     };
   }, [page]);
 
+  useEffect(() => {
+    if (!isLightboxOpen) return;
+
+    const handleKeyDown = (event) => {
+      if (event.key === 'ArrowLeft') {
+        event.preventDefault();
+        setLightboxIndex((prev) => (prev - 1 + images.length) % images.length);
+      } else if (event.key === 'ArrowRight') {
+        event.preventDefault();
+        setLightboxIndex((prev) => (prev + 1) % images.length);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isLightboxOpen, images.length]);
+
   const count = images.length;
-  const desktopSlides = Math.min(3, Math.max(1, count));
-  const tabletSlides = Math.min(2, Math.max(1, count));
+  const safeIndex = count > 0 ? currentIndex % count : 0;
 
-  const settings = {
-    dots: count > 1,
-    infinite: count > 3,
-    autoplay: !prefersReducedMotion && count > 1,
-    autoplaySpeed: 3000,
-    speed: prefersReducedMotion ? 0 : 700,
-    slidesToShow: desktopSlides,
-    slidesToScroll: 1,
-    centerMode: count >= 3,
-    centerPadding: "0px",
-    pauseOnHover: true,
-    arrows: false,
-    beforeChange: (_, newIndex) => setCurrentIndex(newIndex),
-    responsive: [
-      { breakpoint: 1024, settings: { slidesToShow: tabletSlides, centerMode: false } },
-      { breakpoint: 768, settings: { slidesToShow: 1, centerMode: false } },
-    ],
+  const stepFocus = useCallback(
+    (delta) => {
+      if (count <= 1) return;
+      setCurrentIndex((prev) => (prev + delta + count) % count);
+    },
+    [count]
+  );
+
+  const handleTouchStart = (event) => {
+    const touch = event.touches[0];
+    touchStartRef.current = { x: touch.clientX, y: touch.clientY };
   };
 
-  const getScale = (index) => {
-    if (isCompactViewport || count < 3) return 1;
-    return index === currentIndex ? 1 : 0.9;
+  const handleTouchEnd = (event) => {
+    const { x: startX, y: startY } = touchStartRef.current;
+    if (startX === null || startY === null) return;
+
+    const touch = event.changedTouches[0];
+    const diffX = startX - touch.clientX;
+    const diffY = startY - touch.clientY;
+    if (Math.abs(diffX) > 45 && Math.abs(diffX) > Math.abs(diffY)) {
+      stepFocus(diffX > 0 ? 1 : -1);
+    }
+    touchStartRef.current = { x: null, y: null };
   };
+
+  const activeLightboxImg =
+    isLightboxOpen ? images[lightboxIndex % images.length] : null;
 
   return (
-    <motion.section
+    <section
       id="gallery"
-      className="modern-gallery"
+      className="alt-section gallery-section"
       aria-labelledby="gallery-title"
-      ref={ref}
-      initial={prefersReducedMotion ? "visible" : "hidden"}
-      animate={controls}
-      variants={{
-        hidden: { opacity: 0, y: 40 },
-        visible: {
-          opacity: 1,
-          y: 0,
-          transition: { duration: prefersReducedMotion ? 0 : 0.8 },
-        },
-      }}
     >
-      <h2 id="gallery-title" className="gallery-title">
-        {t("galleryTitle")}
-      </h2>
+      <div className="alt-wrap">
+        <div className="gallery-header">
+          <h2 id="gallery-title" className="alt-section-title">
+            {t('galleryTitle')}
+          </h2>
+          <p className="gallery-subtitle">{t('gallerySubtitle')}</p>
+        </div>
 
-      {count > 0 && (
-        <div className="gallery-slider-wrapper">
-          {count > 1 && (
-            <button
-              type="button"
-              className="gallery-arrow-btn prev"
-              aria-label={t("galleryPrevSlide")}
-              onClick={() => sliderRef.current?.slickPrev()}
+        {isLoadingGallery && count === 0 && (
+          <div className="gallery-loading" role="status">
+            {t('common.loading')}
+          </div>
+        )}
+
+        {count > 0 && (
+          <div className="gallery-focus-wrap">
+            <div
+              className="gallery-focus-stage"
+              onTouchStart={handleTouchStart}
+              onTouchEnd={handleTouchEnd}
             >
-              <FaChevronLeft aria-hidden="true" />
-            </button>
-          )}
+              {images.map((img, i) => {
+                const pos = getSlidePosition(i, safeIndex, count);
+                const isCenter = pos === '0';
+                const label = isCenter
+                  ? t('gallery.openLightbox', { index: i + 1 })
+                  : img.Name || `${t('galleryAlt')} ${i + 1}`;
 
-          <Slider ref={sliderRef} {...settings}>
-            {images.map((img, i) => (
-              <div
-                className={`gallery-card ${i === currentIndex ? "is-active" : ""}`}
-                key={img.Id || i}
-              >
-                <div
-                  className="gallery-img-wrap"
-                  style={{
-                    transform: `scale(${getScale(i)})`,
-                  }}
+                return (
+                  <button
+                    key={img.Id || i}
+                    type="button"
+                    className="gallery-focus-slide"
+                    data-pos={pos}
+                    aria-label={label}
+                    tabIndex={pos === 'far' ? -1 : 0}
+                    onClick={() => {
+                      if (isCenter) {
+                        setLightboxIndex(i);
+                      } else {
+                        setCurrentIndex(i);
+                      }
+                    }}
+                  >
+                    <img
+                      src={img.url}
+                      alt={img.Name || `${t('galleryAlt')} ${i + 1}`}
+                      loading="lazy"
+                      decoding="async"
+                    />
+                  </button>
+                );
+              })}
+            </div>
+
+            {count > 1 && (
+              <div className="gallery-controls">
+                <button
+                  type="button"
+                  className="alt-glass-nav-btn"
+                  aria-label={t('galleryPrevSlide')}
+                  onClick={() => stepFocus(-1)}
                 >
-                  <img
-                    src={img.url}
-                    alt={img.Name || `${t("galleryAlt")} ${i + 1}`}
-                    loading="lazy"
-                  />
-                </div>
-              </div>
-            ))}
-          </Slider>
+                  <FaChevronLeft aria-hidden="true" />
+                </button>
 
-          {count > 1 && (
+                <div className="gallery-dots">
+                  {images.map((_, i) => (
+                    <button
+                      key={i}
+                      type="button"
+                      className={`gallery-dot ${i === safeIndex ? 'is-active' : ''}`}
+                      aria-label={t('gallery.openLightbox', { index: i + 1 })}
+                      aria-pressed={i === safeIndex}
+                      onClick={() => setCurrentIndex(i)}
+                    />
+                  ))}
+                </div>
+
+                <button
+                  type="button"
+                  className="alt-glass-nav-btn"
+                  aria-label={t('galleryNextSlide')}
+                  onClick={() => stepFocus(1)}
+                >
+                  <FaChevronRight aria-hidden="true" />
+                </button>
+              </div>
+            )}
+          </div>
+        )}
+
+        {(page > 1 || hasNextPage) && (
+          <nav className="gallery-pagination" aria-label={t('galleryPagination')}>
             <button
               type="button"
-              className="gallery-arrow-btn next"
-              aria-label={t("galleryNextSlide")}
-              onClick={() => sliderRef.current?.slickNext()}
+              className="gallery-page-btn"
+              onClick={() => setPage((p) => Math.max(1, p - 1))}
+              disabled={page === 1 || isLoadingGallery}
             >
-              <FaChevronRight aria-hidden="true" />
+              {t('galleryPrevPage')}
             </button>
-          )}
+            <span className="gallery-page-indicator">
+              {t('galleryPageInfo', { page })}
+            </span>
+            <button
+              type="button"
+              className="gallery-page-btn"
+              onClick={() => setPage((p) => p + 1)}
+              disabled={!hasNextPage || isLoadingGallery}
+            >
+              {t('galleryNextPage')}
+            </button>
+          </nav>
+        )}
+      </div>
+
+      {isLightboxOpen && activeLightboxImg && (
+        <div
+          className="gallery-lightbox"
+          onClick={closeLightbox}
+        >
+          <div
+            ref={lightboxRef}
+            className="gallery-lightbox__dialog"
+            role="dialog"
+            aria-modal="true"
+            aria-label={t('galleryTitle')}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              type="button"
+              className="alt-glass-nav-btn gallery-lightbox__close"
+              aria-label={t('altitude.gallery.closeLightbox')}
+              onClick={closeLightbox}
+            >
+              <FaTimes aria-hidden="true" />
+            </button>
+
+            <img
+              src={activeLightboxImg.url}
+              alt={activeLightboxImg.Name || `${t('galleryAlt')} ${(lightboxIndex % images.length) + 1}`}
+              className="gallery-lightbox__img"
+            />
+
+            {count > 1 && (
+              <div className="gallery-lightbox__bar">
+                <button
+                  type="button"
+                  className="alt-glass-nav-btn"
+                  aria-label={t('galleryPrevSlide')}
+                  onClick={() =>
+                    setLightboxIndex((prev) => (prev - 1 + images.length) % images.length)
+                  }
+                >
+                  <FaChevronLeft aria-hidden="true" />
+                </button>
+                <span>
+                  {t('altitude.gallery.counter', {
+                    current: (lightboxIndex % images.length) + 1,
+                    total: images.length,
+                  })}
+                </span>
+                <button
+                  type="button"
+                  className="alt-glass-nav-btn"
+                  aria-label={t('galleryNextSlide')}
+                  onClick={() =>
+                    setLightboxIndex((prev) => (prev + 1) % images.length)
+                  }
+                >
+                  <FaChevronRight aria-hidden="true" />
+                </button>
+              </div>
+            )}
+          </div>
         </div>
       )}
-
-      {(page > 1 || hasNextPage) && (
-        <nav className="gallery-pagination" aria-label={t("galleryPagination")}>
-          <button
-            type="button"
-            className="gallery-page-btn"
-            onClick={() => setPage((p) => Math.max(1, p - 1))}
-            disabled={page === 1 || isLoadingGallery}
-          >
-            {t("galleryPrevPage")}
-          </button>
-          <span className="gallery-page-indicator">
-            {t("galleryPageInfo", { page })}
-          </span>
-          <button
-            type="button"
-            className="gallery-page-btn"
-            onClick={() => setPage((p) => p + 1)}
-            disabled={!hasNextPage || isLoadingGallery}
-          >
-            {t("galleryNextPage")}
-          </button>
-        </nav>
-      )}
-    </motion.section>
+    </section>
   );
 };
 

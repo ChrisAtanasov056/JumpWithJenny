@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import { FaTimes, FaCheck, FaInfoCircle, FaCalendarAlt, FaShoePrints, FaUser } from 'react-icons/fa';
 import axios from '../../api/axius';
 import './WorkoutModal.scss';
@@ -89,6 +89,7 @@ const WorkoutModal = ({
   const { t } = useTranslation();
   const modalRef = useRef(null);
   const justRegisteredRef = useRef(false);
+  const shouldReduceMotion = useReducedMotion();
 
   useOutsideClick(modalRef, onClose, isOpen);
   useModalAccessibility({ isOpen, onClose, modalRef });
@@ -98,6 +99,7 @@ const WorkoutModal = ({
   const [phoneNumber, setPhoneNumber] = useState('');
   const [selectedSize, setSelectedSize] = useState('');
   const [usesOwnShoes, setUsesOwnShoes] = useState(false);
+  const [visitType, setVisitType] = useState('individual');
   const [error, setError] = useState('');
   const [isCheckingRegistration, setIsCheckingRegistration] = useState(false);
   const [existingBooking, setExistingBooking] = useState(null);
@@ -160,6 +162,7 @@ const WorkoutModal = ({
     setEmail(prefs.email);
     setPhoneNumber(prefs.phoneNumber);
     setUsesOwnShoes(prefs.usesOwnShoes);
+    setVisitType(prefs.visitType || 'individual');
     setSelectedSize(
       !prefs.usesOwnShoes && prefs.shoeSize && counts[prefs.shoeSize] > 0
         ? prefs.shoeSize
@@ -289,6 +292,7 @@ const WorkoutModal = ({
         phoneNumber: trimmedPhone,
         shoeSize: usesOwnShoes ? undefined : selectedSize,
         usesOwnShoes,
+        visitType,
       });
 
       setSubmittedEmail(trimmedEmail);
@@ -305,7 +309,7 @@ const WorkoutModal = ({
 
   const availableSpots = selectedWorkout?.AvailableSpots ?? 0;
   const takenSpots = selectedWorkout?.TakenSpots ?? 0;
-  const maxSpots = selectedWorkout?.TotalSpots || (availableSpots + takenSpots) || availableSpots;
+  const maxSpots = selectedWorkout?.TotalSpots || availableSpots + takenSpots || availableSpots;
   const isFull = availableSpots <= 0 || selectedWorkout?.Status?.toLowerCase() === 'booked';
   const progressPercent = maxSpots > 0 ? Math.min(100, (takenSpots / maxSpots) * 100) : 0;
 
@@ -313,95 +317,111 @@ const WorkoutModal = ({
     <AnimatePresence>
       {isOpen && (
         <motion.div
-          className="modal-overlay"
+          className="alt-modal-overlay"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
+          transition={{ duration: shouldReduceMotion ? 0.01 : 0.2 }}
         >
           <motion.div
-            className="modal-content"
+            className="alt-modal-sheet"
             ref={modalRef}
             role="dialog"
             aria-modal="true"
             aria-labelledby="workout-modal-title"
             onClick={(e) => e.stopPropagation()}
-            initial={{ y: 40, opacity: 0 }}
+            initial={shouldReduceMotion ? { opacity: 0 } : { y: 48, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
-            exit={{ y: 40, opacity: 0 }}
-            transition={{ type: 'spring', stiffness: 260, damping: 24 }}
+            exit={shouldReduceMotion ? { opacity: 0 } : { y: 48, opacity: 0 }}
+            transition={{
+              duration: shouldReduceMotion ? 0.01 : 0.34,
+              ease: [0.32, 0.72, 0, 1],
+            }}
           >
             <button
               type="button"
-              className="close-btn"
+              className="alt-modal-close"
               onClick={onClose}
               aria-label={t('close')}
             >
               <FaTimes aria-hidden="true" />
             </button>
 
-            <div className="modal-header">
-              <FaCalendarAlt className="header-icon" aria-hidden="true" />
-              <h3>{t('registerFor')}</h3>
+            <div className="alt-modal-header">
+              <div className="alt-modal-header__eyebrow">
+                <FaCalendarAlt aria-hidden="true" />
+                <span>{t('registerFor')}</span>
+              </div>
               <h2 id="workout-modal-title">
                 {selectedWorkout?.Day ? t(`days.${selectedWorkout.Day.toLowerCase()}`) : ''} {t('at')} {selectedWorkout?.Time}
               </h2>
               {selectedWorkout?.Date && (
-                <p className="workout-date-subtitle">{formatWorkoutDateBg(selectedWorkout.Date)}</p>
+                <p className="alt-modal-header__date">{formatWorkoutDateBg(selectedWorkout.Date)}</p>
               )}
             </div>
 
-            <div className="modal-body">
+            <div className="alt-modal-body">
               {isCheckingRegistration ? (
-                <div className="status-message loading" role="status">
-                  <FaInfoCircle className="status-icon" aria-hidden="true" />
+                <div className="alt-modal-status" role="status">
+                  <FaInfoCircle className="alt-modal-status__icon" aria-hidden="true" />
                   <p>{t('checkingRegistration')}</p>
                 </div>
               ) : cancelSuccess ? (
-                <div className="status-message success" role="status">
-                  <FaCheck className="status-icon" aria-hidden="true" />
+                <div className="alt-modal-status is-success" role="status">
+                  <FaCheck className="alt-modal-status__icon" aria-hidden="true" />
                   <p>{t('registrationCancelled')}</p>
-                  <button type="button" onClick={onClose} className="btn-close-prompt">
+                  <button type="button" onClick={onClose} className="alt-modal-primary-btn">
                     {t('close')}
                   </button>
                 </div>
               ) : existingBooking ? (
-                <div className="status-message info existing-booking-panel">
-                  <FaInfoCircle className="status-icon" aria-hidden="true" />
-                  <p>{t('alreadyRegistered')}</p>
-                  <div className="existing-booking-summary">
-                    <div><strong>{t('bookingForm.fullNameLabel')}:</strong> {existingBooking.FullName}</div>
+                <div className="alt-modal-existing">
+                  <div className="alt-modal-existing__badge">
+                    <FaInfoCircle aria-hidden="true" />
+                    <span>{t('alreadyRegistered')}</span>
+                  </div>
+                  <div className="alt-modal-existing__summary">
+                    <div>
+                      <span>{t('bookingForm.fullNameLabel')}:</span>
+                      <strong>{existingBooking.FullName}</strong>
+                    </div>
                     {existingBooking.PhoneNumber && (
-                      <div><strong>{t('bookingForm.phoneLabel')}:</strong> {existingBooking.PhoneNumber}</div>
+                      <div>
+                        <span>{t('bookingForm.phoneLabel')}:</span>
+                        <strong>{existingBooking.PhoneNumber}</strong>
+                      </div>
                     )}
                     <div>
-                      <strong>{t('cancelBooking.shoesLabel')}</strong>{' '}
-                      {existingBooking.UsesOwnShoes
-                        ? t('admin.workouts.view.ownShoes')
-                        : SHOE_SIZE_LABELS[Number(existingBooking.ShoeSize)] || t('admin.common.notAvailable')}
+                      <span>{t('cancelBooking.shoesLabel')}</span>
+                      <strong>
+                        {existingBooking.UsesOwnShoes
+                          ? t('admin.workouts.view.ownShoes')
+                          : SHOE_SIZE_LABELS[Number(existingBooking.ShoeSize)] || t('admin.common.notAvailable')}
+                      </strong>
                     </div>
                   </div>
-                  {error && <div className="error-message" role="alert">{error}</div>}
+                  {error && <div className="alt-modal-error" role="alert">{error}</div>}
                   {existingBooking.CanCancel ? (
                     <button
                       type="button"
                       onClick={handleCancelExistingBooking}
                       disabled={isSubmitting}
-                      className="btn-cancel"
+                      className="alt-modal-danger-btn"
                     >
                       {isSubmitting ? t('cancelBooking.cancelling') : t('cancelRegistration')}
                     </button>
                   ) : (
-                    <p className="status-subtext">{t('cancelBooking.pastWorkoutNotice')}</p>
+                    <p className="alt-modal-subtext">{t('cancelBooking.pastWorkoutNotice')}</p>
                   )}
                 </div>
               ) : isRegistrationSuccess ? (
-                <div className="status-message success" role="status">
-                  <FaCheck className="status-icon" aria-hidden="true" />
-                  <p>{t('registrationSuccess')}</p>
-                  <span className="status-subtext">
+                <div className="alt-modal-status is-success" role="status">
+                  <FaCheck className="alt-modal-status__icon" aria-hidden="true" />
+                  <p className="alt-modal-status__title">{t('registrationSuccess')}</p>
+                  <span className="alt-modal-subtext">
                     {t('bookingForm.confirmationEmailNotice', { email: submittedEmail })}
                   </span>
-                  <button type="button" onClick={onClose} className="btn-close-prompt">
+                  <button type="button" onClick={onClose} className="alt-modal-primary-btn">
                     {t('close')}
                   </button>
                 </div>
@@ -409,24 +429,24 @@ const WorkoutModal = ({
                 <form onSubmit={handleSubmit} noValidate>
                   {!isFull ? (
                     <>
-                      <div className="spot-progress">
-                        <span className="spots-text">
-                          {t('spotsTaken', { taken: takenSpots, max: maxSpots })}
-                        </span>
-                        <div className="progress-bar-container">
+                      <div className="alt-modal-progress">
+                        <div className="alt-modal-progress__top">
+                          <span>{t('spotsTaken', { taken: takenSpots, max: maxSpots })}</span>
+                        </div>
+                        <div className="alt-modal-progress__track">
                           <div
-                            className="progress-bar"
+                            className="alt-modal-progress__fill"
                             style={{ width: `${progressPercent}%` }}
-                          ></div>
+                          />
                         </div>
                       </div>
 
-                      <div className="form-section">
-                        <h4 className="section-title">
+                      <div className="alt-modal-section">
+                        <h3 className="alt-modal-section__title">
                           <FaUser aria-hidden="true" /> {t('bookingForm.contactDetailsTitle')}
-                        </h4>
-                        <div className="guest-fields">
-                          <div className="input-group-field">
+                        </h3>
+                        <div className="alt-modal-fields">
+                          <div className="alt-modal-field">
                             <label htmlFor="booking-full-name">{t('bookingForm.fullNameLabel')}</label>
                             <input
                               id="booking-full-name"
@@ -443,7 +463,7 @@ const WorkoutModal = ({
                               required
                             />
                           </div>
-                          <div className="input-group-field">
+                          <div className="alt-modal-field">
                             <label htmlFor="booking-email">{t('bookingForm.emailLabel')}</label>
                             <input
                               id="booking-email"
@@ -460,7 +480,7 @@ const WorkoutModal = ({
                               required
                             />
                           </div>
-                          <div className="input-group-field">
+                          <div className="alt-modal-field">
                             <label htmlFor="booking-phone">{t('bookingForm.phoneLabel')}</label>
                             <input
                               id="booking-phone"
@@ -477,45 +497,53 @@ const WorkoutModal = ({
                               required
                             />
                           </div>
+                          <div className="alt-modal-field">
+                            <label htmlFor="booking-visit-type">{t('selectCardTitle')}</label>
+                            <select
+                              id="booking-visit-type"
+                              value={visitType}
+                              onChange={(e) => setVisitType(e.target.value)}
+                            >
+                              <option value="individual">{t('individualWorkout')}</option>
+                              <option value="coolfit">{t('coolfitCard')}</option>
+                              <option value="pulse">{t('pulseCard')}</option>
+                            </select>
+                          </div>
                         </div>
                       </div>
 
-                      <div className="form-section">
-                        <h4 className="section-title">
+                      <div className="alt-modal-section">
+                        <h3 className="alt-modal-section__title">
                           <FaShoePrints aria-hidden="true" /> {t('shoesTitle')}
-                        </h4>
-                        <div className="option-group">
-                          <label className="checkbox-container" htmlFor="workout-own-shoes">
-                            <input
-                              id="workout-own-shoes"
-                              type="checkbox"
-                              checked={usesOwnShoes}
-                              onChange={handleOwnShoesChange}
-                            />
-                            <span className="checkmark" aria-hidden="true"></span>
-                            {t('useOwnShoes')}
-                          </label>
-                        </div>
+                        </h3>
+
+                        <label className="alt-modal-checkbox" htmlFor="workout-own-shoes">
+                          <input
+                            id="workout-own-shoes"
+                            type="checkbox"
+                            checked={usesOwnShoes}
+                            onChange={handleOwnShoesChange}
+                          />
+                          <span>{t('useOwnShoes')}</span>
+                        </label>
 
                         {!usesOwnShoes && (
                           availableSizes.length > 0 ? (
-                            <div className="size-selection-grid">
+                            <div className="alt-modal-sizes">
                               {availableSizes.map((size) => {
                                 const available = shoeAvailability[size];
-
+                                const isActive = selectedSize === size;
                                 return (
                                   <button
                                     key={size}
                                     type="button"
-                                    aria-pressed={selectedSize === size}
-                                    className={`size-btn ${selectedSize === size ? 'active' : ''}`}
+                                    aria-pressed={isActive}
+                                    className={`alt-modal-size-btn ${isActive ? 'is-active' : ''}`}
                                     onClick={() => handleSizeClick(size)}
                                   >
-                                    {size}
-                                    <br />
+                                    <strong>{size}</strong>
                                     <small>{SHOE_SIZE_RANGES[size]}</small>
-                                    <br />
-                                    <span className="availability">
+                                    <span>
                                       {`${available} ${available === 1 ? t('availableSingular') : t('available')}`}
                                     </span>
                                   </button>
@@ -523,28 +551,28 @@ const WorkoutModal = ({
                               })}
                             </div>
                           ) : (
-                            <div className="no-shoes-notice" role="status">
+                            <div className="alt-modal-notice" role="status">
                               {t('bookingForm.onlyOwnShoesLeft')}
                             </div>
                           )
                         )}
                       </div>
 
-                      {error && <div className="error-message" role="alert">{error}</div>}
+                      {error && <div className="alt-modal-error" role="alert">{error}</div>}
 
                       <button
                         type="submit"
-                        className="btn-submit"
+                        className="alt-modal-primary-btn"
                         disabled={isSubmitting || (!usesOwnShoes && !selectedSize)}
                       >
                         {isSubmitting ? t('schedule.registering') : t('submit')}
                       </button>
                     </>
                   ) : (
-                    <div className="status-message full">
-                      <FaInfoCircle className="status-icon" aria-hidden="true" />
+                    <div className="alt-modal-status">
+                      <FaInfoCircle className="alt-modal-status__icon" aria-hidden="true" />
                       <p>{t('fullNotice')}</p>
-                      <button type="button" onClick={onClose} className="btn-close-full">
+                      <button type="button" onClick={onClose} className="alt-modal-secondary-btn">
                         {t('close')}
                       </button>
                     </div>

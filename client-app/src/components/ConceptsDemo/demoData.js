@@ -1,0 +1,598 @@
+export const CONCEPTS = [
+  {
+    id: 'pulse',
+    number: '1',
+    shortName: 'Pulse (Реф.)',
+    nameBg: 'Pulse Rebound (Референция)',
+    nameEn: 'Pulse Rebound (Ref)',
+    subtitleBg: 'Оригиналната високоенергийна неонова студийна сцена',
+    subtitleEn: 'Original high-contrast neon studio reference',
+    fonts: {
+      display: 'Unbounded (900)',
+      body: 'Onest',
+    },
+    motionNoteBg: 'Пружинен отскок (spring) + магнитен CTA',
+    motionNoteEn: 'Spring rebound physics + magnetic CTA',
+    swatches: [
+      { hex: '#0C0A14', label: 'Obsidian Studio' },
+      { hex: '#171426', label: 'Matte Rubber' },
+      { hex: '#FF3B5C', label: 'Pulse Infrared' },
+      { hex: '#D8FF38', label: 'Volt Spring' },
+      { hex: '#8B5CF6', label: 'Ultraviolet LED' },
+    ],
+  },
+  {
+    id: 'coral',
+    number: '2',
+    shortName: 'Coral Velvet',
+    nameBg: 'Coral Velvet',
+    nameEn: 'Coral Velvet',
+    subtitleBg: 'Меко сливово-графитено студио, кадифен корал и шампанско',
+    subtitleEn: 'Plum-charcoal studio with velvet coral & soft mint',
+    fonts: {
+      display: 'Unbounded (700)',
+      body: 'Onest',
+    },
+    motionNoteBg: 'Омекотен пружинен отскок + топло коралово сияние',
+    motionNoteEn: 'Softened spring rebound + warm coral ambient glow',
+    swatches: [
+      { hex: '#13111A', label: 'Plum Charcoal' },
+      { hex: '#1C1927', label: 'Velvet Surface' },
+      { hex: '#E85D75', label: 'Velvet Coral-Rose' },
+      { hex: '#7CD9B8', label: 'Soft Studio Mint' },
+      { hex: '#C49B66', label: 'Champagne Gold' },
+    ],
+  },
+  {
+    id: 'amber',
+    number: '3',
+    shortName: 'Amber Motion',
+    nameBg: 'Amber Motion',
+    nameEn: 'Amber Motion',
+    subtitleBg: 'Топъл графит, мандарина от катарамите на обувките и егейска мента',
+    subtitleEn: 'Warm graphite with logo-matched tangerine & seafoam',
+    fonts: {
+      display: 'Unbounded (700)',
+      body: 'Onest',
+    },
+    motionNoteBg: 'Топла кинетична лента + балансиран графитен контраст',
+    motionNoteEn: 'Kinetic warm progress track + balanced graphite contrast',
+    swatches: [
+      { hex: '#121318', label: 'Warm Graphite' },
+      { hex: '#1B1D26', label: 'Studio Slate' },
+      { hex: '#F07C41', label: 'Tangerine Ember' },
+      { hex: '#5EC2B7', label: 'Aegean Seafoam' },
+      { hex: '#F4C97A', label: 'Soft Amber' },
+    ],
+  },
+  {
+    id: 'nocturne',
+    number: '4',
+    shortName: 'Nocturne Orchid',
+    nameBg: 'Nocturne Orchid',
+    nameEn: 'Nocturne Orchid',
+    subtitleBg: 'Полунощно морско синьо от логото, сатенена малина и матирано стъкло',
+    subtitleEn: 'Midnight navy from logo with satin berry & brushed glass',
+    fonts: {
+      display: 'Unbounded (700)',
+      body: 'Onest',
+    },
+    motionNoteBg: 'Матирано стъкло + плавен индиго-малинов преход',
+    motionNoteEn: 'Brushed glass elevation + berry-periwinkle glide',
+    swatches: [
+      { hex: '#0E121D', label: 'Midnight Navy' },
+      { hex: '#161C2C', label: 'Brushed Glass' },
+      { hex: '#D94E8A', label: 'Satin Berry' },
+      { hex: '#63D2A5', label: 'Eucalyptus Mint' },
+      { hex: '#818CF8', label: 'Soft Periwinkle' },
+    ],
+  },
+];
+
+export const SHOE_SIZES = [
+  { key: 'S', code: 1, eu: '36–38' },
+  { key: 'M', code: 2, eu: '39–41' },
+  { key: 'L', code: 3, eu: '42–44' },
+  { key: 'XL', code: 4, eu: '44–46' },
+];
+
+export const VISIT_TYPES = [
+  { id: 'coolfit', key: 'coolfitCard' },
+  { id: 'pulse', key: 'pulseCard' },
+  { id: 'individual', key: 'individualWorkout' },
+];
+
+const buildShoePool = (availableCounts) => {
+  const result = [];
+  let idx = 1;
+  const sizes = [
+    { code: 1, key: 'S', total: 6 },
+    { code: 2, key: 'M', total: 5 },
+    { code: 3, key: 'L', total: 2 },
+    { code: 4, key: 'XL', total: 1 },
+  ];
+
+  sizes.forEach(({ code, key, total }) => {
+    const free = Math.min(total, Math.max(0, availableCounts[key] ?? 0));
+    for (let i = 0; i < total; i += 1) {
+      result.push({
+        Id: `demo-shoe-${code}-${idx}`,
+        IsTaken: i >= free,
+        Shoe: { Id: `shoe-${code}-${i + 1}`, Size: code },
+      });
+      idx += 1;
+    }
+  });
+
+  return result;
+};
+
+const getUpcomingDayDate = (targetDow, hour, minute) => {
+  const now = new Date();
+  const date = new Date(now);
+  const currentDow = date.getDay();
+  let diff = (targetDow - currentDow + 7) % 7;
+  if (diff === 0 && (date.getHours() > hour || (date.getHours() === hour && date.getMinutes() >= minute))) {
+    diff = 7;
+  }
+  date.setDate(date.getDate() + diff);
+  date.setHours(hour, minute, 0, 0);
+  return date.toISOString();
+};
+
+export const createFallbackWorkouts = () => [
+  {
+    Id: 'demo-w-mon',
+    Day: 'Monday',
+    Time: '18:30',
+    Date: getUpcomingDayDate(1, 18, 30),
+    Status: 'Available',
+    AvailableSpots: 5,
+    TakenSpots: 7,
+    TotalSpots: 12,
+    WorkoutShoes: buildShoePool({ S: 3, M: 2, L: 1, XL: 1 }),
+  },
+  {
+    Id: 'demo-w-wed',
+    Day: 'Wednesday',
+    Time: '19:00',
+    Date: getUpcomingDayDate(3, 19, 0),
+    Status: 'Available',
+    AvailableSpots: 2,
+    TakenSpots: 10,
+    TotalSpots: 12,
+    WorkoutShoes: buildShoePool({ S: 1, M: 1, L: 0, XL: 1 }),
+  },
+  {
+    Id: 'demo-w-thu',
+    Day: 'Thursday',
+    Time: '18:30',
+    Date: getUpcomingDayDate(4, 18, 30),
+    Status: 'Available',
+    AvailableSpots: 7,
+    TakenSpots: 5,
+    TotalSpots: 12,
+    WorkoutShoes: buildShoePool({ S: 4, M: 3, L: 2, XL: 1 }),
+  },
+  {
+    Id: 'demo-w-sat',
+    Day: 'Saturday',
+    Time: '10:30',
+    Date: getUpcomingDayDate(6, 10, 30),
+    Status: 'Booked',
+    AvailableSpots: 0,
+    TakenSpots: 12,
+    TotalSpots: 12,
+    WorkoutShoes: buildShoePool({ S: 0, M: 0, L: 0, XL: 0 }),
+  },
+  {
+    Id: 'demo-w-sun',
+    Day: 'Sunday',
+    Time: '17:30',
+    Date: getUpcomingDayDate(0, 17, 30),
+    Status: 'Available',
+    AvailableSpots: 4,
+    TakenSpots: 8,
+    TotalSpots: 12,
+    WorkoutShoes: buildShoePool({ S: 2, M: 2, L: 1, XL: 0 }),
+  },
+];
+
+export const COPY = {
+  bg: {
+    brand: 'Jump With Jenny',
+    locationBadge: 'Бургас · ж.к. Зорница 75',
+    instructorBadge: 'Сертифициран инструктор · Бургас',
+    nav: {
+      schedule: 'График',
+      about: 'За мен',
+      gallery: 'Галерия',
+      reviews: 'Отзиви',
+      faq: 'Въпроси',
+      cancelPreview: 'Отказ на час',
+      bookCta: 'Запази час',
+    },
+    hero: {
+      pulseTitle: 'Отскочи от рутината. Тренирай в ритъм с Жени.',
+      pulseLead: 'Интензивно Kangoo Jumps кардио в Бургас, което пази ставите и изстрелва настроението ти до тавана.',
+      coralTitle: 'Усети ритъма на отскока. Тренирай с лекота с Жени.',
+      coralLead: 'Енергични Kangoo Jumps сесии в Бургас в камерна студийна атмосфера — обувките ти очакват в залата.',
+      amberTitle: 'Силно кардио, меко приземяване и заряд след всеки час.',
+      amberLead: 'Сертифицирани Kangoo Jumps тренировки в ж.к. Зорница 75, подходящи както за първи скок, така и за напреднали.',
+      nocturneTitle: 'Вечерна динамика, чист баланс и музика без гравитация.',
+      nocturneLead: 'Групови тренировки с Kangoo Jumps обувки в Бургас — пазят коленете, тонизират и носят усмивка.',
+      ctaPrimary: 'Запази час',
+      ctaSecondary: 'Виж графика',
+      nextClassLabel: 'Следваща свободна тренировка',
+      shoeIncluded: 'Обувки S–XL включени',
+    },
+    schedule: {
+      title: 'Седмичен график',
+      subtitle: 'Избери ден и час. Наличността на местата и размерите обувки се обновяват на живо.',
+      allDays: 'Всички дни',
+      spotsLeft: 'оставащи места',
+      spotLeftSingular: 'оставащо място',
+      takenOf: '{{taken}} от {{total}} заети',
+      full: 'Групата е пълна',
+      registered: 'Записан си ✓',
+      bookButton: 'Запази място',
+      manageButton: 'Управлявай часа',
+      shoesAvailableLabel: 'Свободни обувки',
+      onlyOwnShoes: 'Само собствени обувки',
+      demoSourceLive: 'Данни от локалния сървър',
+      demoSourcePreview: 'Интерактивен демо график (можеш да записваш и отменяш)',
+      days: {
+        Monday: 'Понеделник',
+        Tuesday: 'Вторник',
+        Wednesday: 'Сряда',
+        Thursday: 'Четвъртък',
+        Friday: 'Петък',
+        Saturday: 'Събота',
+        Sunday: 'Неделя',
+      },
+      shortDays: {
+        Monday: 'Пон',
+        Tuesday: 'Вт',
+        Wednesday: 'Ср',
+        Thursday: 'Чет',
+        Friday: 'Пет',
+        Saturday: 'Съб',
+        Sunday: 'Нед',
+      },
+    },
+    about: {
+      title: 'За Жени и силата на Kangoo Jumps',
+      lead: 'Здравей, аз съм Жени — сертифициран Kangoo Jumps инструктор. Вярвам, че тренировката трябва да е моментът от деня, който чакаш с усмивка, а не задължение.',
+      quote: 'Независимо дали стъпваш на пружини за първи път или скачаш редовно, темпото се адаптира към теб.',
+      pillars: [
+        {
+          value: '-80%',
+          title: 'Щадящо за ставите',
+          text: 'Патентованата IPS пружинна система поглъща удара при приземяване и пази коленете и гърба.',
+        },
+        {
+          value: '600+ kcal',
+          title: 'Висок разход без тежест',
+          text: 'Динамично кардио в музикален ритъм, което стяга краката, корема и подобрява баланса.',
+        },
+        {
+          value: 'S — XL',
+          title: 'Обувки на място',
+          text: 'В студиото те очакват подготвени обувки от 36 до 46 номер или можеш да дойдеш със свои.',
+        },
+      ],
+    },
+    gallery: {
+      title: 'Атмосфера от залата',
+      subtitle: 'Истински кадри от тренировките на Жени — музика, синхрон и усмивки след последния трак.',
+      closeLightbox: 'Затвори прегледа',
+      items: [
+        { src: '/images/gallery/studio-pulse-group.jpg', caption: 'Вечерна Kangoo Jumps група в Pulse' },
+        { src: '/images/gallery/studio-jenny-energy.jpg', caption: 'Енергията на Жени в ритъм' },
+        { src: '/images/gallery/studio-wide-squad.jpg', caption: 'Пълна зала и синхрон на пружини' },
+        { src: '/images/gallery/studio-boots-closeup.jpg', caption: 'Детайл от Kangoo Jumps обувките' },
+        { src: '/images/gallery/studio-evening-class.jpg', caption: 'Кардио заряд с усмивка' },
+        { src: '/images/gallery/studio-smiles-group.jpg', caption: 'Усмивки след последния трак' },
+      ],
+    },
+    reviews: {
+      title: 'Истории от групата',
+      subtitle: 'Какво споделят момичетата след тренировките в Бургас.',
+      items: [
+        {
+          name: 'Мария Иванова',
+          tag: 'Посещава от 8 месеца',
+          comment: 'Най-доброто място за тренировки. Персонализиран подход към всеки клиент и видими резултати.',
+          rating: 5,
+        },
+        {
+          name: 'Стефка Николова',
+          tag: 'Вечерна група',
+          comment: 'Уникално изживяване! Енергията и мотивацията на тренировките са заразителни.',
+          rating: 5,
+        },
+        {
+          name: 'Елена Василева',
+          tag: 'Пробен час → редовен',
+          comment: 'С всяка тренировка се чувствам все по-силна и уверена. Благодарение на Жени!',
+          rating: 5,
+        },
+        {
+          name: 'Десислава Георгиева',
+          tag: 'Карта Pulse Fitness',
+          comment: 'Всяка тренировка е истинско удоволствие! Жени винаги знае как да ни мотивира.',
+          rating: 5,
+        },
+      ],
+    },
+    faq: {
+      title: 'Често задавани въпроси',
+      items: [
+        {
+          q: 'Какво представлява тренировката Kangoo Jumps?',
+          a: 'Забавна и високоенергийна кардио тренировка със специални обувки с пружини, които намаляват ударното натоварване с до 80% и ускоряват изгарянето на калории.',
+        },
+        {
+          q: 'Трябва ли да имам опит или специална подготовка?',
+          a: 'Не. Първите минути са посветени на баланса и правилната стойка, а всяка хореография позволява да регулираш интензитета си.',
+        },
+        {
+          q: 'Как да запазя час и обувки?',
+          a: 'Избери свободен слот от графика горе, попълни име, имейл и телефон и избери твоя размер обувки — без нужда от регистрация.',
+        },
+        {
+          q: 'Ами ако плановете ми се променят?',
+          a: 'В имейла за потвърждение получаваш персонален линк за отмяна с 1 клик, който веднага освобождава мястото и обувките ти.',
+        },
+      ],
+    },
+    cancelPreview: {
+      sectionTitle: 'Преглед на страницата /cancel-booking/:token',
+      sectionLead: 'Когато участник отвори линка от имейла си, вижда същата модерна визия с детайлите и бутон за отмяна.',
+      title: 'Отмяна на тренировка',
+      subtitle: 'Прегледай детайлите и потвърди, ако не можеш да присъстваш.',
+      participant: 'Участник',
+      sampleName: 'Елена Василева',
+      dateLabel: 'Дата и час',
+      shoesLabel: 'Обувки',
+      sampleShoes: 'M (39–41)',
+      confirmBtn: 'Потвърди отказа от тренировка',
+      keepBtn: 'Запази резервацията',
+      cancelledTitle: 'Резервацията е отменена',
+      cancelledText: 'Мястото и чифтът обувки M (39–41) бяха освободени веднага в графика.',
+      restoreBtn: 'Върни демо прегледа',
+    },
+    modal: {
+      title: 'Бърза резервация',
+      contactSection: 'Твоите данни (автопопълване)',
+      fullName: 'Име и фамилия',
+      fullNamePlaceholder: 'напр. Елена Василева',
+      email: 'Имейл адрес',
+      emailPlaceholder: 'name@example.com',
+      phone: 'Телефон',
+      phonePlaceholder: '0888 123 456',
+      autofillDemo: 'Попълни примерни данни',
+      shoesSection: 'Избери Kangoo обувки',
+      ownShoes: 'Ще използвам собствени обувки',
+      visitTypeSection: 'Тип посещение (информативно)',
+      coolfitCard: 'Карта CoolFit',
+      pulseCard: 'Карта Pulse Fitness',
+      individualWorkout: 'Единична тренировка',
+      submit: 'Запиши се за часа',
+      successTitle: 'Мястото ти е запазено!',
+      successNote: 'В реалния сайт веднага получаваш имейл на {{email}} с детайлите и линк за отказ с 1 клик.',
+      alreadyTitle: 'Вече си записан за този час',
+      cancelMine: 'Откажи участието си (демо)',
+      cancelledTitle: 'Участието е отменено',
+      close: 'Затвори',
+      availableCount: '{{count}} св.',
+      errName: 'Въведи име и фамилия (минимум 2 символа).',
+      errEmail: 'Въведи валиден имейл адрес.',
+      errPhone: 'Въведи валиден телефонен номер.',
+      errShoe: 'Избери размер обувки или отбележи „Собствени обувки“.',
+    },
+    dock: {
+      label: 'Превключвател на концепциите',
+      paletteLabel: 'Палитра и шрифтове',
+      backToOriginal: 'Към текущия сайт',
+    },
+  },
+  en: {
+    brand: 'Jump With Jenny',
+    locationBadge: 'Burgas · Zornitsa 75',
+    instructorBadge: 'Certified Instructor · Burgas',
+    nav: {
+      schedule: 'Schedule',
+      about: 'About',
+      gallery: 'Gallery',
+      reviews: 'Reviews',
+      faq: 'FAQ',
+      cancelPreview: 'Cancel link',
+      bookCta: 'Book a class',
+    },
+    hero: {
+      pulseTitle: 'Bounce past routine. Train in rhythm with Jenny.',
+      pulseLead: 'High-energy Kangoo Jumps cardio in Burgas that protects your joints and lifts your mood.',
+      coralTitle: 'Feel the bounce rhythm. Move effortlessly with Jenny.',
+      coralLead: 'Boutique Kangoo Jumps sessions in Burgas — sanitized studio boots wait for you on site.',
+      amberTitle: 'Strong cardio, soft landing, and pure energy every hour.',
+      amberLead: 'Certified Kangoo Jumps workouts in Zornitsa 75 tailored for beginners and regulars alike.',
+      nocturneTitle: 'Evening momentum, balance, and zero-gravity music.',
+      nocturneLead: 'Group Kangoo Jumps classes in Burgas designed to protect your joints and boost endurance.',
+      ctaPrimary: 'Book a class',
+      ctaSecondary: 'Explore schedule',
+      nextClassLabel: 'Next open session',
+      shoeIncluded: 'Boots S–XL included',
+    },
+    schedule: {
+      title: 'Weekly Schedule',
+      subtitle: 'Pick a day and time. Remaining spots and boot sizes update live.',
+      allDays: 'All days',
+      spotsLeft: 'spots left',
+      spotLeftSingular: 'spot left',
+      takenOf: '{{taken}} of {{total}} booked',
+      full: 'Class full',
+      registered: 'You are booked ✓',
+      bookButton: 'Reserve spot',
+      manageButton: 'Manage booking',
+      shoesAvailableLabel: 'Available boots',
+      onlyOwnShoes: 'Own boots only',
+      demoSourceLive: 'Live API schedule',
+      demoSourcePreview: 'Interactive demo schedule (book & cancel freely)',
+      days: {
+        Monday: 'Monday',
+        Tuesday: 'Tuesday',
+        Wednesday: 'Wednesday',
+        Thursday: 'Thursday',
+        Friday: 'Friday',
+        Saturday: 'Saturday',
+        Sunday: 'Sunday',
+      },
+      shortDays: {
+        Monday: 'Mon',
+        Tuesday: 'Tue',
+        Wednesday: 'Wed',
+        Thursday: 'Thu',
+        Friday: 'Fri',
+        Saturday: 'Sat',
+        Sunday: 'Sun',
+      },
+    },
+    about: {
+      title: 'About Jenny & Kangoo Jumps',
+      lead: 'Hi, I am Jenny — a certified Kangoo Jumps instructor. I believe workouts should be the highlight of your day, never a chore.',
+      quote: 'Whether it is your very first bounce or your hundredth class, the pace adapts to you.',
+      pillars: [
+        {
+          value: '-80%',
+          title: 'Joint-friendly impact',
+          text: 'The patented IPS spring shell absorbs landing shock to protect knees, ankles, and spine.',
+        },
+        {
+          value: '600+ kcal',
+          title: 'Effortless cardio output',
+          text: 'Music-driven intervals that tone legs and core while boosting balance and stamina.',
+        },
+        {
+          value: 'S — XL',
+          title: 'Boots provided',
+          text: 'Sanitized studio boots from EU 36 to 46 wait for you, or bring your own pair.',
+        },
+      ],
+    },
+    gallery: {
+      title: 'Inside the Studio',
+      subtitle: 'Real moments from Jenny’s sessions — music, rhythm, and post-class smiles.',
+      closeLightbox: 'Close preview',
+      items: [
+        { src: '/images/gallery/studio-pulse-group.jpg', caption: 'Evening Kangoo Jumps group at Pulse' },
+        { src: '/images/gallery/studio-jenny-energy.jpg', caption: 'Jenny leading the rhythm on springs' },
+        { src: '/images/gallery/studio-wide-squad.jpg', caption: 'Full studio squad in sync' },
+        { src: '/images/gallery/studio-boots-closeup.jpg', caption: 'Studio Kangoo Jumps boots up close' },
+        { src: '/images/gallery/studio-evening-class.jpg', caption: 'High-energy evening cardio' },
+        { src: '/images/gallery/studio-smiles-group.jpg', caption: 'Post-workout smiles with the crew' },
+      ],
+    },
+    reviews: {
+      title: 'Community Stories',
+      subtitle: 'What regulars say after jumping in Burgas.',
+      items: [
+        {
+          name: 'Maria Ivanova',
+          tag: 'Member for 8 months',
+          comment: 'The best place to train. Personal attention for everyone and visible results.',
+          rating: 5,
+        },
+        {
+          name: 'Stefka Nikolova',
+          tag: 'Evening group',
+          comment: 'A unique experience! The energy and motivation in class are contagious.',
+          rating: 5,
+        },
+        {
+          name: 'Elena Vasileva',
+          tag: 'Trial → regular',
+          comment: 'Every session makes me feel stronger and more confident. Thanks to Jenny!',
+          rating: 5,
+        },
+        {
+          name: 'Desislava Georgieva',
+          tag: 'Pulse Fitness Card',
+          comment: 'Pure joy every time! Jenny always knows how to keep us energized.',
+          rating: 5,
+        },
+      ],
+    },
+    faq: {
+      title: 'Frequently Asked Questions',
+      items: [
+        {
+          q: 'What is a Kangoo Jumps workout?',
+          a: 'A fun, high-energy cardio class on spring rebound boots that cuts joint impact by up to 80% while boosting calorie burn.',
+        },
+        {
+          q: 'Do I need prior experience?',
+          a: 'Not at all. We start with balance cues and basic steps so you can scale the intensity comfortably.',
+        },
+        {
+          q: 'How do I book a spot and boots?',
+          a: 'Pick any open slot above, enter your name, email, and phone, and select your boot size — no account needed.',
+        },
+        {
+          q: 'What if my plans change?',
+          a: 'Your confirmation email includes a 1-click cancellation link that immediately frees your spot and boots.',
+        },
+      ],
+    },
+    cancelPreview: {
+      sectionTitle: '/cancel-booking/:token Experience Preview',
+      sectionLead: 'Opening the email cancellation link renders the exact same design system with clear one-click confirmation.',
+      title: 'Cancel Booking',
+      subtitle: 'Review your session details and confirm if you cannot attend.',
+      participant: 'Participant',
+      sampleName: 'Elena Vasileva',
+      dateLabel: 'Date & time',
+      shoesLabel: 'Boots',
+      sampleShoes: 'M (39–41)',
+      confirmBtn: 'Confirm cancellation',
+      keepBtn: 'Keep my spot',
+      cancelledTitle: 'Booking cancelled',
+      cancelledText: 'Your spot and M (39–41) studio boots were immediately released back to the schedule.',
+      restoreBtn: 'Reset preview',
+    },
+    modal: {
+      title: 'Quick Booking',
+      contactSection: 'Your details (autofill)',
+      fullName: 'Full name',
+      fullNamePlaceholder: 'e.g. Elena Vasileva',
+      email: 'Email address',
+      emailPlaceholder: 'name@example.com',
+      phone: 'Phone number',
+      phonePlaceholder: '0888 123 456',
+      autofillDemo: 'Fill sample data',
+      shoesSection: 'Select Kangoo boots',
+      ownShoes: 'I will bring my own boots',
+      visitTypeSection: 'Visit type (informational)',
+      coolfitCard: 'CoolFit Card',
+      pulseCard: 'Pulse Fitness Card',
+      individualWorkout: 'Single Session',
+      submit: 'Confirm booking',
+      successTitle: 'Spot reserved!',
+      successNote: 'In production, an instant confirmation with a 1-click cancellation link is sent to {{email}}.',
+      alreadyTitle: 'You are booked for this class',
+      cancelMine: 'Cancel booking (demo)',
+      cancelledTitle: 'Booking cancelled',
+      close: 'Close',
+      availableCount: '{{count}} free',
+      errName: 'Please enter your full name (min 2 chars).',
+      errEmail: 'Please enter a valid email address.',
+      errPhone: 'Please enter a valid phone number.',
+      errShoe: 'Please select a boot size or toggle own boots.',
+    },
+    dock: {
+      label: 'Concept Switcher',
+      paletteLabel: 'Palette & Fonts',
+      backToOriginal: 'Current site',
+    },
+  },
+};

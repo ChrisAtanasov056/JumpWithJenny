@@ -1,125 +1,83 @@
-// Footer.scss
-$accent-color: #E74C3C;
-$text-color: #2C3E50;
-$white: #FFFFFF;
-$transition-speed: 0.3s;
+.alt-footer {
+  margin-top: 86px;
+  padding: 28px 0 42px;
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 0.9rem;
 
-.footer-animated {
-  background: $text-color;
-  color: $white;
-  padding: 2rem 1.2rem;
-  text-align: center;
-  position: relative;
-  overflow: hidden;
-
-  .footer-container {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 0 2rem;
-  }
-
-  .jump-animation {
-    margin: 0 auto 1.5rem;
-    width: 80px;
-    height: 80px;
-    position: relative;
-    
-    .kangoo-shoe-img {
-      width: 70px;
-      height: auto;
-      animation: jump 1.5s infinite alternate;
-      filter: drop-shadow(0 4px 8px rgba(0,0,0,0.3));
-    }
-
-    .shadow {
-      width: 40px;
-      height: 10px;
-      background: rgba($accent-color, 0.8);
-      border-radius: 50%;
-      position: absolute;
-      left: 45%;
-      transform: translateX(-50%);
-      animation: shadow 1.5s infinite alternate;
-      filter: blur(2px);
-      bottom: 0;
-    }
-  }
-
-  .social-links {
+  &__inner {
     display: flex;
-    justify-content: center;
-    gap: 1.5rem;
-    margin-bottom: 2rem;
     flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 18px 26px;
+  }
 
-    .social-btn {
-      width: auto;
-      height: auto;
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      color: $white;
-      text-decoration: none;
-      padding: 0.7rem 1.2rem;
-      border-radius: 50px;
-      transition: all $transition-speed ease;
-      background: rgba($white, 0.1);
+  &__brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 600;
+  }
 
+  &__logo {
+    width: 30px;
+    height: 30px;
+    object-fit: contain;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.92);
+    padding: 2px;
+  }
+
+  &__socials {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  &__social {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 8px 14px;
+    border-radius: 999px;
+    border: 1px solid rgba(255, 255, 255, 0.28);
+    background: rgba(255, 255, 255, 0.1);
+    color: #ffffff;
+    text-decoration: none;
+    font-weight: 500;
+    transition: background-color 180ms ease, transform 150ms ease;
+
+    @media (hover: hover) and (pointer: fine) {
       &:hover {
-        background: $accent-color;
-        transform: translateY(-5px);
-        box-shadow: 0 5px 15px rgba($accent-color, 0.4);
+        background: rgba(255, 255, 255, 0.22);
+        transform: translateY(-2px);
+      }
+    }
+  }
 
-        .icon {
-          transform: scale(1.1);
+  &__legal {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+
+    a {
+      color: rgba(255, 255, 255, 0.82);
+      text-decoration: none;
+      transition: color 160ms ease;
+
+      @media (hover: hover) and (pointer: fine) {
+        &:hover {
+          color: var(--alt-sun);
         }
       }
-
-      .icon {
-        font-size: 1.5rem;
-        transition: transform $transition-speed ease;
-      }
-      
-      .label {
-        font-size: 1rem;
-        font-weight: 500;
-      }
     }
-  }
-
-  .footer-links-container {
-    display: flex;
-    flex-direction: row;
-    flex-wrap: wrap;
-    gap: 12px 20px;
-    justify-content: center;
-    margin-bottom: 1.5rem;
-    
-    .link {
-      color: rgba($white, 0.88);
-      text-decoration: none;
-      font-size: 0.9rem;
-      transition: color $transition-speed ease;
-      
-      &:hover {
-        color: $white;
-        text-decoration: underline;
-      }
-    }
-  }
-
-  .copyright {
-    font-size: 0.85rem;
-    color: rgba($white, 0.78);
   }
 }
 
-@keyframes jump {
-  0% { transform: translateY(0); }
-  100% { transform: translateY(-15px); }
-}
-
-@keyframes shadow {
-  0% { transform: scale(1) translateX(-50%); opacity: 0.7; }
-  100% { transform: scale(0.8) translateX(-50%); opacity: 0.4; }
+@media (max-width: 760px) {
+  .alt-footer__inner {
+    flex-direction: column;
+    align-items: flex-start;
+  }
 }

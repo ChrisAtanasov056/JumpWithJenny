@@ -634,5 +634,64 @@
             "deleteButton": "Delete",
             "noPhotos": "No photos uploaded."
         }
+    },
+    "altitude": {
+        "heroBadgeSport": "Kangoo Jumps",
+        "heroBadgeCity": "Burgas",
+        "heroHeadingLine1": "Jump",
+        "heroHeadingLine2": "with Jenny",
+        "heroCta": "Book a Class",
+        "nextWorkoutLabel": "Next Workout",
+        "countdownPrefix": "in {{days}}d {{hours}}h {{minutes}}m",
+        "spotsAvailableSingular": "{{count}} spot left",
+        "spotsAvailablePlural": "{{count}} spots left",
+        "noUpcomingChip": "Check schedule for new classes",
+        "altimeterUnit": "meters",
+        "marquee": {
+            "item1": "Low-impact joint protection",
+            "item2": "Cardio, strength & flexibility",
+            "item3": "For every fitness level",
+            "item4": "Kangoo Jumps boots provided"
+        },
+        "schedule": {
+            "thisWeek": "This Week",
+            "nextWeek": "Next Week",
+            "weekRangeLabel": "Week {{range}}",
+            "allWorkouts": "All ({{count}})",
+            "allSubtitle": "All upcoming dates",
+            "weekTabsAria": "Filter by week",
+            "spotsOfMax": "{{available}} of {{max}} spots left",
+            "fullClassBtn": "Class is Full",
+            "bookBtn": "Book a Class",
+            "manageBookingBtn": "My Booking ✓",
+            "ownShoesOnlyTag": "Own boots only",
+            "altitudeMeters": "{{meters}} m"
+        },
+        "about": {
+            "lead": "Hi, I'm Jenny — a certified Kangoo Jumps instructor in Burgas. I believe every workout should bring joy, lightness, and a real surge of energy.",
+            "highlights": [
+                {
+                    "title": "Joint-friendly (up to 80% less impact)",
+                    "text": "The rebound spring system absorbs landing shock while keeping your heart rate in the optimal zone."
+                },
+                {
+                    "title": "Cardio, strength & balance in 1 hour",
+                    "text": "High-energy choreography in rhythm that tones your whole body and clears your mind after work."
+                },
+                {
+                    "title": "Tailored for every level",
+                    "text": "Whether it's your first time in Kangoo boots or you train regularly, the pace adapts to you."
+                }
+            ]
+        },
+        "gallery": {
+            "openLightbox": "Open photo {{index}} full screen",
+            "closeLightbox": "Close photo viewer",
+            "counter": "{{current}} / {{total}}"
+        },
+        "reviews": {
+            "showMore": "Show more reviews",
+            "showLess": "Show fewer"
+        }
     }
 }

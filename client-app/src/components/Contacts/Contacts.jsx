@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { FaEnvelope, FaPhoneAlt, FaMapMarkerAlt } from 'react-icons/fa';
 import { sendContactForm } from '../../services/ContactService';
-import './Contacts.scss';
 import SuccessModal from './SuccessModal';
+import './Contacts.scss';
 
 const Contacts = () => {
   const { t } = useTranslation();
@@ -25,9 +26,8 @@ const Contacts = () => {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const capitalizeFirstLetter = (string) => {
-    return string.charAt(0).toUpperCase() + string.slice(1);
-  };
+  const capitalizeFirstLetter = (string) =>
+    string.charAt(0).toUpperCase() + string.slice(1);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -57,113 +57,105 @@ const Contacts = () => {
   };
 
   return (
-    <section id="contacts" className="contact-section" aria-labelledby="contacts-title">
-      <div className="contact-container">
+    <section id="contacts" className="alt-section contact-section" aria-labelledby="contacts-title">
+      <div className="alt-wrap">
         <div className="contact-header">
-          <h2 id="contacts-title" className="section-title">{t('contacts.title')}</h2>
-          <p className="section-subtitle">{t('contacts.subtitle')}</p>
+          <h2 id="contacts-title" className="alt-section-title">
+            {t('contacts.title')}
+          </h2>
+          <p className="contact-subtitle">{t('contacts.subtitle')}</p>
         </div>
 
-        <div className="contact-content">
-          <form className="contact-form" onSubmit={handleSubmit}>
-            <div className="form-grid">
-              <div className="form-group floating-label">
+        <div className="contact-grid">
+          <form className="contact-form-card" onSubmit={handleSubmit}>
+            <div className="contact-fields">
+              <div className="contact-field">
+                <label htmlFor="contact-name">{t('contacts.name')}</label>
                 <input
                   type="text"
                   id="contact-name"
                   name="name"
                   value={formData.name}
                   onChange={handleChange}
+                  placeholder={t('contacts.name')}
                   required
                   autoComplete="name"
-                  className={formData.name ? 'has-value' : ''}
                 />
-                <label htmlFor="contact-name">{t('contacts.name')}</label>
-                <span className="input-border" aria-hidden="true"></span>
               </div>
 
-              <div className="form-group floating-label">
+              <div className="contact-field">
+                <label htmlFor="contact-email">{t('contacts.email')}</label>
                 <input
                   type="email"
                   id="contact-email"
                   name="email"
                   value={formData.email}
                   onChange={handleChange}
+                  placeholder={t('contacts.email')}
                   required
                   autoComplete="email"
-                  className={formData.email ? 'has-value' : ''}
                 />
-                <label htmlFor="contact-email">{t('contacts.email')}</label>
-                <span className="input-border" aria-hidden="true"></span>
               </div>
 
-              <div className="form-group floating-label select-group">
+              <div className="contact-field">
+                <label htmlFor="contact-subject">{t('contacts.subject')}</label>
                 <select
                   id="contact-subject"
                   name="subject"
                   value={formData.subject}
                   onChange={handleChange}
                   required
-                  className={formData.subject ? 'has-value' : ''}
                 >
-                  <option value=""></option>
+                  <option value="">{t('contacts.selectSubject')}</option>
                   <option value="training">{t('contacts.subjectTraining')}</option>
                   <option value="trial">{t('contacts.subjectTrial')}</option>
                   <option value="shoes">{t('contacts.subjectShoes')}</option>
                   <option value="media">{t('contacts.subjectMedia')}</option>
                   <option value="other">{t('contacts.subjectOther')}</option>
                 </select>
-                <label htmlFor="contact-subject">{t('contacts.subject')}</label>
-                <span className="input-border" aria-hidden="true"></span>
-                <div className="select-arrow" aria-hidden="true"></div>
               </div>
 
               {formData.subject === 'other' && (
-                <div className="form-group floating-label">
+                <div className="contact-field">
+                  <label htmlFor="contact-customSubject">{t('contacts.customSubject')}</label>
                   <input
                     type="text"
                     id="contact-customSubject"
                     name="customSubject"
                     value={formData.customSubject}
                     onChange={handleChange}
+                    placeholder={t('contacts.customSubject')}
                     required
-                    className={formData.customSubject ? 'has-value' : ''}
                   />
-                  <label htmlFor="contact-customSubject">{t('contacts.customSubject')}</label>
-                  <span className="input-border" aria-hidden="true"></span>
                 </div>
               )}
 
-              <div className="form-group floating-label textarea-group">
+              <div className="contact-field">
+                <label htmlFor="contact-message">{t('contacts.message')}</label>
                 <textarea
                   id="contact-message"
                   name="message"
                   value={formData.message}
                   onChange={handleChange}
+                  placeholder={t('contacts.message')}
                   required
-                  rows="5"
-                  className={formData.message ? 'has-value' : ''}
-                ></textarea>
-                <label htmlFor="contact-message">{t('contacts.message')}</label>
-                <span className="input-border" aria-hidden="true"></span>
+                  rows={4}
+                />
               </div>
             </div>
 
-            <div className="form-footer">
+            <div className="contact-form-footer">
               <button
                 type="submit"
-                className={`submit-button ${isSubmitting ? 'submitting' : ''}`}
+                className="alt-btn contact-submit-btn"
                 disabled={isSubmitting}
               >
-                <span className="button-text">
-                  {isSubmitting ? t('contacts.sending') : t('contacts.send')}
-                </span>
-                {isSubmitting && <span className="button-spinner" aria-hidden="true"></span>}
+                {isSubmitting ? t('contacts.sending') : t('contacts.send')}
               </button>
 
               {(submitSuccess || submitError) && (
                 <div
-                  className={`form-message ${submitSuccess ? 'success' : 'error'}`}
+                  className={`contact-status ${submitSuccess ? 'is-success' : 'is-error'}`}
                   role={submitError ? 'alert' : 'status'}
                 >
                   {submitSuccess ? t('contacts.successMessage') : t('contacts.errorMessage')}
@@ -172,39 +164,32 @@ const Contacts = () => {
             </div>
           </form>
 
-          <div className="contact-info">
-            <div className="map-section">
-              <h3 className="info-title">{t('contacts.location')}</h3>
-              <div className="map-container">
+          <div className="contact-info-col">
+            <div className="contact-glass-card">
+              <h3>{t('contacts.location')}</h3>
+              <div className="contact-map-wrap">
                 <iframe
                   title={t('contacts.location')}
                   src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d526.4989883006733!2d27.466541253362816!3d42.519356308306406!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x40a695df713ef1f3%3A0x7d40c314b363a210!2z0J_Rg9C70YEg0JLQuNGC0LDQuyDRgdC_0L7RgNGC!5e1!3m2!1sbg!2sbg!4v1729614985370!5m2!1sbg!2sbg"
-                  width="100%"
-                  height="300"
-                  style={{ border: 0 }}
-                  allowFullScreen=""
                   loading="lazy"
+                  allowFullScreen
                 />
               </div>
             </div>
 
-            <div className="contact-details">
-              <h3 className="info-title">{t('contacts.contactDetails')}</h3>
-              <ul className="details-list">
-                <li className="detail-item">
-                  <span className="detail-icon" aria-hidden="true">📧</span>
-                  <span>
-                    <a href="mailto:jumpwithjenny.kj@gmail.com">jumpwithjenny.kj@gmail.com</a>
-                  </span>
+            <div className="contact-glass-card">
+              <h3>{t('contacts.contactDetails')}</h3>
+              <ul className="contact-details-list">
+                <li>
+                  <FaEnvelope aria-hidden="true" />
+                  <a href="mailto:jumpwithjenny.kj@gmail.com">jumpwithjenny.kj@gmail.com</a>
                 </li>
-                <li className="detail-item">
-                  <span className="detail-icon" aria-hidden="true">📱</span>
-                  <span>
-                    <a href="tel:+359884984167">+359 88 4984167</a>
-                  </span>
+                <li>
+                  <FaPhoneAlt aria-hidden="true" />
+                  <a href="tel:+359884984167">+359 88 4984167</a>
                 </li>
-                <li className="detail-item">
-                  <span className="detail-icon" aria-hidden="true">🏢</span>
+                <li>
+                  <FaMapMarkerAlt aria-hidden="true" />
                   <span>{t('contacts.address')}</span>
                 </li>
               </ul>
@@ -212,6 +197,7 @@ const Contacts = () => {
           </div>
         </div>
       </div>
+
       <SuccessModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
     </section>
   );

@@ -1,6 +1,6 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { FaChevronDown } from 'react-icons/fa';
+import { FaPlus } from 'react-icons/fa';
 import './FAQ.scss';
 
 const FAQ = () => {
@@ -14,20 +14,25 @@ const FAQ = () => {
   ];
 
   return (
-    <section id="faq" className="faq-section" aria-labelledby="faq-heading">
-      <h2 id="faq-heading">{t('faq.title')}</h2>
-      <div className="faq-list">
-        {faqData.map((item, index) => (
-          <details key={index} className="faq-item">
-            <summary className="faq-question">
-              <span className="faq-question-text">{item.question}</span>
-              <FaChevronDown className="icon" aria-hidden="true" />
-            </summary>
-            <div className="faq-answer">
-              <p>{item.answer}</p>
-            </div>
-          </details>
-        ))}
+    <section id="faq" className="alt-section faq-section" aria-labelledby="faq-heading">
+      <div className="alt-wrap">
+        <h2 id="faq-heading" className="alt-section-title">
+          {t('faq.title')}
+        </h2>
+
+        <div className="faq-list">
+          {faqData.map((item, index) => (
+            <details key={index} className="faq-item">
+              <summary className="faq-question">
+                <span className="faq-question-text">{item.question}</span>
+                <FaPlus className="faq-icon" aria-hidden="true" />
+              </summary>
+              <div className="faq-answer">
+                <p>{item.answer}</p>
+              </div>
+            </details>
+          ))}
+        </div>
       </div>
     </section>
   );

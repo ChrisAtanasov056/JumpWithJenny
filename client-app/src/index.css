@@ -77,14 +77,23 @@ summary {
 }
 
 .standalone-page-offset {
-  padding-top: 4.75rem;
+  padding-top: 5.5rem;
+}
+
+.altitude-public .standalone-page-offset {
+  min-height: 100dvh;
+  background: transparent;
 }
 
 .route-modal-page {
   min-height: 100vh;
   min-height: 100dvh;
   background: #ECF0F1;
-  padding-top: 4.75rem;
+  padding-top: 5.5rem;
+}
+
+.altitude-public .route-modal-page {
+  background: transparent;
 }
 
 .fa-spin {

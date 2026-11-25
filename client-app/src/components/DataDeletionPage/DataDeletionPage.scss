@@ -17,12 +17,12 @@ $mobile-breakpoint: 768px;
 .data-deletion-page {
   min-height: 100vh;
   min-height: 100dvh;
-  background: linear-gradient(135deg, $background-color 0%, color.adjust($background-color, $lightness: -5%) 100%);
+  background: transparent;
   padding: 5.5rem $spacing-unit * 3 $spacing-unit * 3;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-family: 'Inter', 'Segoe UI', sans-serif;
+  font-family: 'Golos Text', sans-serif;
 
   @media (max-width: $mobile-breakpoint) {
     padding: 5rem $spacing-unit $spacing-unit * 2;

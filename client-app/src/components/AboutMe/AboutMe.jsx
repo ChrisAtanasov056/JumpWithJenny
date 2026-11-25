@@ -1,66 +1,52 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React from 'react';
 import { useTranslation } from 'react-i18next';
 import './AboutMe.scss';
 
 const AboutMe = () => {
   const { t } = useTranslation();
-  const sectionRef = useRef(null);
-  const [isVisible, setIsVisible] = useState(() => {
-    if (typeof window === 'undefined') return true;
-    return window.matchMedia?.('(prefers-reduced-motion: reduce)').matches || !('IntersectionObserver' in window);
-  });
 
-  useEffect(() => {
-    if (isVisible) return;
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            setIsVisible(true);
-            observer.disconnect();
-          }
-        });
-      },
-      { threshold: 0.1, rootMargin: '0px 0px -40px 0px' }
-    );
-
-    const node = sectionRef.current;
-    if (node) {
-      observer.observe(node);
-    }
-
-    return () => observer.disconnect();
-  }, [isVisible]);
-
-  const paragraphs = String(t('about.content')).split('\n\n').filter(Boolean);
+  const rawHighlights = t('altitude.about.highlights', { returnObjects: true });
+  const highlights = Array.isArray(rawHighlights) ? rawHighlights : [];
 
   return (
     <section
       id="about"
-      ref={sectionRef}
-      className="about-section"
+      className="alt-section about-section"
       aria-labelledby="about-heading"
     >
-      <div className="about-container">
-        <div className={`about-text ${isVisible ? 'active' : ''}`}>
-          <h2 id="about-heading">{t('about.title')}</h2>
-          {paragraphs.map((paragraph, index) => (
-            <p key={index}>{paragraph}</p>
-          ))}
-        </div>
-        <div className={`about-image ${isVisible ? 'active' : ''}`}>
-          <picture>
-            <source srcSet="/images/jenny.webp" type="image/webp" />
-            <img
-              src="/images/jenny.jpg"
-              alt={t('about.title')}
-              loading="lazy"
-              decoding="async"
-              width={1200}
-              height={900}
-            />
-          </picture>
+      <div className="alt-wrap">
+        <h2 id="about-heading" className="alt-section-title">
+          {t('about.title')}
+        </h2>
+
+        <div className="about-grid">
+          <div className="about-portrait-wrap">
+            <picture>
+              <source srcSet="/images/jenny.webp" type="image/webp" />
+              <img
+                src="/images/jenny.jpg"
+                alt={t('about.title')}
+                className="about-portrait"
+                loading="lazy"
+                decoding="async"
+                width={640}
+                height={640}
+              />
+            </picture>
+          </div>
+
+          <div className="about-story">
+            <p className="about-lead">{t('altitude.about.lead')}</p>
+
+            <div className="about-highlights">
+              {highlights.map((item, idx) => (
+                <article key={idx} className="about-highlight-card">
+                  <h3>{item.title}</h3>
+                  <p>{item.text}</p>
+                </article>
+              ))}
+            </div>
+          </div>
         </div>
       </div>
     </section>

@@ -23,10 +23,10 @@ $mobile-breakpoint: 768px;
     display: flex;
     align-items: center;
     justify-content: center;
-    background: linear-gradient(135deg, $primary-color 0%, color.adjust($primary-color, $lightness: -10%) 100%);
+    background: transparent;
     overflow: hidden;
     position: relative;
-    font-family: 'Inter', 'Segoe UI', sans-serif;
+    font-family: 'Golos Text', sans-serif;
 }
 
 .background-elements {

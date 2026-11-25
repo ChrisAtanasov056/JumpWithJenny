@@ -1,18 +1,20 @@
 import React, { useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import './Home.scss';
+import { useScheduleWorkouts } from '../../hooks/useScheduleWorkouts';
+import Welcome from '../Welcome/Welcome';
 import Schedule from '../Schedule/Schedule';
 import AboutMe from '../AboutMe/AboutMe';
+import Gallery from '../Gallery/Gallery';
+import HappyCustomers from '../HappyCustomers/HappyCustomers';
 import FAQ from '../FAQ/FAQ';
 import Contacts from '../Contacts/Contacts';
 import Footer from '../Footer/Footer';
-import Welcome from '../Welcome/Welcome';
-import Gallery from '../Gallery/Gallery';
-import HappyCustomers from '../HappyCustomers/HappyCustomers';
 
 const Home = () => {
   const location = useLocation();
   const navigate = useNavigate();
+  const scheduleState = useScheduleWorkouts();
 
   useEffect(() => {
     const targetId = location.state?.scrollTo || (location.hash ? location.hash.slice(1) : null);
@@ -40,10 +42,13 @@ const Home = () => {
 
   return (
     <div className="home-page">
-      <Welcome />
+      <Welcome
+        workouts={scheduleState.workouts}
+        loadingWorkouts={scheduleState.loading}
+      />
+      <Schedule externalState={scheduleState} />
       <AboutMe />
       <Gallery />
-      <Schedule />
       <HappyCustomers />
       <FAQ />
       <Contacts />
