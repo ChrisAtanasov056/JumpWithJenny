@@ -6,8 +6,7 @@ namespace ServerAPI.ViewModels.Workout
     {
         public string Id { get; set; }
 
-        public string FirstName { get; set; }
-        public string LastName { get; set; }
+        public string FullName { get; set; }
 
         public string Email { get; set; }
 
@@ -15,5 +14,8 @@ namespace ServerAPI.ViewModels.Workout
 
         public bool UsesOwnShoes { get; set; }
 
+        public CardType CardType { get; set; }
+
+        public bool IsSubscriptionCard { get; set; }
     }
 }

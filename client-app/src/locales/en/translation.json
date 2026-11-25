@@ -123,7 +123,7 @@
         ]
     },
     "shoesTitle": "Kangoo Jumps Shoes",
-    "selectCardTitle": "Select Workout Card",
+    "selectCardTitle": "Visit Type (informational)",
     "days": {
         "monday": "Monday",
         "tuesday": "Tuesday",
@@ -331,17 +331,61 @@
     "errorCheckingRegistration": "Error checking registration status. Please try again.",
     "errorCancelRegistration": "Failed to cancel registration. Please try again.",
     "registrationError": "Failed to register for the workout. Please try again.",
+    "bookingForm": {
+        "contactDetailsTitle": "Booking Details",
+        "fullNameLabel": "Full Name",
+        "fullNamePlaceholder": "Enter your full name",
+        "emailLabel": "Email Address",
+        "emailPlaceholder": "name@example.com",
+        "errorFullName": "Please enter your full name (at least 2 characters).",
+        "errorEmail": "Please enter a valid email address.",
+        "onlyOwnShoesLeft": "All studio Kangoo Jumps shoes for this class are taken. You can still book if you bring your own shoes.",
+        "confirmationEmailNotice": "We sent a confirmation email with the class details and a 1-click cancellation link to {{email}}."
+    },
+    "cancelBooking": {
+        "loading": "Loading booking details...",
+        "notFoundTitle": "Booking Not Found",
+        "notFoundMessage": "This cancellation link is invalid or the booking has already been cancelled.",
+        "errorTitle": "Something Went Wrong",
+        "loadError": "Failed to load booking details. Please try again.",
+        "cancelError": "Failed to cancel booking. Please try again.",
+        "successTitle": "Booking Cancelled",
+        "successMessage": "Your spot and shoes have been released.",
+        "backToSchedule": "Back to Weekly Schedule",
+        "title": "Cancel Workout Booking",
+        "subtitle": "Please review your booking details and confirm cancellation.",
+        "participantLabel": "Participant:",
+        "dayLabel": "Day:",
+        "dateLabel": "Date:",
+        "timeLabel": "Time:",
+        "shoesLabel": "Shoes:",
+        "cancelling": "Cancelling...",
+        "confirmButton": "Confirm Cancellation",
+        "keepBooking": "Keep Booking",
+        "pastWorkoutNotice": "This workout has already started or passed and can no longer be cancelled online."
+    },
+    "adminLogin": {
+        "title": "Administrator Sign In",
+        "subtitle": "Sign in with your administrator account to manage classes.",
+        "unauthorized": "Access is restricted to administrators only.",
+        "backToSite": "Back to Website"
+    },
     "bookingErrors": {
         "WORKOUT_NOT_FOUND": "Workout was not found.",
         "USER_NOT_FOUND": "User account was not found.",
         "EMAIL_NOT_CONFIRMED": "Your account is not confirmed. Please confirm your email before registering.",
         "WORKOUT_PAST": "This workout has already started or passed.",
         "WORKOUT_NOT_AVAILABLE": "This workout is not open for registration.",
-        "ALREADY_REGISTERED": "You are already registered for this workout.",
+        "ALREADY_REGISTERED": "This email already has an active booking for this workout.",
+        "MAX_ACTIVE_BOOKINGS": "You can have at most 3 active upcoming bookings per email address.",
         "NO_AVAILABLE_SPOTS": "No available spots left for this workout.",
         "NO_AVAILABLE_SHOES": "No available shoes of the selected size.",
         "INVALID_SHOE_SIZE": "Please select a valid shoe size.",
-        "INVALID_CARD_TYPE": "Please select a valid workout card type.",
+        "INVALID_CARD_TYPE": "Please select a valid visit type.",
+        "INVALID_FULL_NAME": "Please enter a valid full name (2 to 120 characters).",
+        "INVALID_EMAIL": "Please enter a valid email address.",
+        "BOOKING_NOT_FOUND": "Booking was not found or has already been cancelled.",
+        "RATE_LIMITED": "Too many requests. Please wait a moment and try again.",
         "CONCURRENCY_CONFLICT": "Availability just changed. Please check available spots and try again."
     },
     "noShoes": "No shoes available",
@@ -374,7 +418,8 @@
             "workouts": "Workouts",
             "shoes": "Shoes",
             "photos": "Photos",
-            "backToSite": "Back to Main Site"
+            "backToSite": "Back to Main Site",
+            "logout": "Log Out"
         },
         "roles": {
             "user": "User",
@@ -522,6 +567,9 @@
                 "ownShoes": "Own shoes",
                 "notAssigned": "Not assigned",
                 "card": "Card:",
+                "visitType": "Visit type:",
+                "subscriptionCard": "Subscription Card",
+                "singleVisit": "Single Visit",
                 "notSpecified": "Not specified",
                 "noClients": "No clients have registered for this workout yet."
             }

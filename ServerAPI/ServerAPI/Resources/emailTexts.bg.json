@@ -11,16 +11,39 @@
     "AllRightsReserved": "Всички права запазени.",
     "ContactUs": "Контакт с нас"
   },
-    "VerifyEmail": {
-      "Subject": "Потвърждение на имейл",
-      "Heading": "Потвърждение на имейл адрес",
-      "Greeting": "Здравейте",
-      "Instructions": "Моля потвърдете вашия имейл адрес като кликнете върху бутона по-долу:",
-      "ButtonText": "Потвърди имейл",
-      "ExpiryNote": "Връзката ще изтече след 24 часа.",
-      "NoRequestNote": "Ако не сте направили тази заявка, моля игнорирайте този имейл.",
-      "Signature": "С уважение,<br>Екипът на Jump With Jenny",
-      "AllRightsReserved": "Всички права запазени",
-      "ContactUs": "Свържете се с нас"
-    }
+  "VerifyEmail": {
+    "Subject": "Потвърждение на имейл",
+    "Heading": "Потвърждение на имейл адрес",
+    "Greeting": "Здравейте",
+    "Instructions": "Моля потвърдете вашия имейл адрес като кликнете върху бутона по-долу:",
+    "ButtonText": "Потвърди имейл",
+    "ExpiryNote": "Връзката ще изтече след 24 часа.",
+    "NoRequestNote": "Ако не сте направили тази заявка, моля игнорирайте този имейл.",
+    "Signature": "С уважение,<br>Екипът на Jump With Jenny",
+    "AllRightsReserved": "Всички права запазени",
+    "ContactUs": "Свържете се с нас"
+  },
+  "BookingConfirmation": {
+    "Subject": "Потвърдена резервация за Kangoo Jumps",
+    "Heading": "Вашето място е запазено!",
+    "Greeting": "Здравейте",
+    "Intro": "Успешно се записахте за тренировка по Kangoo Jumps в Jump With Jenny. Ето детайлите за Вашия час:",
+    "DayLabel": "Ден",
+    "DateLabel": "Дата",
+    "TimeLabel": "Час",
+    "ShoesLabel": "Обувки",
+    "OwnShoesValue": "Собствени обувки",
+    "ShoeSizePrefix": "Размер",
+    "VisitTypeLabel": "Посещение",
+    "CardCoolFit": "Абонаментна карта CoolFit",
+    "CardPulse": "Абонаментна карта Pulse Fitness",
+    "CardIndividual": "Единично посещение",
+    "LocationLabel": "Локация",
+    "LocationValue": "ж.к. Зорница, 75, партер, Бургас",
+    "CancelInstructions": "Ако плановете Ви се променят, можете да отмените резервацията си с един клик от бутона по-долу, за да освободите мястото и обувките:",
+    "CancelButtonText": "Отмени резервацията",
+    "Signature": "Очакваме Ви с настроение!<br>Жени — Jump With Jenny",
+    "AllRightsReserved": "Всички права запазени.",
+    "ContactUs": "Свържете се с нас"
+  }
 }

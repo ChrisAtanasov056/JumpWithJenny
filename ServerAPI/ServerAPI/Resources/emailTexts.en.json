@@ -1,15 +1,15 @@
 {
-    "ResetPassword": {
-      "Subject": "Password Reset Request",
-      "Heading": "Reset Your Password",
-      "Greeting": "Hello",
-      "Instructions": "We received a request to reset your password. Click the button below to set a new password:",
-      "ButtonText": "Reset Password",
-      "ExpiryNote": "This link will expire in 24 hours.",
-      "NoRequestNote": "If you didn't request a password reset, please ignore this email.",
-      "Signature": "Best regards,<br>The Jump With Jenny Team",
-      "AllRightsReserved": "All rights reserved.",
-      "ContactUs": "Contact Us"  
+  "ResetPassword": {
+    "Subject": "Password Reset Request",
+    "Heading": "Reset Your Password",
+    "Greeting": "Hello",
+    "Instructions": "We received a request to reset your password. Click the button below to set a new password:",
+    "ButtonText": "Reset Password",
+    "ExpiryNote": "This link will expire in 24 hours.",
+    "NoRequestNote": "If you didn't request a password reset, please ignore this email.",
+    "Signature": "Best regards,<br>The Jump With Jenny Team",
+    "AllRightsReserved": "All rights reserved.",
+    "ContactUs": "Contact Us"
   },
   "VerifyEmail": {
     "Subject": "Verify Your Email",
@@ -22,6 +22,28 @@
     "Signature": "Best regards,<br>Your Jump With Jenny Team",
     "AllRightsReserved": "All rights reserved",
     "ContactUs": "Contact us"
+  },
+  "BookingConfirmation": {
+    "Subject": "Kangoo Jumps Workout Booking Confirmed",
+    "Heading": "Your spot is reserved!",
+    "Greeting": "Hello",
+    "Intro": "You are successfully booked for a Kangoo Jumps class at Jump With Jenny. Here are your session details:",
+    "DayLabel": "Day",
+    "DateLabel": "Date",
+    "TimeLabel": "Time",
+    "ShoesLabel": "Shoes",
+    "OwnShoesValue": "Own shoes",
+    "ShoeSizePrefix": "Size",
+    "VisitTypeLabel": "Visit type",
+    "CardCoolFit": "CoolFit Card",
+    "CardPulse": "Pulse Fitness Card",
+    "CardIndividual": "Single Visit",
+    "LocationLabel": "Location",
+    "LocationValue": "Zornitsa Complex 75, ground floor, Burgas",
+    "CancelInstructions": "If your plans change, you can cancel your booking in one click using the button below to free up the spot and shoes:",
+    "CancelButtonText": "Cancel Booking",
+    "Signature": "See you in class!<br>Jenny — Jump With Jenny",
+    "AllRightsReserved": "All rights reserved.",
+    "ContactUs": "Contact us"
   }
 }
-  

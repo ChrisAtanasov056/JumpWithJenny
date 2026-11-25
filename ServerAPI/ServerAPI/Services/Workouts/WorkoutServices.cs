@@ -164,10 +164,15 @@ namespace ServerAPI.Services.Workouts
                         {
                             Id = a.Id,
                             UserId = a.UserId,
-                            UserFullName = a.User != null ? (a.User.FirstName + " " + a.User.LastName).Trim() : "Deleted User",
-                            UserEmail = a.User != null ? a.User.Email : string.Empty,
+                            UserFullName = !string.IsNullOrWhiteSpace(a.FullName)
+                                ? a.FullName
+                                : (a.User != null ? (a.User.FirstName + " " + a.User.LastName).Trim() : "Guest"),
+                            UserEmail = !string.IsNullOrWhiteSpace(a.Email)
+                                ? a.Email
+                                : (a.User != null ? a.User.Email : string.Empty),
                             ShoeId = a.ShoeId,
-                            CardType = a.CardType,
+                            CardType = a.CardType ?? CardType.IndividualWorkout,
+                            IsSubscriptionCard = a.CardType == CardType.CoolFit || a.CardType == CardType.PulseCard,
                             ShoeSize = a.Shoe != null ? a.Shoe.Size : (ShoesSize?)null,
                             UsesOwnShoes = a.UsesOwnShoes,
                         }).ToList()
@@ -218,14 +223,20 @@ namespace ServerAPI.Services.Workouts
         {
             return await _appointmentRepository.AllAsNoTracking()
                 .Where(a => a.WorkoutId == workoutId)
+                .OrderBy(a => a.CreatedOn)
                 .Select(a => new GetParticipantsModel
                 {
-                    Id = a.UserId,
-                    FirstName = a.User != null ? a.User.FirstName : null,
-                    LastName = a.User != null ? a.User.LastName : null,
-                    Email = a.User != null ? a.User.Email : null,
+                    Id = a.Id,
+                    FullName = !string.IsNullOrWhiteSpace(a.FullName)
+                        ? a.FullName
+                        : (a.User != null ? (a.User.FirstName + " " + a.User.LastName).Trim() : "Guest"),
+                    Email = !string.IsNullOrWhiteSpace(a.Email)
+                        ? a.Email
+                        : (a.User != null ? a.User.Email : string.Empty),
                     ShoeSize = a.Shoe != null ? a.Shoe.Size : (ShoesSize?)null,
                     UsesOwnShoes = a.UsesOwnShoes,
+                    CardType = a.CardType ?? CardType.IndividualWorkout,
+                    IsSubscriptionCard = a.CardType == CardType.CoolFit || a.CardType == CardType.PulseCard,
                 })
                 .ToListAsync();
         }
@@ -379,9 +390,14 @@ namespace ServerAPI.Services.Workouts
                         {
                             Id = a.Id,
                             UserId = a.UserId,
-                            UserFullName = a.User != null ? (a.User.FirstName + " " + a.User.LastName).Trim() : "Deleted User",
-                            UserEmail = a.User != null ? a.User.Email : string.Empty,
-                            CardType = a.CardType,
+                            UserFullName = !string.IsNullOrWhiteSpace(a.FullName)
+                                ? a.FullName
+                                : (a.User != null ? (a.User.FirstName + " " + a.User.LastName).Trim() : "Guest"),
+                            UserEmail = !string.IsNullOrWhiteSpace(a.Email)
+                                ? a.Email
+                                : (a.User != null ? a.User.Email : string.Empty),
+                            CardType = a.CardType ?? CardType.IndividualWorkout,
+                            IsSubscriptionCard = a.CardType == CardType.CoolFit || a.CardType == CardType.PulseCard,
                             ShoeId = a.ShoeId,
                             ShoeSize = a.Shoe != null ? a.Shoe.Size : (ShoesSize?)null,
                             UsesOwnShoes = a.UsesOwnShoes

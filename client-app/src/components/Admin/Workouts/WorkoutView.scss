@@ -187,6 +187,23 @@ $mobile-breakpoint: 768px;
           color: $text-color-dark;
           margin-right: 5px;
         }
+        .visit-badge {
+          display: inline-block;
+          padding: 2px 8px;
+          border-radius: 999px;
+          font-size: 0.8rem;
+          font-weight: 600;
+
+          &.subscription-card {
+            background: #e3f2fd;
+            color: #1565c0;
+          }
+
+          &.single-visit {
+            background: #e8f5e9;
+            color: #2e7d32;
+          }
+        }
       }
     }
   }

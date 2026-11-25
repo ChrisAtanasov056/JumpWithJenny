@@ -12,7 +12,11 @@ namespace ServerAPI.Models.Schedule
         NoAvailableShoes,
         InvalidShoeSize,
         InvalidCardType,
-        ConcurrencyConflict
+        ConcurrencyConflict,
+        InvalidFullName,
+        InvalidEmail,
+        MaxActiveBookingsReached,
+        BookingNotFound
     }
 
     public class ScheduleBookingException : Exception

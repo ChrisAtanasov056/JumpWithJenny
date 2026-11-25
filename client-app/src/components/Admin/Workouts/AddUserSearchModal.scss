@@ -58,19 +58,27 @@ $box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
   color: #333;
 }
 
-.add-user-modal input[type="text"] {
+.add-user-modal input[type="text"],
+.add-user-modal input[type="email"] {
   width: 100%;
   padding: 10px;
-  margin-bottom: 12px;
+  margin-bottom: 4px;
   border: 1px solid #ddd;
   border-radius: 6px;
   background: #f9f9f9;
   outline: none;
   transition: border-color 0.2s;
+
+  &:focus {
+    border-color: #007bff;
+  }
 }
 
-.add-user-modal input[type="text"]:focus {
-  border-color: #007bff;
+.add-user-modal .error {
+  color: #c0392b;
+  font-size: 0.88rem;
+  font-weight: 600;
+  margin-bottom: 10px;
 }
 
 .add-user-modal .user-results {

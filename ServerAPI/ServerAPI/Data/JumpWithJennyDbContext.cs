@@ -54,7 +54,26 @@
 
             builder
                 .Entity<Appointment>()
-                .HasKey(k => new { k.UserId, k.WorkoutId });
+                .HasKey(a => a.Id);
+
+            builder.Entity<Appointment>()
+                .HasOne(a => a.User)
+                .WithMany(u => u.Appointments)
+                .HasForeignKey(a => a.UserId)
+                .IsRequired(false)
+                .OnDelete(DeleteBehavior.SetNull);
+
+            builder.Entity<Appointment>()
+                .HasIndex(a => new { a.WorkoutId, a.NormalizedEmail })
+                .IsUnique()
+                .HasFilter("\"IsDeleted\" = false");
+
+            builder.Entity<Appointment>()
+                .HasIndex(a => a.CancellationToken)
+                .IsUnique();
+
+            builder.Entity<Appointment>()
+                .HasIndex(a => new { a.NormalizedEmail, a.IsDeleted });
 
             builder.Entity<Appointment>()
                 .HasIndex(a => new { a.WorkoutId, a.ShoeId })

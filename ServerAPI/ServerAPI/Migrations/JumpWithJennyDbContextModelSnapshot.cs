@@ -130,11 +130,13 @@ namespace ServerAPI.Migrations
 
             modelBuilder.Entity("ServerAPI.Models.Appointment", b =>
                 {
-                    b.Property<string>("UserId")
+                    b.Property<string>("Id")
                         .HasColumnType("text");
 
-                    b.Property<string>("WorkoutId")
-                        .HasColumnType("text");
+                    b.Property<string>("CancellationToken")
+                        .IsRequired()
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)");
 
                     b.Property<int?>("CardType")
                         .HasColumnType("integer");
@@ -145,8 +147,15 @@ namespace ServerAPI.Migrations
                     b.Property<DateTime?>("DeletedOn")
                         .HasColumnType("timestamp without time zone");
 
-                    b.Property<string>("Id")
-                        .HasColumnType("text");
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasMaxLength(254)
+                        .HasColumnType("character varying(254)");
+
+                    b.Property<string>("FullName")
+                        .IsRequired()
+                        .HasMaxLength(120)
+                        .HasColumnType("character varying(120)");
 
                     b.Property<bool>("IsConfirmed")
                         .HasColumnType("boolean");
@@ -157,17 +166,40 @@ namespace ServerAPI.Migrations
                     b.Property<DateTime?>("ModifiedOn")
                         .HasColumnType("timestamp without time zone");
 
+                    b.Property<string>("NormalizedEmail")
+                        .IsRequired()
+                        .HasMaxLength(254)
+                        .HasColumnType("character varying(254)");
+
                     b.Property<string>("ShoeId")
+                        .HasColumnType("text");
+
+                    b.Property<string>("UserId")
                         .HasColumnType("text");
 
                     b.Property<bool>("UsesOwnShoes")
                         .HasColumnType("boolean");
 
-                    b.HasKey("UserId", "WorkoutId");
+                    b.Property<string>("WorkoutId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CancellationToken")
+                        .IsUnique();
 
                     b.HasIndex("ShoeId");
 
+                    b.HasIndex("UserId");
+
+                    b.HasIndex("NormalizedEmail", "IsDeleted");
+
                     b.HasIndex("WorkoutId", "IsDeleted");
+
+                    b.HasIndex("WorkoutId", "NormalizedEmail")
+                        .IsUnique()
+                        .HasFilter("\"IsDeleted\" = false");
 
                     b.HasIndex("WorkoutId", "ShoeId")
                         .IsUnique()
@@ -619,8 +651,7 @@ namespace ServerAPI.Migrations
                     b.HasOne("ServerAPI.Models.User", "User")
                         .WithMany("Appointments")
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.SetNull);
 
                     b.HasOne("ServerAPI.Models.Workout", "Workout")
                         .WithMany("Appointments")

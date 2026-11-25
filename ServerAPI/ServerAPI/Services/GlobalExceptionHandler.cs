@@ -97,8 +97,8 @@ namespace ServerAPI.Services
                 case ScheduleBookingException bookingEx:
                     var bookingStatus = bookingEx.ErrorCode switch
                     {
-                        BookingErrorCode.WorkoutNotFound or BookingErrorCode.UserNotFound => StatusCodes.Status404NotFound,
-                        BookingErrorCode.AlreadyRegistered or BookingErrorCode.NoAvailableSpots or BookingErrorCode.NoAvailableShoes or BookingErrorCode.ConcurrencyConflict => StatusCodes.Status409Conflict,
+                        BookingErrorCode.WorkoutNotFound or BookingErrorCode.UserNotFound or BookingErrorCode.BookingNotFound => StatusCodes.Status404NotFound,
+                        BookingErrorCode.AlreadyRegistered or BookingErrorCode.MaxActiveBookingsReached or BookingErrorCode.NoAvailableSpots or BookingErrorCode.NoAvailableShoes or BookingErrorCode.ConcurrencyConflict => StatusCodes.Status409Conflict,
                         _ => StatusCodes.Status400BadRequest,
                     };
                     return (bookingStatus, GetDefaultTitle(bookingStatus), bookingEx.Message, bookingEx.Code);

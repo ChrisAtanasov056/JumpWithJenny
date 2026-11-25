@@ -1,10 +1,17 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import WorkoutService from '../../../services/WorkoutSevices';
 import AddUserSearchModal from './AddUserSearchModal';
 import { formatWorkoutDateForInput } from '../../../utils/workoutDate';
 import './WorkoutForm.scss';
+
+const shoeSizeLabels = {
+  1: 'S',
+  2: 'M',
+  3: 'L',
+  4: 'XL',
+};
 
 const WorkoutForm = () => {
   const { t } = useTranslation();
@@ -17,7 +24,7 @@ const WorkoutForm = () => {
     Date: '',
     Status: 'Available',
     AvailableSpots: 20,
-    Appointments: []
+    Appointments: [],
   });
 
   const [loading, setLoading] = useState(false);
@@ -25,33 +32,17 @@ const WorkoutForm = () => {
   const [successMessage, setSuccessMessage] = useState('');
   const [showUserSearch, setShowUserSearch] = useState(false);
 
-  const searchUsers = useCallback(async (query) => {
-    try {
-      return await WorkoutService.searchUsers(query);
-    } catch (err) {
-      console.error('User search failed', err);
-      return [];
-    }
-  }, []);
-
   const addParticipant = async (participant) => {
-    const { userId, shoeSize, cardType, usesOwnShoes } = participant;
-    const updatedWorkout = await WorkoutService.addParticipantToWorkout(
-      id,
-      userId,
-      shoeSize,
-      cardType,
-      usesOwnShoes
-    );
+    const updatedWorkout = await WorkoutService.addParticipantToWorkout(id, participant);
     setWorkout({
       ...updatedWorkout,
       Date: formatWorkoutDateForInput(updatedWorkout.Date),
     });
   };
 
-  const removeParticipant = async (participantId) => {
+  const removeParticipant = async (appointmentId) => {
     try {
-      await WorkoutService.removeParticipantFromWorkout(id, participantId);
+      await WorkoutService.removeParticipantFromWorkout(appointmentId);
       const refreshed = await WorkoutService.getWorkoutById(id);
       setWorkout({
         ...refreshed,
@@ -82,7 +73,7 @@ const WorkoutForm = () => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setWorkout(prev => ({ ...prev, [name]: value }));
+    setWorkout((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleSubmit = async (e) => {
@@ -113,6 +104,12 @@ const WorkoutForm = () => {
     }
   };
 
+  const cardTypeLabels = {
+    1: t('admin.workouts.cardTypes.coolfit'),
+    2: t('admin.workouts.cardTypes.pulse'),
+    3: t('admin.workouts.cardTypes.individual'),
+  };
+
   return (
     <div className="workout-form">
       <h2>{id ? t('admin.workouts.editTitle') : t('admin.workouts.addTitle')}</h2>
@@ -125,7 +122,7 @@ const WorkoutForm = () => {
           <div className="form-group">
             <label htmlFor="workout-day">{t('admin.workouts.table.day')}</label>
             <select id="workout-day" name="Day" value={workout.Day} onChange={handleChange} required>
-              {['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'].map(day => (
+              {['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'].map((day) => (
                 <option key={day} value={day}>{t(`days.${day.toLowerCase()}`)}</option>
               ))}
             </select>
@@ -155,7 +152,7 @@ const WorkoutForm = () => {
           <div className="form-group">
             <label htmlFor="workout-status">{t('admin.workouts.table.status')}</label>
             <select id="workout-status" name="Status" value={workout.Status} onChange={handleChange}>
-              {['Available', 'Booked', 'Completed', 'Cancelled'].map(status => (
+              {['Available', 'Booked', 'Completed', 'Cancelled'].map((status) => (
                 <option key={status} value={status}>{t(`admin.workouts.statuses.${status.toLowerCase()}`)}</option>
               ))}
             </select>
@@ -181,19 +178,28 @@ const WorkoutForm = () => {
             <h3>{t('admin.workouts.participants')}</h3>
             {workout.Appointments?.length === 0 && <p>{t('admin.workouts.noParticipants')}</p>}
 
-            {workout.Appointments?.map((appointment) => (
-              <div key={appointment.Id || appointment.UserId} className="participant-display">
-                <span>{appointment.UserFullName} ({appointment.UserEmail})</span>
-                <button
-                  type="button"
-                  onClick={() => removeParticipant(appointment.UserId)}
-                  className="btn-remove"
-                  aria-label={t('admin.workouts.removeParticipantAria')}
-                >
-                  ×
-                </button>
-              </div>
-            ))}
+            {workout.Appointments?.map((appointment) => {
+              const shoeText = appointment.UsesOwnShoes
+                ? t('admin.workouts.view.ownShoes')
+                : (shoeSizeLabels[Number(appointment.ShoeSize)] || t('admin.workouts.view.notAssigned'));
+              const visitText = cardTypeLabels[appointment.CardType] || t('admin.workouts.cardTypes.individual');
+
+              return (
+                <div key={appointment.Id} className="participant-display">
+                  <span>
+                    {appointment.UserFullName} ({appointment.UserEmail}) — {shoeText} · {visitText}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => removeParticipant(appointment.Id)}
+                    className="btn-remove"
+                    aria-label={t('admin.workouts.removeParticipantAria')}
+                  >
+                    ×
+                  </button>
+                </div>
+              );
+            })}
 
             <div className="add-participant">
               <button
@@ -224,7 +230,6 @@ const WorkoutForm = () => {
         visible={showUserSearch}
         onClose={() => setShowUserSearch(false)}
         onConfirm={addParticipant}
-        searchUsers={searchUsers}
       />
     </div>
   );

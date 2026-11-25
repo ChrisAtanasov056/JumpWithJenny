@@ -96,6 +96,14 @@ namespace ServerAPI.Controllers
             return Ok(workout);
         }
 
+        // GET: api/admin/workouts/{id}/participants
+        [HttpGet("workouts/{id}/participants")]
+        public async Task<IActionResult> GetWorkoutParticipants(string id)
+        {
+            var participants = await _workoutService.GetParticipantsAsync(id);
+            return Ok(participants);
+        }
+
         // POST: /api/Admin/add/participant
         [HttpPost("add/participant")]
         public async Task<IActionResult> AddParticipantToWorkout([FromQuery] string id = null, [FromBody] ApplyForWorkoutRequest request = null)
@@ -106,38 +114,35 @@ namespace ServerAPI.Controllers
             }
 
             var workoutId = !string.IsNullOrWhiteSpace(request.WorkoutId) ? request.WorkoutId : id;
+            request.WorkoutId = workoutId;
 
             await _scheduleService.ApplyForWorkoutAsync(
-                workoutId,
-                request.ShoeSize,
-                request.CardType,
-                request.UserId,
-                request.UsesOwnShoes,
-                requireConfirmedEmail: false,
-                allowPastWorkout: true
-            );
+                request,
+                allowPastWorkout: true,
+                enforceBookingLimits: false,
+                sendConfirmationEmail: false);
 
             var adminWorkout = await _workoutService.GetWorkoutByIdAsync(workoutId);
-            _logger.LogInformation("Participant {UserId} added to workout {WorkoutId}", request.UserId, workoutId);
+            _logger.LogInformation("Participant {Email} added to workout {WorkoutId}", request.Email, workoutId);
             return Ok(adminWorkout);
         }
 
         [HttpDelete("remove/participant")]
-        public async Task<IActionResult> RemoveParticipantFromWorkout([FromQuery] string workoutId, [FromQuery] string userId)
+        public async Task<IActionResult> RemoveParticipantFromWorkout([FromQuery] string appointmentId)
         {
-            if (string.IsNullOrEmpty(workoutId) || string.IsNullOrEmpty(userId))
+            if (string.IsNullOrWhiteSpace(appointmentId))
             {
-                return BadRequest(new { message = "Workout ID and User ID must be provided." });
+                return BadRequest(new { message = "Appointment ID must be provided." });
             }
 
-            var success = await _scheduleService.CancelRegistrationAsync(workoutId, userId, allowPastWorkout: true);
+            var success = await _scheduleService.CancelRegistrationByIdAsync(appointmentId, allowPastWorkout: true);
 
             if (!success)
             {
-                return NotFound(new { code = "REGISTRATION_NOT_FOUND", message = "Participant registration not found." });
+                return NotFound(new { code = "BOOKING_NOT_FOUND", message = "Participant registration not found." });
             }
 
-            _logger.LogInformation("Participant {UserId} removed from workout {WorkoutId}", userId, workoutId);
+            _logger.LogInformation("Participant appointment {AppointmentId} removed by admin", appointmentId);
             return Ok(new { Message = "Participant removed successfully." });
         }
 

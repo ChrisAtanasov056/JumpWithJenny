@@ -83,6 +83,16 @@ namespace ServerAPI.Services.AuthService
             }
 
             var roles = await _userManager.GetRolesAsync(user);
+            if (!roles.Any(r => string.Equals(r, GlobalConstants.AdministratorRoleName, StringComparison.OrdinalIgnoreCase)))
+            {
+                _logger.LogWarning("Rejected non-administrator login attempt for user {UserId}", user.Id);
+                return new AuthResult
+                {
+                    Success = false,
+                    Errors = new[] { "Invalid email or password" }
+                };
+            }
+
             var jwtToken = _jwtTokenService.GenerateJwtToken(user, roles);
 
             _logger.LogInformation("Rotating refresh token on login for user {UserId}", user.Id);
@@ -165,6 +175,16 @@ namespace ServerAPI.Services.AuthService
             }
 
             var roles = await _userManager.GetRolesAsync(user);
+            if (!roles.Any(r => string.Equals(r, GlobalConstants.AdministratorRoleName, StringComparison.OrdinalIgnoreCase)))
+            {
+                _logger.LogWarning("Rejected non-administrator login attempt for user {UserId}", user.Id);
+                return new AuthResult
+                {
+                    Success = false,
+                    Errors = new[] { "Invalid email or password" }
+                };
+            }
+
             var jwtToken = _jwtTokenService.GenerateJwtToken(user, roles);
             var rawRefreshToken = await RefreshTokenHelper.RotateUserRefreshTokensAsync(_dbContext, user.Id);
 
@@ -290,6 +310,12 @@ namespace ServerAPI.Services.AuthService
             if (user == null || user.IsDeleted)
             {
                 // For security, return success even if user doesn't exist
+                return new AuthResult { Success = true };
+            }
+
+            var roles = await _userManager.GetRolesAsync(user);
+            if (!roles.Any(r => string.Equals(r, GlobalConstants.AdministratorRoleName, StringComparison.OrdinalIgnoreCase)))
+            {
                 return new AuthResult { Success = true };
             }
 
@@ -599,11 +625,20 @@ namespace ServerAPI.Services.AuthService
             try
             {
                 var languageFile = $"emailTexts.{language}.json";
-                var jsonContent = await File.ReadAllTextAsync(Path.Combine("Resources", languageFile));
+                var baseResources = Path.Combine(AppContext.BaseDirectory, "Resources");
+                var fallbackResources = Path.Combine(Directory.GetCurrentDirectory(), "Resources");
+                var jsonPath = File.Exists(Path.Combine(baseResources, languageFile))
+                    ? Path.Combine(baseResources, languageFile)
+                    : Path.Combine(fallbackResources, languageFile);
+                var layoutPath = File.Exists(Path.Combine(baseResources, "EmailTemplate.html"))
+                    ? Path.Combine(baseResources, "EmailTemplate.html")
+                    : Path.Combine(fallbackResources, "EmailTemplate.html");
+
+                var jsonContent = await File.ReadAllTextAsync(jsonPath);
                 dynamic emailTexts = JsonConvert.DeserializeObject(jsonContent);
                 dynamic templateContent = emailTexts[templateName];
 
-                var emailLayout = await File.ReadAllTextAsync(Path.Combine("Resources", "EmailTemplate.html"));
+                var emailLayout = await File.ReadAllTextAsync(layoutPath);
                 
                 var resetButton = $@"<table cellpadding='0' cellspacing='0' border='0' align='center'>
                                 <tr><td align='center'>

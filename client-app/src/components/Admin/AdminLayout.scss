@@ -72,6 +72,21 @@ $border-radius: 8px;
           font-weight: 600;
           box-shadow: 0 4px 10px rgba(52, 152, 219, 0.2);
         }
+
+        &.nav-logout-btn {
+          width: 100%;
+          background: none;
+          border: none;
+          text-align: left;
+          cursor: pointer;
+          color: #c0392b;
+          font-weight: 500;
+
+          &:hover {
+            background-color: #fdecea;
+            color: #a92d20;
+          }
+        }
       }
     }
   }

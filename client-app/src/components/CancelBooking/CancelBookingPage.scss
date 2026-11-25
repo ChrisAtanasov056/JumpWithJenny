@@ -1,0 +1,221 @@
+@use "sass:color";
+
+$primary-color: #D81B4E;
+$secondary-color: #2c3e50;
+$muted-text: #546678;
+
+.cancel-booking-page {
+  min-height: calc(100vh - 90px);
+  min-height: calc(100dvh - 90px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2.5rem 1rem;
+  background: linear-gradient(180deg, #f8fafc 0%, #ffffff 100%);
+}
+
+.cancel-booking-card {
+  width: 100%;
+  max-width: 500px;
+  background: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 12px 32px rgba(44, 62, 80, 0.12);
+  padding: 2.25rem 2rem;
+  color: $secondary-color;
+
+  @media (max-width: 576px) {
+    padding: 1.75rem 1.25rem;
+  }
+
+  .cancel-state {
+    text-align: center;
+
+    .state-icon {
+      font-size: 3rem;
+      margin-bottom: 1rem;
+
+      &.spin {
+        color: #1d6fa5;
+        animation: cancelSpin 1s linear infinite;
+      }
+
+      &.success {
+        color: #1e8449;
+      }
+
+      &.warning {
+        color: #c0392b;
+      }
+    }
+
+    h1 {
+      font-size: 1.55rem;
+      font-weight: 700;
+      margin: 0 0 0.75rem;
+      color: $secondary-color;
+    }
+
+    p {
+      font-size: 1rem;
+      color: $muted-text;
+      margin: 0 0 1.5rem;
+      line-height: 1.55;
+    }
+  }
+
+  .cancel-header {
+    text-align: center;
+    margin-bottom: 1.5rem;
+
+    .header-icon {
+      font-size: 2.5rem;
+      color: $primary-color;
+      margin-bottom: 0.75rem;
+    }
+
+    h1 {
+      font-size: 1.55rem;
+      font-weight: 700;
+      margin: 0 0 0.45rem;
+      color: $secondary-color;
+    }
+
+    p {
+      font-size: 0.95rem;
+      color: $muted-text;
+      margin: 0;
+    }
+  }
+
+  .booking-summary {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 1rem 1.25rem;
+    margin-bottom: 1.5rem;
+
+    .summary-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1rem;
+      padding: 0.55rem 0;
+      border-bottom: 1px solid #e9eef5;
+
+      &:last-child {
+        border-bottom: none;
+      }
+
+      .summary-label {
+        font-weight: 600;
+        color: $muted-text;
+        font-size: 0.92rem;
+      }
+
+      .summary-value {
+        font-weight: 600;
+        color: $secondary-color;
+        text-align: right;
+      }
+    }
+  }
+
+  .cancel-error-alert {
+    background: #fdecea;
+    color: #a92d20;
+    border: 1px solid #f5c6cb;
+    border-radius: 8px;
+    padding: 0.75rem 1rem;
+    font-size: 0.92rem;
+    margin-bottom: 1.25rem;
+    text-align: center;
+  }
+
+  .cancel-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+
+    .btn-confirm-cancel {
+      width: 100%;
+      min-height: 46px;
+      padding: 0.85rem 1.25rem;
+      border: none;
+      border-radius: 50px;
+      background: #c0392b;
+      color: #ffffff;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background-color 0.25s ease, transform 0.25s ease;
+
+      &:hover:not(:disabled) {
+        background: #a92d20;
+        transform: translateY(-1px);
+      }
+
+      &:disabled {
+        opacity: 0.65;
+        cursor: not-allowed;
+      }
+    }
+
+    .btn-secondary-link {
+      display: inline-flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 44px;
+      padding: 0.75rem 1.25rem;
+      border-radius: 50px;
+      border: 1px solid #cbd5e1;
+      color: $secondary-color;
+      text-decoration: none;
+      font-weight: 600;
+      transition: background-color 0.25s ease;
+
+      &:hover {
+        background: #f1f5f9;
+      }
+    }
+  }
+
+  .cancel-past-notice {
+    text-align: center;
+
+    p {
+      color: #7d5a12;
+      background: #fff8e6;
+      border: 1px solid #f6d58e;
+      border-radius: 8px;
+      padding: 0.75rem 1rem;
+      margin-bottom: 1.25rem;
+    }
+  }
+
+  .btn-primary-link {
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 44px;
+    padding: 0.75rem 1.75rem;
+    border-radius: 50px;
+    background: $primary-color;
+    color: #ffffff;
+    text-decoration: none;
+    font-weight: 600;
+    transition: background-color 0.25s ease;
+
+    &:hover {
+      background: color.adjust($primary-color, $lightness: -10%);
+    }
+  }
+}
+
+@keyframes cancelSpin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}

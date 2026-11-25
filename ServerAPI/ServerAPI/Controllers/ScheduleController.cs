@@ -1,9 +1,8 @@
-﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using ServerAPI.Models.Schedule;
 using ServerAPI.Services.Schedule;
-using System.Security.Claims;
 using System.Threading;
 
 namespace ServerAPI.Controllers
@@ -22,6 +21,7 @@ namespace ServerAPI.Controllers
         }
 
         [HttpGet]
+        [AllowAnonymous]
         public async Task<IActionResult> GetAllWorkouts(
             [FromQuery] int page = 1,
             [FromQuery] int pageSize = 50,
@@ -32,6 +32,7 @@ namespace ServerAPI.Controllers
         }
 
         [HttpGet("{id}")]
+        [AllowAnonymous]
         public async Task<IActionResult> GetWorkoutById(string id)
         {
             var workout = await _scheduleService.GetWorkoutByIdAsync(id);
@@ -66,7 +67,8 @@ namespace ServerAPI.Controllers
         }
 
         [HttpPost("apply")]
-        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+        [AllowAnonymous]
+        [EnableRateLimiting("BookingPolicy")]
         public async Task<IActionResult> ApplyForWorkout([FromBody] ApplyForWorkoutRequest request)
         {
             if (request == null)
@@ -74,17 +76,13 @@ namespace ServerAPI.Controllers
                 return BadRequest(new { code = "INVALID_REQUEST", message = "Request body is required." });
             }
 
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            _logger.LogInformation("Received request to apply for workout: {WorkoutId} with userId: {UserId}", request.WorkoutId, userId);
+            _logger.LogInformation("Received public booking request for workout {WorkoutId}", request.WorkoutId);
 
             var updatedWorkout = await _scheduleService.ApplyForWorkoutAsync(
-                request.WorkoutId,
-                request.ShoeSize,
-                request.CardType,
-                userId,
-                request.UsesOwnShoes,
-                requireConfirmedEmail: true
-            );
+                request,
+                allowPastWorkout: false,
+                enforceBookingLimits: true,
+                sendConfirmationEmail: true);
 
             return Ok(new
             {
@@ -93,35 +91,21 @@ namespace ServerAPI.Controllers
             });
         }
 
-        [HttpGet("is-registered/{workoutId}")]
-        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
-        public async Task<ActionResult<bool>> IsUserRegistered(string workoutId)
+        [HttpGet("cancel/{token}")]
+        [AllowAnonymous]
+        [EnableRateLimiting("CancelBookingPolicy")]
+        public async Task<IActionResult> GetBookingByCancellationToken(string token)
         {
-            _logger.LogInformation("Checking registration status for workout {WorkoutId}", workoutId);
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-
-            if (string.IsNullOrWhiteSpace(workoutId))
-            {
-                return BadRequest(new { code = "WORKOUT_NOT_FOUND", message = "Workout ID is required." });
-            }
-
-            var isRegistered = await _scheduleService.IsUserRegisteredAsync(workoutId, userId);
-            _logger.LogInformation("User {UserId} registration status for workout {WorkoutId}: {IsRegistered}", userId, workoutId, isRegistered);
-            return Ok(isRegistered);
+            var details = await _scheduleService.GetCancellationDetailsByTokenAsync(token);
+            return Ok(details);
         }
 
-        [HttpDelete("cancel-registration/{workoutId}")]
-        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
-        public async Task<IActionResult> CancelRegistration(string workoutId)
+        [HttpPost("cancel/{token}")]
+        [AllowAnonymous]
+        [EnableRateLimiting("CancelBookingPolicy")]
+        public async Task<IActionResult> CancelBookingByToken(string token)
         {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            var isCanceled = await _scheduleService.CancelRegistrationAsync(workoutId, userId, allowPastWorkout: false);
-
-            if (!isCanceled)
-            {
-                return NotFound(new { code = "REGISTRATION_NOT_FOUND", message = "Registration not found." });
-            }
-
+            await _scheduleService.CancelByTokenAsync(token);
             return Ok(new { message = "Registration canceled successfully." });
         }
     }

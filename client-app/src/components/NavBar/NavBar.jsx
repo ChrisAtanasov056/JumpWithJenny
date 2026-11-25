@@ -1,9 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import './NavBar.scss';
-import AuthModal from '../Modal/AuthModal';
-import ProfileModal from '../Profile/Profile';
 import { useAuth } from '../../services/AuthContext';
-import { FaUser } from 'react-icons/fa';
 import { Link as RouterLink, useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import LanguageDropdown from '../lang/LanguageDropdown.tsx';
@@ -19,11 +16,9 @@ const NAV_SECTIONS = [
 ];
 
 const Navbar = () => {
-  const [isModalOpen, setModalOpen] = useState(false);
-  const [isProfileOpen, setProfileOpen] = useState(false);
   const [menuActive, setMenuActive] = useState(false);
 
-  const { isAuthenticated, user, logout } = useAuth();
+  const { isAuthenticated, user } = useAuth();
   const { t } = useTranslation();
   const location = useLocation();
   const navigate = useNavigate();
@@ -91,122 +86,67 @@ const Navbar = () => {
     }
   };
 
-  const openAuthModal = () => {
-    closeMenu();
-    setModalOpen(true);
-  };
-
-  const openProfileModal = () => {
-    closeMenu();
-    setProfileOpen(true);
-  };
-
-  const handleLoginSuccess = () => setModalOpen(false);
-
-  const handleLogout = () => {
-    logout();
-    setProfileOpen(false);
-  };
-
-  const isAdmin = user?.role === 'Administrator' || user?.role === 'Admin';
+  const isAdmin = isAuthenticated && (user?.role === 'Administrator' || user?.role === 'Admin');
 
   return (
-    <>
-      <nav
-        ref={navRef}
-        aria-label={t('navbar.ariaLabel')}
-        className={`navbar navbar-expand-lg fixed-top ${menuActive ? 'menu-open' : ''}`}
-      >
-        <div className="container">
-          <RouterLink to="/" className="navbar-logo-link" onClick={closeMenu}>
-            <img
-              src="/images/brand_logo_2.png"
-              alt={t('navbar.logoAlt')}
-              className="navbar-logo"
-            />
-          </RouterLink>
+    <nav
+      ref={navRef}
+      aria-label={t('navbar.ariaLabel')}
+      className={`navbar navbar-expand-lg fixed-top ${menuActive ? 'menu-open' : ''}`}
+    >
+      <div className="container">
+        <RouterLink to="/" className="navbar-logo-link" onClick={closeMenu}>
+          <img
+            src="/images/brand_logo_2.png"
+            alt={t('navbar.logoAlt')}
+            className="navbar-logo"
+          />
+        </RouterLink>
 
-          <div className="navbar-actions">
-            <LanguageDropdown />
-            <button
-              type="button"
-              className={`navbar-toggler ${menuActive ? 'active' : ''}`}
-              onClick={toggleMenu}
-              aria-expanded={menuActive}
-              aria-controls="primary-navigation"
-              aria-label={t('navbar.toggleMenu')}
-            >
-              <span className="navbar-toggler-icon" aria-hidden="true">
-                <span className={`line ${menuActive ? 'active' : ''}`}></span>
-                <span className={`line ${menuActive ? 'active' : ''}`}></span>
-                <span className={`line ${menuActive ? 'active' : ''}`}></span>
-              </span>
-            </button>
-          </div>
-
-          <ul
-            id="primary-navigation"
-            className={`navbar-nav ${menuActive ? 'active' : ''}`}
+        <div className="navbar-actions">
+          <LanguageDropdown />
+          <button
+            type="button"
+            className={`navbar-toggler ${menuActive ? 'active' : ''}`}
+            onClick={toggleMenu}
+            aria-expanded={menuActive}
+            aria-controls="primary-navigation"
+            aria-label={t('navbar.toggleMenu')}
           >
-            {NAV_SECTIONS.map(({ id, key }) => (
-              <li className="nav-item" key={id}>
-                <a
-                  href={id === 'welcome' ? '/' : `/#${id}`}
-                  className="nav-link"
-                  onClick={(e) => handleSectionNav(e, id)}
-                >
-                  {t(key)}
-                </a>
-              </li>
-            ))}
-
-            {isAuthenticated ? (
-              <>
-                {isAdmin && (
-                  <li className="nav-item">
-                    <RouterLink to="/admin" className="nav-link" onClick={closeMenu}>
-                      {t('navbar.admin_panel')}
-                    </RouterLink>
-                  </li>
-                )}
-                <li className="nav-item">
-                  <button
-                    type="button"
-                    className="profile-area"
-                    onClick={openProfileModal}
-                    aria-label={t('profile.title')}
-                  >
-                    <FaUser className="profile-icon" aria-hidden="true" />
-                  </button>
-                </li>
-              </>
-            ) : (
-              <li className="nav-item">
-                <button type="button" onClick={openAuthModal} className="login-btn">
-                  {t('navbar.login_register')}
-                </button>
-              </li>
-            )}
-          </ul>
+            <span className="navbar-toggler-icon" aria-hidden="true">
+              <span className={`line ${menuActive ? 'active' : ''}`}></span>
+              <span className={`line ${menuActive ? 'active' : ''}`}></span>
+              <span className={`line ${menuActive ? 'active' : ''}`}></span>
+            </span>
+          </button>
         </div>
-      </nav>
 
-      {isModalOpen && (
-        <AuthModal
-          onClose={() => setModalOpen(false)}
-          onLoginSuccess={handleLoginSuccess}
-          setModalOpen={setModalOpen}
-        />
-      )}
+        <ul
+          id="primary-navigation"
+          className={`navbar-nav ${menuActive ? 'active' : ''}`}
+        >
+          {NAV_SECTIONS.map(({ id, key }) => (
+            <li className="nav-item" key={id}>
+              <a
+                href={id === 'welcome' ? '/' : `/#${id}`}
+                className="nav-link"
+                onClick={(e) => handleSectionNav(e, id)}
+              >
+                {t(key)}
+              </a>
+            </li>
+          ))}
 
-      {isProfileOpen && (
-        <ProfileModal
-          onClose={() => setProfileOpen(false)}
-          user={user}
-          onLogout={handleLogout}
-        />
-      )}
-    </>
+          {isAdmin && (
+            <li className="nav-item">
+              <RouterLink to="/admin" className="nav-link" onClick={closeMenu}>
+                {t('navbar.admin_panel')}
+              </RouterLink>
+            </li>
+          )}
+        </ul>
+      </div>
+    </nav>
   );
 };
 

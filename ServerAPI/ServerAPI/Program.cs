@@ -133,6 +133,26 @@ public partial class Program
                         Window = TimeSpan.FromMinutes(5),
                         QueueLimit = 0
                     }));
+
+            options.AddPolicy("BookingPolicy", httpContext =>
+                RateLimitPartition.GetFixedWindowLimiter(
+                    partitionKey: httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+                    factory: _ => new FixedWindowRateLimiterOptions
+                    {
+                        PermitLimit = 10,
+                        Window = TimeSpan.FromMinutes(5),
+                        QueueLimit = 0
+                    }));
+
+            options.AddPolicy("CancelBookingPolicy", httpContext =>
+                RateLimitPartition.GetFixedWindowLimiter(
+                    partitionKey: httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+                    factory: _ => new FixedWindowRateLimiterOptions
+                    {
+                        PermitLimit = 20,
+                        Window = TimeSpan.FromMinutes(1),
+                        QueueLimit = 0
+                    }));
         });
 
         services.AddProblemDetails(options =>
@@ -241,20 +261,6 @@ public partial class Program
         services.AddSingleton<IEmailTemplateService, EmailTemplateService>();
         services.AddScoped<IContactService, ContactService>();
         services.AddScoped<IShoesService, ShoesService>();
-
-        services.AddHttpClient<IGoogleAuthService, GoogleAuthService>(client =>
-        {
-            client.BaseAddress = new Uri("https://oauth2.googleapis.com/");
-            client.Timeout = TimeSpan.FromSeconds(15);
-            client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-        });
-
-        services.AddHttpClient<IFacebookAuthService, FacebookAuthService>(client =>
-        {
-            client.BaseAddress = new Uri("https://graph.facebook.com/");
-            client.Timeout = TimeSpan.FromSeconds(15);
-            client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-        });
 
         // Swagger
         services.AddEndpointsApiExplorer();

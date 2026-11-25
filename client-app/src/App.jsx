@@ -1,23 +1,20 @@
 import React, { Suspense, lazy, useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { AuthProvider, useAuth } from './services/AuthContext';
 import Navbar from './components/NavBar/NavBar';
 import Home from './components/Home/Home';
-import AuthModal from './components/Modal/AuthModal';
 import Schedule from './components/Schedule/Schedule';
 import AboutMe from './components/AboutMe/AboutMe';
 import FAQ from './components/FAQ/FAQ';
 import Contacts from './components/Contacts/Contacts';
-import Profile from './components/Profile/Profile';
-import VerifyEmail from './services/VerifyEmail';
 import Gallery from './components/Gallery/Gallery';
 import ResetPassword from './components/ForgotPassword/ResetPassword';
 import './i18n';
 import { useTranslation } from 'react-i18next';
-import { GoogleOAuthProvider } from '@react-oauth/google';
-import { FacebookSDKProvider } from './services/FacebookSDKContext.jsx';
 import HappyCustomers from './components/HappyCustomers/HappyCustomers';
 import DataDeletion from './components/DataDeletionPage/DataDeletionPage.jsx';
+import CancelBookingPage from './components/CancelBooking/CancelBookingPage';
+import AdminLoginPage from './components/Admin/Login/AdminLoginPage';
 import { HelmetProvider, Helmet } from 'react-helmet-async';
 import NotFoundPage from './components/404/NotFoundPage';
 
@@ -42,69 +39,27 @@ function App() {
   }, [i18n.language, i18n.resolvedLanguage]);
 
   return (
-    <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>
-      <AuthProvider>
-        <FacebookSDKProvider>
-          <HelmetProvider>
-            <Router>
-              <AppContent />
-            </Router>
-          </HelmetProvider>
-        </FacebookSDKProvider>
-      </AuthProvider>
-    </GoogleOAuthProvider>
+    <AuthProvider>
+      <HelmetProvider>
+        <Router>
+          <AppContent />
+        </Router>
+      </HelmetProvider>
+    </AuthProvider>
   );
 }
 
 const ProtectedAdminRoute = ({ children }) => {
   const { user } = useAuth();
-
-  if (!user) return <Navigate to="/login" replace />;
-  if (user.role !== 'Admin' && user.role !== 'Administrator') return <Navigate to="/" replace />;
-  return children;
-};
-
-const AuthRoutePage = ({ mode }) => {
-  const { isAuthenticated } = useAuth();
-  const navigate = useNavigate();
   const location = useLocation();
-  const redirectTarget = location.state?.from || '/';
 
-  if (isAuthenticated) {
-    return <Navigate to={redirectTarget} replace />;
+  if (!user) {
+    return <Navigate to="/admin/login" state={{ from: location.pathname }} replace />;
   }
-
-  return (
-    <div className="route-modal-page">
-      <AuthModal
-        initialMode={mode}
-        onClose={() => navigate('/')}
-        onLoginSuccess={() => navigate(redirectTarget, { replace: true })}
-      />
-    </div>
-  );
-};
-
-const ProfileRoutePage = () => {
-  const { isAuthenticated, user, logout } = useAuth();
-  const navigate = useNavigate();
-
-  if (!isAuthenticated || !user) {
-    return <Navigate to="/login" state={{ from: '/profile' }} replace />;
+  if (user.role !== 'Admin' && user.role !== 'Administrator') {
+    return <Navigate to="/" replace />;
   }
-
-  return (
-    <div className="route-modal-page">
-      <Profile
-        user={user}
-        onClose={() => navigate('/')}
-        onLogout={() => {
-          logout();
-          navigate('/');
-        }}
-      />
-    </div>
-  );
+  return children;
 };
 
 const StandaloneSection = ({ children }) => (
@@ -115,11 +70,8 @@ const NO_INDEX_PAGES = [
   '/data-deletion',
   '/privacy-policy',
   '/terms-of-service',
-  '/login',
-  '/register',
-  '/verify-email',
   '/reset-password',
-  '/profile',
+  '/admin/login',
 ];
 
 const CanonicalLink = () => {
@@ -130,7 +82,11 @@ const CanonicalLink = () => {
     path = path.slice(0, -1);
   }
 
-  if (path.startsWith('/admin') || NO_INDEX_PAGES.includes(path)) {
+  if (
+    path.startsWith('/admin') ||
+    path.startsWith('/cancel-booking') ||
+    NO_INDEX_PAGES.includes(path)
+  ) {
     return (
       <Helmet>
         <meta name="robots" content="noindex, nofollow" />
@@ -147,7 +103,6 @@ const CanonicalLink = () => {
 };
 
 const AppContent = () => {
-  const { user } = useAuth();
   const { t } = useTranslation();
   const location = useLocation();
   const isAdminRoute = location.pathname.startsWith('/admin');
@@ -161,12 +116,12 @@ const AppContent = () => {
       <Route path="/contacts" element={<StandaloneSection><Contacts /></StandaloneSection>} />
       <Route path="/schedule" element={<StandaloneSection><Schedule /></StandaloneSection>} />
       <Route path="/customers" element={<StandaloneSection><HappyCustomers /></StandaloneSection>} />
-      <Route path="/login" element={<AuthRoutePage mode="login" />} />
-      <Route path="/register" element={<AuthRoutePage mode="register" />} />
-      <Route path="/profile" element={<ProfileRoutePage />} />
-      <Route path="/verify-email" element={<VerifyEmail />} />
+      <Route path="/cancel-booking/:token" element={<StandaloneSection><CancelBookingPage /></StandaloneSection>} />
       <Route path="/reset-password" element={<ResetPassword />} />
       <Route path="/data-deletion" element={<DataDeletion />} />
+
+      {/* Hidden admin login route */}
+      <Route path="/admin/login" element={<AdminLoginPage />} />
 
       {/* Admin routes */}
       <Route
@@ -179,7 +134,7 @@ const AppContent = () => {
           </ProtectedAdminRoute>
         }
       >
-        <Route index element={<Navigate to="users" replace />} />
+        <Route index element={<Navigate to="workouts" replace />} />
         <Route path="users" element={<AdminUsersList />} />
         <Route path="users/new" element={<AdminNewUser />} />
         <Route path="users/:userId" element={<AdminUserProfile />} />
@@ -192,7 +147,7 @@ const AppContent = () => {
         <Route path="shoes/new" element={<AdminShoeForm />} />
         <Route path="shoes/:id" element={<AdminShoeForm />} />
         <Route path="shoes/details/:id" element={<ShoeDetailsView />} />
-        <Route path="analytics" element={<Navigate to="/admin/users" replace />} />
+        <Route path="analytics" element={<Navigate to="/admin/workouts" replace />} />
       </Route>
 
       <Route path="*" element={<NotFoundPage />} />
@@ -205,7 +160,7 @@ const AppContent = () => {
       <a href="#main-content" className="skip-to-content">
         {t('skipToContent')}
       </a>
-      {!isAdminRoute && <Navbar user={user} />}
+      {!isAdminRoute && <Navbar />}
       {isAdminRoute ? routesElement : <main id="main-content">{routesElement}</main>}
     </>
   );

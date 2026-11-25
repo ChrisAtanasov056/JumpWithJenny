@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import axios from '../../api/axius';
-import { useAuth } from '../../services/AuthContext';
 import WorkoutModal from '../WorkoutModal/WorkoutModal';
 import { useTranslation } from 'react-i18next';
 import { useMediaQuery } from 'react-responsive';
@@ -13,8 +12,7 @@ const parseTimeToMinutes = (timeStr = '') => {
 };
 
 const Schedule = () => {
-  const { isAuthenticated, user } = useAuth();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
 
   const [workouts, setWorkouts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -60,20 +58,19 @@ const Schedule = () => {
     setSelectedWorkout(null);
   };
 
-  const handleRegistration = async (workout, shoeSize, cardType, usesOwnShoes) => {
-    if (!isAuthenticated) {
-      throw new Error(t('schedule.loginRequired'));
-    }
-
+  const handleRegistration = async (workout, bookingData) => {
     setIsRegistering((prev) => ({ ...prev, [workout.Id]: true }));
 
     try {
+      const activeLang = (i18n.resolvedLanguage || i18n.language || 'bg').split('-')[0];
       const payload = {
         workoutId: workout.Id,
-        shoeSize: usesOwnShoes ? null : shoeSize,
-        cardType,
-        userId: user?.id,
-        usesOwnShoes,
+        fullName: bookingData.fullName,
+        email: bookingData.email,
+        shoeSize: bookingData.usesOwnShoes ? null : bookingData.shoeSize,
+        usesOwnShoes: bookingData.usesOwnShoes,
+        cardType: bookingData.cardType,
+        language: activeLang === 'en' ? 'en' : 'bg',
       };
 
       const response = await axios.post('/api/Schedule/apply', payload);
@@ -161,8 +158,7 @@ const Schedule = () => {
                     {dayKeys.map((dayKey, dayIdx) => {
                       const workout = groupedWorkouts[dayKey]?.find((w) => w.Time === time);
                       const status = workout?.Status?.toLowerCase();
-                      const canOpenModal =
-                        status === 'available' || (status === 'booked' && isAuthenticated);
+                      const canOpenModal = status === 'available';
 
                       const statusText =
                         status === 'available'
@@ -215,8 +211,7 @@ const Schedule = () => {
                   <h3 className="day-header">{translatedDay}</h3>
                   {dayWorkouts.map((workout) => {
                     const status = workout?.Status?.toLowerCase();
-                    const canOpenModal =
-                      status === 'available' || (status === 'booked' && isAuthenticated);
+                    const canOpenModal = status === 'available';
                     const statusText =
                       status === 'available'
                         ? isRegistering[workout?.Id]
@@ -262,8 +257,6 @@ const Schedule = () => {
         onClose={closeModal}
         selectedWorkout={selectedWorkout}
         onRegister={handleRegistration}
-        onRegistrationCancelled={fetchWorkouts}
-        isLoggedIn={isAuthenticated}
       />
     </section>
   );

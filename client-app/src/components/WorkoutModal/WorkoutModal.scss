@@ -168,6 +168,13 @@ $border-radius: 12px;
       color: $secondary-color;
       word-break: break-word;
     }
+
+    .workout-date-subtitle {
+      margin: 4px 0 0;
+      font-size: 0.95rem;
+      color: $light-text-color;
+      font-weight: 500;
+    }
   }
 
   .modal-body {
@@ -193,9 +200,65 @@ $border-radius: 12px;
     }
 
     &.loading { .status-icon { color: $info-color; } }
-    &.success { .status-icon { color: $success-color; } }
+    &.success {
+      .status-icon { color: $success-color; }
+      .status-subtext {
+        display: block;
+        margin: 8px 0 20px;
+        font-size: 0.95rem;
+        color: $light-text-color;
+        line-height: 1.5;
+      }
+    }
     &.info { .status-icon { color: $info-color; } }
     &.full { .status-icon { color: $error-color; } }
+  }
+
+  .guest-fields {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 12px;
+
+    .input-group-field {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+
+      label {
+        font-size: 0.9rem;
+        font-weight: 600;
+        color: $secondary-color;
+      }
+
+      input {
+        width: 100%;
+        padding: 11px 12px;
+        min-height: 44px;
+        font-size: 1rem;
+        color: $secondary-color;
+        background: #f8fafc;
+        border: 1px solid #cbd5e1;
+        border-radius: math.div($border-radius, 2);
+        transition: border-color $transition-speed, box-shadow $transition-speed;
+
+        &:focus {
+          outline: none;
+          border-color: $primary-color;
+          box-shadow: 0 0 0 3px rgba($primary-color, 0.14);
+        }
+      }
+    }
+  }
+
+  .no-shoes-notice {
+    margin-top: 10px;
+    padding: 10px 12px;
+    border-radius: math.div($border-radius, 2);
+    background: #fff8e6;
+    border: 1px solid #f6d58e;
+    color: #7d5a12;
+    font-size: 0.9rem;
+    line-height: 1.4;
   }
 
   .login-prompt-card {

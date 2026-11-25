@@ -26,13 +26,12 @@ ServerAPI/
     ├── Common/
     │   ├── GlobalConstants.cs            # Роли ("Administrator", "User") и кеш ключове
     │   └── BulgariaTimeHelper.cs         # Помощник за часова зона Europe/Sofia (нормализиране на стенен час, конвертиране Sofia ↔ UTC, GetNextUpcomingSofiaDate)
-    ├── Controllers/                      # REST API контролери (9 броя)
-    │   ├── AccountController.cs          # Регистрация, вход, изход (logout), потвърждение на имейл, пароли, refresh token; AuthPolicy и EmailPolicy rate limiting
+    ├── Controllers/                      # REST API контролери (8 броя)
+    │   ├── AccountController.cs          # Админ вход, изход (logout), пароли, refresh token; AuthPolicy и EmailPolicy rate limiting
     │   ├── AdminController.cs            # Админ операции ([Authorize(Roles = "Administrator")]) за потребители, участници и справки с пагинация
-    │   ├── AuthController.cs             # Вход с Google OAuth 2.0 и Facebook Login (AuthPolicy rate limiting)
     │   ├── ContactController.cs          # Изпращане на контактната форма по имейл (EmailPolicy rate limiting)
     │   ├── GalleryController.cs          # Публична галерия и админ ([Authorize(Roles = "Administrator")]) преглед/качване (до 10 MB, magic-bytes валидация)/изтриване
-    │   ├── ScheduleController.cs         # Публичен график (с пагинация), записване и отмяна на тренировки
+    │   ├── ScheduleController.cs         # Публичен график (с пагинация), публично записване (BookingPolicy) и отмяна с токен (CancelBookingPolicy)
     │   ├── ShoesController.cs            # CRUD за Kangoo Jumps обувки ([Authorize(Roles = "Administrator")])
     │   ├── UserController.cs             # [Authorize] на класа: админ операции (all, get, PUT /{id}, DELETE /{id}) с роля "Administrator" и PUT /User/change-password за собствения акаунт
     │   └── WorkoutController.cs          # CRUD за тренировки ([Authorize(Roles = "Administrator")]) с пагинация
@@ -154,10 +153,10 @@ client-app/
 ## 2. Рутинг, State Management и стилове в `client-app`
 
 - **Рутинг (`App.jsx`)**:
-  - Публични маршрути: `/`, `/about`, `/gallery`, `/faq`, `/contacts`, `/schedule`, `/customers`, `/register`, `/verify-email`, `/reset-password`, `/data-deletion`, `/login` (връща `NotFoundPage`), `*` (`NotFoundPage`).
-  - Потребителски маршрут: `/profile` (ако има `user` → `Profile`, иначе `Login`).
-  - Админ маршрути под `/admin` (защитени от `ProtectedAdminRoute`, който допуска `user.role === 'Admin' || user.role === 'Administrator'`):
-    - `/admin` → редирект към `/admin/users`
+  - Публични маршрути: `/`, `/about`, `/gallery`, `/faq`, `/contacts`, `/schedule`, `/customers`, `/cancel-booking/:token`, `/reset-password`, `/data-deletion`, `*` (`NotFoundPage`).
+  - Скрит админ вход: `/admin/login` (`AdminLoginPage`).
+  - Админ маршрути под `/admin` (защитени от `ProtectedAdminRoute`, който допуска `user.role === 'Admin' || user.role === 'Administrator'` и пренасочва към `/admin/login`):
+    - `/admin` → редирект към `/admin/workouts`
     - `/admin/users`, `/admin/users/new`, `/admin/users/:userId`
     - `/admin/workouts`, `/admin/workouts/new`, `/admin/workouts/:id`, `/admin/workouts/:id/view`
     - `/admin/photos`

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useRef, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import useOutsideClick from '../../../services/useOutsideClick';
 import useModalAccessibility from '../../../services/useModalAccessibility';
@@ -8,39 +8,23 @@ const AddUserSearchModal = ({
   visible,
   onClose,
   onConfirm,
-  searchUsers,
 }) => {
   const { t } = useTranslation();
-  const [searchTerm, setSearchTerm] = useState('');
-  const [searchResults, setSearchResults] = useState([]);
-  const [selectedUser, setSelectedUser] = useState(null);
+  const [fullName, setFullName] = useState('');
+  const [email, setEmail] = useState('');
   const [shoeSize, setShoeSize] = useState('');
-  const [cardType, setCardType] = useState('');
+  const [cardType, setCardType] = useState('3');
   const [usesOwnShoes, setUsesOwnShoes] = useState(false);
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const modalRef = useRef(null);
 
-  useEffect(() => {
-    const delayDebounce = setTimeout(async () => {
-      if (searchTerm.trim()) {
-        const users = await searchUsers(searchTerm);
-        setSearchResults(users);
-      } else {
-        setSearchResults([]);
-      }
-    }, 300);
-
-    return () => clearTimeout(delayDebounce);
-  }, [searchTerm, searchUsers]);
-
   const handleClose = useCallback(() => {
-    setSearchTerm('');
-    setSearchResults([]);
-    setSelectedUser(null);
+    setFullName('');
+    setEmail('');
     setShoeSize('');
-    setCardType('');
+    setCardType('3');
     setUsesOwnShoes(false);
     setError('');
     setIsSubmitting(false);
@@ -55,7 +39,20 @@ const AddUserSearchModal = ({
   });
 
   const handleConfirm = async () => {
-    if (!selectedUser || !cardType || (!usesOwnShoes && !shoeSize)) {
+    const trimmedName = fullName.trim();
+    const trimmedEmail = email.trim();
+
+    if (trimmedName.length < 2) {
+      setError(t('bookingForm.errorFullName'));
+      return;
+    }
+
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmedEmail)) {
+      setError(t('bookingForm.errorEmail'));
+      return;
+    }
+
+    if (!usesOwnShoes && !shoeSize) {
       setError(t('admin.workouts.addParticipantModal.validationError'));
       return;
     }
@@ -65,14 +62,15 @@ const AddUserSearchModal = ({
 
     try {
       await onConfirm({
-        userId: selectedUser.Id,
+        fullName: trimmedName,
+        email: trimmedEmail,
         shoeSize: usesOwnShoes ? null : parseInt(shoeSize, 10),
-        cardType: parseInt(cardType, 10),
+        cardType: parseInt(cardType || '3', 10),
         usesOwnShoes,
       });
       handleClose();
     } catch (err) {
-      const serverMessage = err.response?.data?.message || err.response?.data || err.message;
+      const serverMessage = err.response?.data?.message || err.response?.data?.detail || err.message;
       setError(typeof serverMessage === 'string' ? serverMessage : t('admin.workouts.addParticipantModal.addError'));
       setIsSubmitting(false);
     }
@@ -100,97 +98,104 @@ const AddUserSearchModal = ({
         >
           &times;
         </button>
-        {!selectedUser ? (
-          <>
+
+        <div className="user-extra-form">
+          <div className="form-group">
+            <label htmlFor="add-participant-name">{t('bookingForm.fullNameLabel')}</label>
             <input
+              id="add-participant-name"
               type="text"
-              placeholder={t('admin.workouts.addParticipantModal.searchPlaceholder')}
-              aria-label={t('admin.workouts.addParticipantModal.searchPlaceholder')}
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
+              placeholder={t('bookingForm.fullNamePlaceholder')}
+              value={fullName}
+              onChange={(e) => {
+                setFullName(e.target.value);
+                setError('');
+              }}
+              maxLength={120}
             />
+          </div>
 
-            <ul className="user-results">
-              {searchResults.map(user => (
-                <li key={user.Id}>
-                  <span>{user.FullName} ({user.Email})</span>
-                  <button type="button" onClick={() => setSelectedUser(user)}>{t('admin.workouts.addParticipantModal.selectButton')}</button>
-                </li>
-              ))}
-            </ul>
-          </>
-        ) : (
-          <div className="user-extra-form">
-            <p><strong>{selectedUser.FullName}</strong> ({selectedUser.Email})</p>
+          <div className="form-group">
+            <label htmlFor="add-participant-email">{t('bookingForm.emailLabel')}</label>
+            <input
+              id="add-participant-email"
+              type="email"
+              placeholder={t('bookingForm.emailPlaceholder')}
+              value={email}
+              onChange={(e) => {
+                setEmail(e.target.value);
+                setError('');
+              }}
+              maxLength={254}
+            />
+          </div>
 
-            <div className="form-group">
-              <label htmlFor="add-user-own-shoes">
-                <input
-                  id="add-user-own-shoes"
-                  type="checkbox"
-                  checked={usesOwnShoes}
-                  onChange={(e) => {
-                    const checked = e.target.checked;
-                    setUsesOwnShoes(checked);
-                    if (checked) {
-                      setShoeSize('');
-                    }
-                    setError('');
-                  }}
-                />
-                {' '}{t('admin.workouts.addParticipantModal.usesOwnShoes')}
-              </label>
-            </div>
-
-            {!usesOwnShoes && (
-              <div className="form-group">
-                <label htmlFor="add-user-shoe-size">{t('admin.workouts.addParticipantModal.shoeSize')}</label>
-                <select
-                  id="add-user-shoe-size"
-                  value={shoeSize}
-                  onChange={(e) => {
-                    setShoeSize(e.target.value);
-                    setError('');
-                  }}
-                >
-                  <option value="" disabled>{t('admin.workouts.addParticipantModal.selectSize')}</option>
-                  <option value="1">S</option>
-                  <option value="2">M</option>
-                  <option value="3">L</option>
-                  <option value="4">XL</option>
-                </select>
-              </div>
-            )}
-
-            <div className="form-group">
-              <label htmlFor="add-user-card-type">{t('admin.workouts.addParticipantModal.cardType')}</label>
-              <select
-                id="add-user-card-type"
-                value={cardType}
+          <div className="form-group checkbox-group">
+            <label htmlFor="add-user-own-shoes">
+              <input
+                id="add-user-own-shoes"
+                type="checkbox"
+                checked={usesOwnShoes}
                 onChange={(e) => {
-                  setCardType(e.target.value);
+                  const checked = e.target.checked;
+                  setUsesOwnShoes(checked);
+                  if (checked) {
+                    setShoeSize('');
+                  }
+                  setError('');
+                }}
+              />
+              <span>{t('admin.workouts.addParticipantModal.usesOwnShoes')}</span>
+            </label>
+          </div>
+
+          {!usesOwnShoes && (
+            <div className="form-group">
+              <label htmlFor="add-user-shoe-size">{t('admin.workouts.addParticipantModal.shoeSize')}</label>
+              <select
+                id="add-user-shoe-size"
+                value={shoeSize}
+                onChange={(e) => {
+                  setShoeSize(e.target.value);
                   setError('');
                 }}
               >
-                <option value="" disabled>{t('admin.workouts.addParticipantModal.selectCardType')}</option>
-                <option value="1">{t('admin.workouts.cardTypes.coolfit')}</option>
-                <option value="2">{t('admin.workouts.cardTypes.pulse')}</option>
-                <option value="3">{t('admin.workouts.cardTypes.individual')}</option>
+                <option value="" disabled>{t('admin.workouts.addParticipantModal.selectSize')}</option>
+                <option value="1">S (36-38)</option>
+                <option value="2">M (39-41)</option>
+                <option value="3">L (42-44)</option>
+                <option value="4">XL (44-46)</option>
               </select>
             </div>
+          )}
 
-            {error && <div className="error" role="alert">{error}</div>}
-
-            <div className="form-buttons">
-              <button type="button" onClick={handleConfirm} disabled={isSubmitting}>
-                {isSubmitting ? t('admin.workouts.addParticipantModal.adding') : t('admin.workouts.addParticipantModal.confirm')}
-              </button>
-              <button type="button" onClick={handleClose} disabled={isSubmitting}>
-                {t('admin.common.cancel')}
-              </button>
-            </div>
+          <div className="form-group">
+            <label htmlFor="add-user-card-type">{t('admin.workouts.addParticipantModal.cardType')}</label>
+            <select
+              id="add-user-card-type"
+              value={cardType}
+              onChange={(e) => {
+                setCardType(e.target.value);
+                setError('');
+              }}
+            >
+              <option value="3">{t('admin.workouts.cardTypes.individual')}</option>
+              <option value="1">{t('admin.workouts.cardTypes.coolfit')}</option>
+              <option value="2">{t('admin.workouts.cardTypes.pulse')}</option>
+            </select>
           </div>
-        )}
+
+          {error && <div className="error" role="alert">{error}</div>}
+
+          <div className="form-buttons">
+            <button type="button" onClick={handleConfirm} disabled={isSubmitting}>
+              {isSubmitting ? t('admin.workouts.addParticipantModal.adding') : t('admin.workouts.addParticipantModal.confirm')}
+            </button>
+            <button type="button" onClick={handleClose} disabled={isSubmitting}>
+              {t('admin.common.cancel')}
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   );

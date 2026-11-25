@@ -17,6 +17,7 @@ const WorkoutView = () => {
   const { id } = useParams();
   const [data, setData] = useState({
     workout: null,
+    participants: [],
     loading: true,
     error: null,
   });
@@ -24,11 +25,20 @@ const WorkoutView = () => {
   useEffect(() => {
     const fetchWorkout = async () => {
       try {
-        const workoutData = await WorkoutService.getWorkoutById(id);
-        setData({ workout: workoutData, loading: false, error: null });
+        const [workoutData, participantsData] = await Promise.all([
+          WorkoutService.getWorkoutById(id),
+          WorkoutService.getWorkoutParticipants(id),
+        ]);
+        setData({
+          workout: workoutData,
+          participants: Array.isArray(participantsData) ? participantsData : [],
+          loading: false,
+          error: null,
+        });
       } catch (err) {
         setData({
           workout: null,
+          participants: [],
           loading: false,
           error: err.message || t('admin.workouts.view.loadError'),
         });
@@ -38,7 +48,7 @@ const WorkoutView = () => {
     fetchWorkout();
   }, [id, t]);
 
-  const { workout, loading, error } = data;
+  const { workout, participants, loading, error } = data;
 
   if (loading) {
     return <div className="loading">{t('admin.workouts.view.loading')}</div>;
@@ -68,6 +78,18 @@ const WorkoutView = () => {
   const sortedShoes = [...(workout.WorkoutShoes || [])].sort(
     (a, b) => (Number(a.Shoe?.Size) || 0) - (Number(b.Shoe?.Size) || 0)
   );
+
+  const clientList = participants.length > 0
+    ? participants
+    : (workout.Appointments || []).map((a) => ({
+        Id: a.Id,
+        FullName: a.UserFullName,
+        Email: a.UserEmail,
+        ShoeSize: a.ShoeSize,
+        UsesOwnShoes: a.UsesOwnShoes,
+        CardType: a.CardType || 3,
+        IsSubscriptionCard: Boolean(a.IsSubscriptionCard),
+      }));
 
   return (
     <div className="workout-view">
@@ -117,32 +139,43 @@ const WorkoutView = () => {
         {/* Registered Clients Section */}
         <div className="clients-section">
           <h3>{t('admin.workouts.view.registeredClients')}</h3>
-          {workout.Appointments && workout.Appointments.length > 0 ? (
+          {clientList.length > 0 ? (
             <div className="clients-list">
-              {workout.Appointments.map((appointment) => (
-                <div key={appointment.Id} className="client-card">
-                  <div className="client-info">
-                    <h4>{appointment.UserFullName}</h4>
-                    <p>{t('admin.workouts.view.email')} {appointment.UserEmail}</p>
-                  </div>
-                  <div className="shoe-info">
-                    <span className="label">{t('admin.workouts.view.shoe')}</span>
-                    {appointment.UsesOwnShoes ? (
-                      <span>{t('admin.workouts.view.ownShoes')}</span>
-                    ) : (
-                      <span>
-                        {shoeSizeLabels[Number(appointment.ShoeSize)] || t('admin.workouts.view.notAssigned')}
+              {clientList.map((participant) => {
+                const isCard = Boolean(
+                  participant.IsSubscriptionCard ||
+                  participant.CardType === 1 ||
+                  participant.CardType === 2
+                );
+                const cardLabel = cardTypeLabels[participant.CardType] || t('admin.workouts.cardTypes.individual');
+
+                return (
+                  <div key={participant.Id} className="client-card">
+                    <div className="client-info">
+                      <h4>{participant.FullName}</h4>
+                      <p>{t('admin.workouts.view.email')} {participant.Email}</p>
+                    </div>
+                    <div className="shoe-info">
+                      <span className="label">{t('admin.workouts.view.shoe')}</span>
+                      {participant.UsesOwnShoes ? (
+                        <span>{t('admin.workouts.view.ownShoes')}</span>
+                      ) : (
+                        <span>
+                          {shoeSizeLabels[Number(participant.ShoeSize)] || t('admin.workouts.view.notAssigned')}
+                        </span>
+                      )}
+                    </div>
+                    <div className="shoe-info">
+                      <span className="label">{t('admin.workouts.view.visitType')}</span>
+                      <span className={`visit-badge ${isCard ? 'subscription-card' : 'single-visit'}`}>
+                        {isCard
+                          ? `${t('admin.workouts.view.subscriptionCard')} (${cardLabel})`
+                          : t('admin.workouts.view.singleVisit')}
                       </span>
-                    )}
+                    </div>
                   </div>
-                  <div className="shoe-info">
-                    <span className="label">{t('admin.workouts.view.card')}</span>
-                    <span>
-                      {cardTypeLabels[appointment.CardType] || t('admin.workouts.view.notSpecified')}
-                    </span>
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           ) : (
             <div className="no-clients">

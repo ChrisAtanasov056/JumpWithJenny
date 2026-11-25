@@ -16,10 +16,20 @@ const WorkoutService = {
       const response = await api.get(`/api/Admin/workouts/${id}`);
       if (response.status !== 200) {
         throw new Error('Failed to fetch workout details');
-      } 
+      }
       return response.data;
     } catch (error) {
       console.error('Error fetching workout:', error);
+      throw error;
+    }
+  },
+
+  getWorkoutParticipants: async (id) => {
+    try {
+      const response = await api.get(`/api/Admin/workouts/${id}/participants`);
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching workout participants:', error);
       throw error;
     }
   },
@@ -43,10 +53,12 @@ const WorkoutService = {
       throw error;
     }
   },
-  addParticipantToWorkout: async (workoutId, userId, shoeSize, cardType, usesOwnShoes) => {
-    const response = await api.post(`/api/Admin/add/participant`, {
+
+  addParticipantToWorkout: async (workoutId, { fullName, email, shoeSize, cardType, usesOwnShoes }) => {
+    const response = await api.post('/api/Admin/add/participant', {
       workoutId,
-      userId,
+      fullName,
+      email,
       shoeSize,
       cardType,
       usesOwnShoes,
@@ -54,15 +66,15 @@ const WorkoutService = {
     return response.data;
   },
 
-  removeParticipantFromWorkout: async (workoutId, participantId) => {
-    const response = await api.delete('/api/admin/remove/participant', {
+  removeParticipantFromWorkout: async (appointmentId) => {
+    const response = await api.delete('/api/Admin/remove/participant', {
       params: {
-        workoutId,
-        userId: participantId,
+        appointmentId,
       },
     });
     return response.data;
   },
+
   deleteWorkout: async (id) => {
     try {
       const response = await api.delete(`api/Workout/delete-workout/${id}`);
@@ -72,18 +84,6 @@ const WorkoutService = {
       throw error;
     }
   },
-  async searchUsers(query) {
-    try {
-      const response = await api.get(`/api/users/search`, {
-        params: { query },
-      });
-      return response.data;
-    } catch (error) {
-      console.error('Error searching users:', error);
-      throw error;
-    }
-  },
 };
-
 
 export default WorkoutService;
