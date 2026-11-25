@@ -20,8 +20,11 @@ const AdminWorkoutsList = () => {
 
   useEffect(() => {
     const fetchWorkouts = async () => {
+      setLoading(true);
+      setError(null);
       try {
-        const data = await WorkoutService.getAllWorkouts();
+        const responseData = await WorkoutService.getAllWorkouts({ upcomingOnly: !showPast });
+        const data = Array.isArray(responseData) ? responseData : (responseData?.Items || []);
         const now = new Date();
 
         const filtered = data

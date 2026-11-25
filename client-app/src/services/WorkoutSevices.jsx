@@ -1,9 +1,13 @@
 import api from '../api/axius';
 
 const WorkoutService = {
-  getAllWorkouts: async () => {
+  getAllWorkouts: async ({ upcomingOnly, search } = {}) => {
     try {
-      const response = await api.get('/api/workouts/all');
+      const params = {
+        ...(typeof upcomingOnly === 'boolean' ? { upcomingOnly } : {}),
+        ...(search ? { search } : {}),
+      };
+      const response = await api.get('/api/workouts/all', { params });
       return response.data;
     } catch (error) {
       console.error('Error fetching workouts:', error);

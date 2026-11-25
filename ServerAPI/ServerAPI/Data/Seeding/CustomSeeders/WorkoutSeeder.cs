@@ -1,4 +1,6 @@
-﻿using ServerAPI.Common;
+﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Hosting;
+using ServerAPI.Common;
 using ServerAPI.Data;
 using ServerAPI.Data.Seeding;
 using ServerAPI.Models;
@@ -7,16 +9,40 @@ public class WorkoutSeeder : ISeeder
 {
     public async Task SeedAsync(JumpWithJennyDbContext dbContext, IServiceProvider serviceProvider)
     {
-        if (dbContext.Workouts.Any())
+        var logger = serviceProvider.GetRequiredService<ILogger<WorkoutSeeder>>();
+        var environment = serviceProvider.GetRequiredService<IHostEnvironment>();
+        var nowSofia = BulgariaTimeHelper.GetCurrentSofiaTime();
+
+        // Repair any legacy workouts that were seeded before the Date column was populated.
+        var uninitializedWorkouts = await dbContext.Workouts
+            .Where(w => w.Date.Year <= 1900)
+            .ToListAsync();
+
+        if (uninitializedWorkouts.Count > 0)
         {
-            return; // Exit if workouts already exist
+            foreach (var legacyWorkout in uninitializedWorkouts)
+            {
+                if (Enum.TryParse<DayOfWeek>(legacyWorkout.Day, ignoreCase: true, out var parsedDay) &&
+                    TimeSpan.TryParse(legacyWorkout.Time, out var parsedTime))
+                {
+                    legacyWorkout.Date = BulgariaTimeHelper.GetNextUpcomingSofiaDate(parsedDay, parsedTime, nowSofia);
+                }
+            }
+
+            await dbContext.SaveChangesAsync();
+            logger.LogInformation("Updated legacy Date values for {Count} existing workouts.", uninitializedWorkouts.Count);
         }
 
-        var logger = serviceProvider.GetRequiredService<ILogger<WorkoutSeeder>>();
+        var hasAnyWorkouts = await dbContext.Workouts.AnyAsync();
+        var hasUpcomingWorkouts = await dbContext.Workouts.AnyAsync(w => w.Date > nowSofia);
 
-        var shoes = dbContext.Shoes.ToList();  // Get all shoes from the database
-        var cardTypes = dbContext.WorkoutCardTypes.ToList(); // Get all workout card types
-        var nowSofia = BulgariaTimeHelper.GetCurrentSofiaTime();
+        if (hasAnyWorkouts && (!environment.IsDevelopment() || hasUpcomingWorkouts))
+        {
+            return;
+        }
+
+        var shoes = await dbContext.Shoes.ToListAsync();
+        var cardTypes = await dbContext.WorkoutCardTypes.ToListAsync();
 
         var specificWorkouts = new List<(string Day, string Time, string Status)>
         {
@@ -40,7 +66,7 @@ public class WorkoutSeeder : ISeeder
                 Time = time,
                 Date = BulgariaTimeHelper.GetNextUpcomingSofiaDate(dayOfWeek, timeOfDay, nowSofia),
                 Status = status,
-                WorkoutCardTypes = cardTypes, // Assign all card types (if many-to-many)
+                WorkoutCardTypes = cardTypes,
                 AvailableSpots = string.Equals(status, "Booked", StringComparison.OrdinalIgnoreCase) ? 0 : 20
             };
 
@@ -50,26 +76,26 @@ public class WorkoutSeeder : ISeeder
         await dbContext.Workouts.AddRangeAsync(workouts);
         await dbContext.SaveChangesAsync();
 
-        // Fetch the saved workouts
-        var savedWorkouts = dbContext.Workouts.ToList();
-
         var workoutShoes = new List<WorkoutShoes>();
 
-        foreach (var workout in savedWorkouts)
+        foreach (var workout in workouts)
         {
             foreach (var shoe in shoes)
             {
                 workoutShoes.Add(new WorkoutShoes
                 {
-                    WorkoutId = workout.Id,  // Set the foreign key for Workout
-                    ShoeId = shoe.Id,        // Set the foreign key for Shoe
-                    IsTaken = workout.Status == "Booked" // Set the IsTaken flag
+                    WorkoutId = workout.Id,
+                    ShoeId = shoe.Id,
+                    IsTaken = string.Equals(workout.Status, "Booked", StringComparison.OrdinalIgnoreCase)
                 });
             }
         }
 
-        await dbContext.WorkoutShoes.AddRangeAsync(workoutShoes);
-        await dbContext.SaveChangesAsync();
+        if (workoutShoes.Count > 0)
+        {
+            await dbContext.WorkoutShoes.AddRangeAsync(workoutShoes);
+            await dbContext.SaveChangesAsync();
+        }
 
         logger.LogInformation("Seeded {Count} workouts and {ShoeCount} workout-shoe relationships.", workouts.Count, workoutShoes.Count);
     }

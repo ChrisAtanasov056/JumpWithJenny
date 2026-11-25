@@ -106,6 +106,10 @@
       }
 
 
+      input:checked + .slider {
+        background-color: #1D6FA5;
+      }
+
       input:checked + .slider:before {
         transform: translateX(26px);
       }
@@ -170,12 +174,22 @@
         border-radius: 0.375rem;
       }
 
-      .status-badge.open {
-        background-color: #28a745;
+      .status-badge.open,
+      .status-badge.available {
+        background-color: #1e8449;
         color: white;
       }
-      .status-badge.full {
-        background-color: #dc3545;
+      .status-badge.full,
+      .status-badge.booked {
+        background-color: #c0392b;
+        color: white;
+      }
+      .status-badge.completed {
+        background-color: #1d6fa5;
+        color: white;
+      }
+      .status-badge.cancelled {
+        background-color: #6c757d;
         color: white;
       }
     }
