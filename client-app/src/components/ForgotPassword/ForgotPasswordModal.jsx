@@ -1,14 +1,31 @@
 // ForgotPasswordModal.jsx
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import './ForgotPasswordModal.scss';
-import { forgotPasswordEmail } from '../../services/authService'; 
-import i18n from '../../i18n'; 
+import { forgotPasswordEmail } from '../../services/authService';
+import { useTranslation } from 'react-i18next';
 import PropTypes from 'prop-types';
+import useOutsideClick from '../../services/useOutsideClick';
+import useModalAccessibility from '../../services/useModalAccessibility';
 
 const ForgotPasswordModal = ({ onClose }) => {
+  const { t, i18n } = useTranslation();
   const [email, setEmail] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [feedback, setFeedback] = useState({ message: '', isError: false });
+
+  const modalRef = useRef(null);
+  const timerRef = useRef(null);
+
+  useEffect(() => {
+    return () => {
+      if (timerRef.current) {
+        clearTimeout(timerRef.current);
+      }
+    };
+  }, []);
+
+  useOutsideClick(modalRef, onClose, true);
+  useModalAccessibility({ isOpen: true, onClose, modalRef });
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -17,20 +34,19 @@ const ForgotPasswordModal = ({ onClose }) => {
 
     try {
       await forgotPasswordEmail({ email, language: i18n.language });
-      setFeedback({ 
-        message: i18n.t('auth.forgotPasswordSuccessMessage'), 
-        isError: false 
+      setFeedback({
+        message: t('auth.forgotPasswordSuccessMessage'),
+        isError: false,
       });
 
-      setTimeout(() => {
+      timerRef.current = setTimeout(() => {
         onClose();
       }, 2500);
-      
     } catch (err) {
-      const errorMessage = err.message || i18n.t('auth.forgotPasswordGenericError');
-      setFeedback({ 
-        message: errorMessage, 
-        isError: true 
+      const errorMessage = err.message || t('auth.forgotPasswordGenericError');
+      setFeedback({
+        message: errorMessage,
+        isError: true,
       });
     } finally {
       setIsSubmitting(false);
@@ -38,33 +54,51 @@ const ForgotPasswordModal = ({ onClose }) => {
   };
 
   return (
-    <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-        <button className="close-button" onClick={onClose}>&times;</button>
+    <div className="forgot-modal-overlay">
+      <div
+        ref={modalRef}
+        className="forgot-modal-content"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="forgot-password-title"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <button
+          type="button"
+          className="close-button"
+          onClick={onClose}
+          aria-label={t('close')}
+        >
+          &times;
+        </button>
         <div className="form-container">
           <form onSubmit={handleSubmit} className="forgot-password-form">
-            <h2>{i18n.t('auth.forgotPasswordTitle')}</h2>
-            <p>{i18n.t('auth.forgotPasswordInstructions')}</p>
+            <h2 id="forgot-password-title">{t('auth.forgotPasswordTitle')}</h2>
+            <p>{t('auth.forgotPasswordInstructions')}</p>
             <div className="form-group">
-              <label htmlFor="email">{i18n.t('auth.emailLabel')}</label>
+              <label htmlFor="forgot-password-email">{t('auth.emailLabel')}</label>
               <input
-                id="email"
+                id="forgot-password-email"
                 type="email"
+                autoComplete="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder={i18n.t('auth.emailPlaceholder')}
+                placeholder={t('auth.emailPlaceholder')}
                 required
               />
             </div>
-            <button 
-              type="submit" 
+            <button
+              type="submit"
               className="submit-button"
               disabled={isSubmitting}
             >
-              {isSubmitting ? i18n.t('auth.sending') : i18n.t('auth.sendResetLink')}
+              {isSubmitting ? t('auth.sending') : t('auth.sendResetLink')}
             </button>
             {feedback.message && (
-              <p className={`feedback-message ${feedback.isError ? 'error' : 'success'}`}>
+              <p
+                className={`feedback-message ${feedback.isError ? 'error' : 'success'}`}
+                role={feedback.isError ? 'alert' : 'status'}
+              >
                 {feedback.message}
               </p>
             )}

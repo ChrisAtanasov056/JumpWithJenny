@@ -1,32 +1,34 @@
-// src/components/AuthModal/AuthModal.scss
+// src/components/Modal/AuthModal.scss
 
-$primary-color: #BDC3C7;
+$primary-color: #7F8C8D;
+$muted-text: #546678;
 $secondary-color: #FFFFFF;
 $background-color: #ECF0F1;
-$accent-color: #E74C3C;
+$accent-color: #C83728;
 $white: #FFFFFF;
 $text-color: #2C3E50;
-$hover-color: #C0392B;
+$hover-color: #A92D20;
 $transition-speed: 0.3s;
 $border-radius: 12px;
-$shadow: 0 4px 20px rgba(44, 62, 80, 0.1);
+$shadow: 0 4px 20px rgba(44, 62, 80, 0.15);
 
 .auth-modal-overlay {
   position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
+  inset: 0;
   background: rgba(44, 62, 80, 0.7);
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 1000;
+  z-index: 1050;
+  padding: 1rem;
+  overflow-y: auto;
+  overscroll-behavior: contain;
   backdrop-filter: blur(5px);
 }
+
 .auth-content {
   .dynamic-form {
-    transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
+    transition: opacity 0.25s ease-in-out, transform 0.25s ease-in-out;
     opacity: 1;
     transform: translateY(0);
 
@@ -36,36 +38,54 @@ $shadow: 0 4px 20px rgba(44, 62, 80, 0.1);
     }
   }
 }
+
 .auth-modal-card {
   position: relative;
-  width: 90%;
+  width: 100%;
   max-width: 450px;
+  max-height: calc(100dvh - 2rem);
+  overflow-y: auto;
+  overscroll-behavior: contain;
   background: $secondary-color;
   border-radius: $border-radius;
   box-shadow: $shadow;
-  padding: 3rem;
+  padding: 2.5rem;
   text-align: center;
   color: $text-color;
-  animation: slideIn 0.5s forwards;
-  
+  animation: authSlideIn 0.35s ease-out forwards;
+
   @media (min-width: 768px) {
-    max-width: 600px;
+    max-width: 580px;
+    padding: 3rem;
+  }
+
+  @media (max-width: 480px) {
+    padding: 2rem 1.25rem 1.5rem;
   }
 }
 
 .auth-close-btn {
   position: absolute;
-  top: 1rem;
-  right: 1rem;
+  top: 0.75rem;
+  right: 0.75rem;
+  width: 40px;
+  height: 40px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   background: none;
   border: none;
-  font-size: 1.5rem;
-  color: $primary-color;
-  cursor: default;
-  transition: color 0.2s;
+  border-radius: 50%;
+  font-size: 1.35rem;
+  color: $muted-text;
+  cursor: pointer;
+  transition: color 0.2s, background-color 0.2s;
 
-  &:hover {
-    color: $hover-color;
+  @media (hover: hover) and (pointer: fine) {
+    &:hover {
+      color: $hover-color;
+      background-color: rgba($hover-color, 0.08);
+    }
   }
 }
 
@@ -77,17 +97,18 @@ $shadow: 0 4px 20px rgba(44, 62, 80, 0.1);
 }
 
 .auth-header {
-  margin-bottom: 2rem;
+  margin-bottom: 1.75rem;
 
   h2 {
-    font-size: 2rem;
-    margin-bottom: 0.5rem;
+    font-size: 1.9rem;
+    margin-bottom: 0.4rem;
     color: $text-color;
   }
 
   p {
-    color: $primary-color;
+    color: $muted-text;
     font-size: 1rem;
+    margin-bottom: 0;
   }
 }
 
@@ -97,69 +118,79 @@ $shadow: 0 4px 20px rgba(44, 62, 80, 0.1);
 }
 
 .dynamic-form {
-  animation: fadeIn 0.5s ease-in-out;
+  animation: authFadeIn 0.4s ease-in-out;
 }
 
 .forgot-password-btn {
   background: none;
   border: none;
-  color: $primary-color;
-  font-size: 0.9rem;
-  cursor: default;
+  color: $muted-text;
+  font-size: 0.92rem;
+  font-weight: 500;
+  cursor: pointer;
   margin-top: 1rem;
+  padding: 0.25rem 0.5rem;
   transition: color 0.2s;
 
-  &:hover {
-    color: $accent-color;
+  @media (hover: hover) and (pointer: fine) {
+    &:hover {
+      color: $accent-color;
+      text-decoration: underline;
+    }
   }
 }
 
 .auth-error-msg {
-  color: $accent-color;
-  font-size: 0.9rem;
+  color: $hover-color;
+  font-size: 0.92rem;
+  font-weight: 600;
   margin-top: 1rem;
 }
 
 .auth-footer {
-  margin-top: 2rem;
-  
+  margin-top: 1.75rem;
+
   .switch-text {
-    color: $primary-color;
-    font-size: 0.9rem;
+    color: $muted-text;
+    font-size: 0.95rem;
     margin-bottom: 1rem;
   }
 
   .switch-mode-btn {
     background: none;
     border: none;
-    color: $accent-color;
-    font-weight: bold;
-    cursor: default;
+    color: $hover-color;
+    font-weight: 700;
+    cursor: pointer;
+    padding: 0.15rem 0.35rem;
     transition: color 0.2s;
 
-    &:hover {
-      text-decoration: underline;
+    @media (hover: hover) and (pointer: fine) {
+      &:hover {
+        text-decoration: underline;
+      }
     }
   }
 
   .social-text {
     position: relative;
-    color: $primary-color;
+    color: $muted-text;
     font-size: 0.9rem;
     margin: 1rem 0;
 
     @media (max-width: 768px) {
-      font-size: 0.5rem
+      font-size: 0.85rem;
     }
 
-    &::before, &::after {
+    &::before,
+    &::after {
       content: '';
-      position: absolute; 
+      position: absolute;
       top: 50%;
-      width: 38%;
+      width: 34%;
       height: 1px;
-      background-color: $primary-color;
-      }
+      background-color: #CBD5E1;
+    }
     &::before {
       left: 0;
     }
@@ -176,22 +207,31 @@ $shadow: 0 4px 20px rgba(44, 62, 80, 0.1);
   gap: 1rem;
 
   .social-btn {
-    width: 40px;
-    height: 40px;
+    width: 44px;
+    height: 44px;
     border-radius: 50%;
     display: flex;
     justify-content: center;
     align-items: center;
     font-size: 1.2rem;
-    cursor: default;
-    transition: transform 0.2s;
-    border: 1px solid $primary-color;
+    cursor: pointer;
+    transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s;
+    border: 1px solid #CBD5E1;
+    background: $white;
     color: $text-color;
-    
-    &:hover {
-      transform: scale(1.1);
-      border-color: $hover-color;
-      color: $hover-color;
+
+    @media (hover: hover) and (pointer: fine) {
+      &:hover {
+        transform: scale(1.08);
+        border-color: $hover-color;
+        color: $hover-color;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      }
+    }
+
+    .svg-inline--fa {
+      width: 20px;
+      height: 20px;
     }
   }
 
@@ -200,72 +240,32 @@ $shadow: 0 4px 20px rgba(44, 62, 80, 0.1);
     color: $white;
     border: none;
     display: none;
-    
+
     &:hover {
       color: $white;
     }
   }
+
   .google-btn {
-    .GBox-root {
-      width: 40px !important;
-      height: 40px !important;
-      border-radius: 50% !important;
-    }
-   
-    
-  }
+    .gsi-material-button-icon {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 20px;
+      height: 20px;
 
-  .instagram-btn {
-    background: #f09433;
-    background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%);
-    color: $white;
-    border: none;
-    display: none;
-    &:hover {
-      color: $white;
-    }
-  }
-}
-.social-btn {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: 1px solid #ccc;
-  cursor: default;
-  transition: all 0.3s ease;
-
-  &:hover {
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-  }
-
-  .svg-inline--fa {
-    width: 20px;
-    height: 20px;
-  }
-}
-
-.social-btn.google-btn {
-  .gsi-material-button-icon {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 20px;
-    height: 20px;
-
-    svg {
-      width: 100%;
-      height: 100%;
-      display: block;
+      svg {
+        width: 100%;
+        height: 100%;
+        display: block;
+      }
     }
   }
 }
 
-@keyframes slideIn {
+@keyframes authSlideIn {
   from {
-    transform: translateY(-50px);
+    transform: translateY(-30px);
     opacity: 0;
   }
   to {
@@ -274,7 +274,7 @@ $shadow: 0 4px 20px rgba(44, 62, 80, 0.1);
   }
 }
 
-@keyframes fadeIn {
+@keyframes authFadeIn {
   from {
     opacity: 0;
   }

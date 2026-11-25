@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import axios from '../../api/axius';
 import { useAuth } from '../../services/AuthContext';
 import WorkoutModal from '../WorkoutModal/WorkoutModal';
@@ -6,6 +6,11 @@ import { useTranslation } from 'react-i18next';
 import { useMediaQuery } from 'react-responsive';
 import { parseWorkoutDate } from '../../utils/workoutDate';
 import './Schedule.scss';
+
+const parseTimeToMinutes = (timeStr = '') => {
+  const [hours, minutes] = String(timeStr).split(':').map(Number);
+  return (Number.isFinite(hours) ? hours * 60 : 0) + (Number.isFinite(minutes) ? minutes : 0);
+};
 
 const Schedule = () => {
   const { isAuthenticated, user } = useAuth();
@@ -27,7 +32,7 @@ const Schedule = () => {
       const response = await axios.get('/api/Schedule');
       const now = new Date();
       const upcoming = response.data
-        .filter(w => {
+        .filter((w) => {
           const parsedDate = parseWorkoutDate(w.Date);
           return parsedDate && parsedDate > now;
         })
@@ -60,7 +65,7 @@ const Schedule = () => {
       throw new Error(t('schedule.loginRequired'));
     }
 
-    setIsRegistering(prev => ({ ...prev, [workout.Id]: true }));
+    setIsRegistering((prev) => ({ ...prev, [workout.Id]: true }));
 
     try {
       const payload = {
@@ -75,8 +80,8 @@ const Schedule = () => {
 
       if (response.status === 200) {
         const updatedWorkout = response.data?.workout || response.data;
-        setWorkouts(prev =>
-          prev.map(w => (w.Id === updatedWorkout.Id ? updatedWorkout : w))
+        setWorkouts((prev) =>
+          prev.map((w) => (w.Id === updatedWorkout.Id ? updatedWorkout : w))
         );
         setSelectedWorkout(updatedWorkout);
         return updatedWorkout;
@@ -88,19 +93,24 @@ const Schedule = () => {
       }
       throw err;
     } finally {
-      setIsRegistering(prev => ({ ...prev, [workout.Id]: false }));
+      setIsRegistering((prev) => ({ ...prev, [workout.Id]: false }));
     }
   };
 
-  if (loading) return <div className="loading">{t('schedule.loading')}</div>;
-  if (error) return <div className="error">{error}</div>;
+  const groupedWorkouts = useMemo(() => {
+    return workouts.reduce((acc, workout) => {
+      const { Day } = workout;
+      if (!acc[Day]) acc[Day] = [];
+      acc[Day].push(workout);
+      return acc;
+    }, {});
+  }, [workouts]);
 
-  const groupedWorkouts = workouts.reduce((acc, workout) => {
-    const { Day } = workout;
-    if (!acc[Day]) acc[Day] = [];
-    acc[Day].push(workout);
-    return acc;
-  }, {});
+  const dynamicTimes = useMemo(() => {
+    return Array.from(new Set(workouts.map((w) => w.Time).filter(Boolean))).sort(
+      (a, b) => parseTimeToMinutes(a) - parseTimeToMinutes(b)
+    );
+  }, [workouts]);
 
   const daysOfWeek = [
     t('days.monday'),
@@ -123,39 +133,63 @@ const Schedule = () => {
   ];
 
   return (
-    <section id="schedule" className="schedule-section">
+    <section id="schedule" className="schedule-section" aria-labelledby="schedule-title">
       <div className="schedule-container">
-        <h2>{t('schedule.title')}</h2>
+        <h2 id="schedule-title">{t('schedule.title')}</h2>
 
-        {!isMobile && (
+        {loading && <div className="schedule-status loading" role="status">{t('schedule.loading')}</div>}
+        {!loading && error && <div className="schedule-status error" role="alert">{error}</div>}
+        {!loading && !error && workouts.length === 0 && (
+          <p className="schedule-empty">{t('schedule.noWorkouts')}</p>
+        )}
+
+        {!loading && !error && workouts.length > 0 && !isMobile && (
           <div className="desktop-schedule">
             <table className="schedule-table">
               <thead>
                 <tr>
-                  <th>{t('schedule.time')}</th>
+                  <th scope="col">{t('schedule.time')}</th>
                   {daysOfWeek.map((day, idx) => (
-                    <th key={idx}>{day}</th>
+                    <th scope="col" key={dayKeys[idx]}>{day}</th>
                   ))}
                 </tr>
               </thead>
               <tbody>
-                {['14:00', '15:00', '16:00', '17:00', '18:00', '19:00', '20:00', '21:00'].map(time => (
+                {dynamicTimes.map((time) => (
                   <tr key={time}>
-                    <td>{time}</td>
-                    {dayKeys.map(dayKey => {
-                      const workout = groupedWorkouts[dayKey]?.find(w => w.Time === time);
+                    <th scope="row" className="time-header">{time}</th>
+                    {dayKeys.map((dayKey, dayIdx) => {
+                      const workout = groupedWorkouts[dayKey]?.find((w) => w.Time === time);
                       const status = workout?.Status?.toLowerCase();
-                      const canOpenModal = status === 'available' || (status === 'booked' && isAuthenticated);
+                      const canOpenModal =
+                        status === 'available' || (status === 'booked' && isAuthenticated);
+
+                      const statusText =
+                        status === 'available'
+                          ? isRegistering[workout?.Id]
+                            ? t('schedule.registering')
+                            : t('schedule.available')
+                          : status === 'booked'
+                            ? t('schedule.booked')
+                            : '';
 
                       return (
                         <td
                           key={`${dayKey}-${time}`}
-                          className={`schedule-cell ${status || 'empty'}`}
-                          onClick={() => canOpenModal && openModal(workout)}
+                          className={`schedule-cell ${status || 'empty'} ${canOpenModal ? 'clickable' : ''}`}
                         >
-                          {status === 'available' &&
-                            (isRegistering[workout?.Id] ? t('schedule.registering') : t('schedule.available'))}
-                          {status === 'booked' && t('schedule.booked')}
+                          {canOpenModal ? (
+                            <button
+                              type="button"
+                              className="schedule-slot-btn"
+                              onClick={() => openModal(workout)}
+                              aria-label={`${daysOfWeek[dayIdx]} ${time} - ${statusText}`}
+                            >
+                              {statusText}
+                            </button>
+                          ) : (
+                            statusText
+                          )}
                         </td>
                       );
                     })}
@@ -166,10 +200,12 @@ const Schedule = () => {
           </div>
         )}
 
-        {isMobile && (
+        {!loading && !error && workouts.length > 0 && isMobile && (
           <div className="mobile-schedule">
             {dayKeys.map((dayKey, index) => {
-              const dayWorkouts = groupedWorkouts[dayKey] || [];
+              const dayWorkouts = [...(groupedWorkouts[dayKey] || [])].sort(
+                (a, b) => parseTimeToMinutes(a.Time) - parseTimeToMinutes(b.Time)
+              );
               const translatedDay = daysOfWeek[index];
 
               if (dayWorkouts.length === 0) return null;
@@ -177,22 +213,40 @@ const Schedule = () => {
               return (
                 <div key={dayKey} className="day-column">
                   <h3 className="day-header">{translatedDay}</h3>
-                  {dayWorkouts.map(workout => {
+                  {dayWorkouts.map((workout) => {
                     const status = workout?.Status?.toLowerCase();
-                    const canOpenModal = status === 'available' || (status === 'booked' && isAuthenticated);
+                    const canOpenModal =
+                      status === 'available' || (status === 'booked' && isAuthenticated);
+                    const statusText =
+                      status === 'available'
+                        ? isRegistering[workout?.Id]
+                          ? t('schedule.registering')
+                          : t('schedule.available')
+                        : status === 'booked'
+                          ? t('schedule.booked')
+                          : '';
+
+                    if (canOpenModal) {
+                      return (
+                        <button
+                          key={workout.Id || `${dayKey}-${workout.Time}`}
+                          type="button"
+                          className={`time-slot ${status || 'empty'} clickable`}
+                          onClick={() => openModal(workout)}
+                        >
+                          <span>{workout.Time}</span>
+                          <span>{statusText}</span>
+                        </button>
+                      );
+                    }
 
                     return (
                       <div
-                        key={`${dayKey}-${workout.Time}`}
+                        key={workout.Id || `${dayKey}-${workout.Time}`}
                         className={`time-slot ${status || 'empty'}`}
-                        onClick={() => canOpenModal && openModal(workout)}
                       >
                         <span>{workout.Time}</span>
-                        <span>
-                          {status === 'available' &&
-                            (isRegistering[workout?.Id] ? t('schedule.registering') : t('schedule.available'))}
-                          {status === 'booked' && t('schedule.booked')}
-                        </span>
+                        <span>{statusText}</span>
                       </div>
                     );
                   })}

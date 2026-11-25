@@ -1,101 +1,95 @@
-import React, { useState, useEffect } from 'react';
+import React, { useMemo, useEffect, useRef } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { Link } from 'react-router-dom';
 import './NotFoundPage.scss';
 
 const NotFoundPage = () => {
-    const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
-    const [isHovered, setIsHovered] = useState(false);
+  const containerRef = useRef(null);
 
-    useEffect(() => {
-        const handleMouseMove = (e) => {
-            setMousePosition({
-                x: (e.clientX / window.innerWidth) * 100,
-                y: (e.clientY / window.innerHeight) * 100
-            });
-        };
+  const particles = useMemo(
+    () =>
+      Array.from({ length: 15 }, (_, i) => ({
+        id: i,
+        delay: `${i * 0.2}s`,
+        left: `${((i * 37 + 13) % 95) + 2}%`,
+      })),
+    []
+  );
 
-        window.addEventListener('mousemove', handleMouseMove);
-        return () => window.removeEventListener('mousemove', handleMouseMove);
-    }, []);
+  useEffect(() => {
+    const canHover = window.matchMedia?.('(hover: hover) and (pointer: fine)').matches;
+    const prefersReducedMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+    if (!canHover || prefersReducedMotion) return;
 
-    return (
-        <div className="not-found-container">
-            <Helmet>
-                <meta name="robots" content="noindex, nofollow" />
-            </Helmet>
-            
-            <div className="background-elements">
-                <div 
-                    className="floating-shape shape-1" 
-                    style={{
-                        transform: `translate(${mousePosition.x * 0.02}px, ${mousePosition.y * 0.02}px)`
-                    }}
-                ></div>
-                <div 
-                    className="floating-shape shape-2"
-                    style={{
-                        transform: `translate(${mousePosition.x * -0.03}px, ${mousePosition.y * -0.03}px)`
-                    }}
-                ></div>
-                <div 
-                    className="floating-shape shape-3"
-                    style={{
-                        transform: `translate(${mousePosition.x * 0.04}px, ${mousePosition.y * 0.01}px)`
-                    }}
-                ></div>
-            </div>
+    let rafId = null;
+    const handleMouseMove = (e) => {
+      if (rafId) return;
+      rafId = window.requestAnimationFrame(() => {
+        rafId = null;
+        if (!containerRef.current) return;
+        const x = (e.clientX / window.innerWidth) * 100;
+        const y = (e.clientY / window.innerHeight) * 100;
+        containerRef.current.style.setProperty('--mouse-x', `${x}`);
+        containerRef.current.style.setProperty('--mouse-y', `${y}`);
+      });
+    };
 
-            <div className="not-found-content">
-                {/* Animated 404 number */}
-                <div className="not-found-code-container">
-                    <h1 className="not-found-code">
-                        4
-                        <span className="zero">0</span>
-                        4
-                    </h1>
-                    <div className="pulse-ring"></div>
-                </div>
+    window.addEventListener('mousemove', handleMouseMove, { passive: true });
+    return () => {
+      window.removeEventListener('mousemove', handleMouseMove);
+      if (rafId) window.cancelAnimationFrame(rafId);
+    };
+  }, []);
 
-                {/* Main content */}
-                <div className="text-content">
-                    <h2 className="not-found-title">
-                        Страницата не беше намерена
-                    </h2>
-                    <p className="not-found-message">
-                        Изглежда, че търсеният от Вас адрес не съществува.
-                    </p>
-                    
-                    {/* Animated button */}
-                    <Link 
-                        to="/" 
-                        className={`not-found-link ${isHovered ? 'hovered' : ''}`}
-                        onMouseEnter={() => setIsHovered(true)}
-                        onMouseLeave={() => setIsHovered(false)}
-                    >
-                        <span className="link-text">
-                            Обратно към началната страница
-                        </span>
-                        <span className="link-arrow">→</span>
-                    </Link>
-                </div>
+  return (
+    <div ref={containerRef} className="not-found-container">
+      <Helmet>
+        <meta name="robots" content="noindex, nofollow" />
+      </Helmet>
 
-                {/* Floating particles */}
-                <div className="particles">
-                    {[...Array(15)].map((_, i) => (
-                        <div 
-                            key={i}
-                            className="particle"
-                            style={{
-                                animationDelay: `${i * 0.2}s`,
-                                left: `${Math.random() * 100}%`
-                            }}
-                        ></div>
-                    ))}
-                </div>
-            </div>
+      <div className="background-elements" aria-hidden="true">
+        <div className="floating-shape shape-1"></div>
+        <div className="floating-shape shape-2"></div>
+        <div className="floating-shape shape-3"></div>
+      </div>
+
+      <div className="not-found-content">
+        <div className="not-found-code-container">
+          <h1 className="not-found-code">
+            4
+            <span className="zero">0</span>
+            4
+          </h1>
+          <div className="pulse-ring" aria-hidden="true"></div>
         </div>
-    );
+
+        <div className="text-content">
+          <h2 className="not-found-title">Страницата не беше намерена</h2>
+          <p className="not-found-message">
+            Изглежда, че търсеният от Вас адрес не съществува.
+          </p>
+
+          <Link to="/" className="not-found-link">
+            <span className="link-text">Обратно към началната страница</span>
+            <span className="link-arrow" aria-hidden="true">→</span>
+          </Link>
+        </div>
+
+        <div className="particles" aria-hidden="true">
+          {particles.map((particle) => (
+            <div
+              key={particle.id}
+              className="particle"
+              style={{
+                animationDelay: particle.delay,
+                left: particle.left,
+              }}
+            ></div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
 };
 
 export default NotFoundPage;

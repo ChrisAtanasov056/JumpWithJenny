@@ -1,12 +1,14 @@
 @use "sass:color";
+
 // Color Variables
-$primary-color: #BDC3C7;
+$primary-color: #7F8C8D;
+$muted-text: #4A5D6E;
 $secondary-color: #FFFFFF;
 $background-color: #ECF0F1;
-$accent-color: #E74C3C;
+$accent-color: #C83728;
 $white: #FFFFFF;
 $text-color: #2C3E50;
-$hover-color: #C0392B;
+$hover-color: #A92D20;
 $transition-speed: 0.3s;
 $border-radius: 12px;
 
@@ -14,17 +16,21 @@ $border-radius: 12px;
   padding: 4rem 0;
   background-color: $background-color;
   color: $text-color;
-  
+
   .contact-container {
     max-width: 1200px;
     margin: 0 auto;
     padding: 0 2rem;
+
+    @media (max-width: 768px) {
+      padding: 0 1rem;
+    }
   }
-  
+
   .contact-header {
     text-align: center;
     margin-bottom: 3rem;
-    
+
     .section-title {
       font-size: 2.5rem;
       font-weight: 700;
@@ -32,7 +38,7 @@ $border-radius: 12px;
       color: $text-color;
       position: relative;
       display: inline-block;
-      
+
       &::after {
         content: '';
         position: absolute;
@@ -45,101 +51,114 @@ $border-radius: 12px;
         border-radius: 2px;
       }
     }
-    
+
     .section-subtitle {
       font-size: 1.1rem;
-      color: $primary-color;
+      color: $muted-text;
       max-width: 700px;
-      margin: 0 auto;
+      margin: 1rem auto 0;
     }
   }
-  
+
   .contact-content {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 3rem;
-    
+
     @media (max-width: 768px) {
       grid-template-columns: 1fr;
+      gap: 2rem;
     }
   }
-  
+
   .contact-form {
     background: $white;
     padding: 2rem;
     border-radius: $border-radius;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
-    
+
+    @media (max-width: 768px) {
+      padding: 1.25rem;
+    }
+
     .form-grid {
       display: grid;
       grid-template-columns: 1fr;
       gap: 1.5rem;
     }
-    
+
     .form-group {
       position: relative;
-      margin-bottom: 1rem;
-      
+      margin-bottom: 0.5rem;
+
       &.floating-label {
         label {
           position: absolute;
           top: 16px;
           left: 12px;
-          color: $primary-color;
+          color: $muted-text;
           font-size: 1rem;
+          pointer-events: none;
           transition: all $transition-speed ease;
         }
-        
-        input, textarea, select {
+
+        input,
+        textarea,
+        select {
           width: 100%;
-          padding: 16px 12px 8px;
+          padding: 18px 12px 8px;
           font-size: 1rem;
+          color: $text-color;
           border: 1px solid $primary-color;
           border-radius: $border-radius - 4;
           background-color: transparent;
-          transition: all $transition-speed ease;
-          
+          transition: border-color $transition-speed ease;
+
           &:focus {
             outline: none;
             border-color: $accent-color;
-            
+
             + label {
               color: $accent-color;
-              transform: translateY(-12px) scale(0.85);
+              transform: translateY(-13px) scale(0.85);
+              transform-origin: left top;
             }
-            
+
             ~ .input-border {
               width: 100%;
               background: $accent-color;
             }
           }
         }
-        
-        input.has-value, 
+
+        input.has-value,
         textarea.has-value,
         select.has-value {
           + label {
-            transform: translateY(-12px) scale(0.85);
-            color: $primary-color;
+            transform: translateY(-13px) scale(0.85);
+            transform-origin: left top;
+            color: $muted-text;
           }
         }
-        
+
         .input-border {
           position: absolute;
           bottom: 0;
           left: 0;
           width: 0;
           height: 2px;
+          pointer-events: none;
           transition: width $transition-speed ease;
         }
       }
-      
+
       &.select-group {
         select {
           appearance: none;
           padding-right: 32px;
+          cursor: pointer;
         }
-        
+
         .select-arrow {
           position: absolute;
           top: 50%;
@@ -148,11 +167,12 @@ $border-radius: 12px;
           height: 0;
           border-left: 5px solid transparent;
           border-right: 5px solid transparent;
-          border-top: 5px solid $primary-color;
+          border-top: 5px solid $muted-text;
           transform: translateY(-50%);
+          pointer-events: none;
         }
       }
-      
+
       &.textarea-group {
         textarea {
           resize: vertical;
@@ -161,92 +181,100 @@ $border-radius: 12px;
       }
     }
   }
-  
+
   .form-footer {
-    margin-top: 2rem;
+    margin-top: 1.5rem;
     display: flex;
     flex-direction: column;
     align-items: flex-start;
     gap: 1rem;
-    
+
     .submit-button {
       position: relative;
       padding: 12px 30px;
+      min-height: 44px;
       background: $accent-color;
       color: $white;
       border: none;
       border-radius: 50px;
       font-size: 1rem;
       font-weight: 600;
-      cursor: default;
+      cursor: pointer;
       overflow: hidden;
-      transition: all $transition-speed ease;
+      transition: background-color $transition-speed ease, transform $transition-speed ease, box-shadow $transition-speed ease;
       box-shadow: 0 4px 15px rgba($accent-color, 0.3);
-      
-      &:hover {
-        background: $hover-color;
-        transform: translateY(-2px);
-        box-shadow: 0 6px 20px rgba($accent-color, 0.4);
+
+      @media (hover: hover) and (pointer: fine) {
+        &:hover:not(:disabled) {
+          background: $hover-color;
+          transform: translateY(-2px);
+          box-shadow: 0 6px 20px rgba($accent-color, 0.4);
+        }
       }
-      
-      &:active {
+
+      &:active:not(:disabled) {
         transform: translateY(0);
       }
-      
+
+      &:disabled {
+        opacity: 0.65;
+        cursor: not-allowed;
+      }
+
       &.submitting {
         padding-right: 50px;
-        
+
         .button-text {
           opacity: 0;
         }
       }
-      
+
       .button-spinner {
         position: absolute;
-        left: 48%;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%);
         width: 20px;
         height: 20px;
         border: 3px solid rgba($white, 0.3);
         border-top-color: $white;
         border-radius: 50%;
-        animation: spin 1s linear infinite;
+        animation: contactsSpin 1s linear infinite;
       }
     }
-    
+
     .form-message {
       padding: 12px 20px;
       border-radius: $border-radius - 4;
-      font-size: 0.9rem;
-      font-weight: 500;
-      transition: all $transition-speed ease;
-      margin: auto;
+      font-size: 0.95rem;
+      font-weight: 600;
       width: 100%;
       text-align: center;
-      
+
       &.success {
-        background-color: rgba($accent-color, 0.1);
-        color: color.adjust($accent-color, $lightness: -10%);
+        background-color: #d4edda;
+        color: #155724;
       }
-      
+
       &.error {
-        background-color: rgba($accent-color, 0.1);
-        color: color.adjust($accent-color, $lightness: -10%);
+        background-color: #f8d7da;
+        color: #721c24;
       }
     }
   }
-  
+
   .contact-info {
     display: flex;
     flex-direction: column;
     gap: 2rem;
-    
+
     .info-title {
       font-size: 1.5rem;
       margin-bottom: 1rem;
       color: $text-color;
       position: relative;
       padding-bottom: 0.5rem;
-      
+
       &::after {
         content: '';
         position: absolute;
@@ -257,42 +285,50 @@ $border-radius: 12px;
         background: $accent-color;
       }
     }
-    
+
     .map-container {
       border-radius: $border-radius;
       overflow: hidden;
       box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-      
+
       iframe {
         display: block;
       }
     }
-    
+
     .details-list {
       list-style: none;
       padding: 0;
       margin: 0;
-      
+
       .detail-item {
         display: flex;
         align-items: center;
         padding: 0.8rem 0;
-        border-bottom: 1px solid $primary-color;
-        
+        border-bottom: 1px solid #d5dbe0;
+
         &:last-child {
           border-bottom: none;
         }
-        
+
+        a {
+          color: $text-color;
+          font-weight: 500;
+          text-decoration: underline;
+          text-underline-offset: 3px;
+        }
+
         .detail-icon {
           margin-right: 1rem;
           font-size: 1.2rem;
-          color: $accent-color;
         }
       }
     }
   }
 }
 
-@keyframes spin {
-  to { transform: translate(-50%, -50%) rotate(360deg); }
+@keyframes contactsSpin {
+  to {
+    transform: translate(-50%, -50%) rotate(360deg);
+  }
 }

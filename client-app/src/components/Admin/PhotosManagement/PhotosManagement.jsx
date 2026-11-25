@@ -3,8 +3,7 @@ import axios, { API_BASE_URL } from "../../../api/axius";
 import "./PhotosManagement.scss";
 import { FaTrashAlt, FaImage, FaPlus, FaSpinner } from "react-icons/fa";
 
-import { ToastContainer, toast } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
+import { toast } from "react-toastify";
 
 const PhotosManagement = () => {
   const [photos, setPhotos] = useState([]);
@@ -113,6 +112,7 @@ const PhotosManagement = () => {
         <input
           type="file"
           accept="image/*"
+          aria-label="Избери снимка за качване"
           onChange={(e) => setSelectedFile(e.target.files[0])}
         />
         <button type="submit" disabled={isUploading}>
@@ -137,12 +137,10 @@ const PhotosManagement = () => {
         </div>
       ) : (
         <div className="no-photos">
-          <FaImage size={40} />
+          <FaImage size={40} aria-hidden="true" />
           <p>Няма качени снимки.</p>
         </div>
       )}
-
-      <ToastContainer position="top-right" autoClose={3000} />
     </div>
   );
 };

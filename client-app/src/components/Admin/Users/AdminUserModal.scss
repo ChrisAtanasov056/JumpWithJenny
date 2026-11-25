@@ -24,18 +24,16 @@ $mobile-breakpoint: 600px;
     align-items: center;
     z-index: 1000;
     backdrop-filter: blur(2px);
+    padding: 1rem;
+    overflow-y: auto;
+    overscroll-behavior: contain;
   
     .modal-overlay {
       position: absolute;
-      width: 100%;
-      height: 100%;
+      inset: 0;
       background: $modal-overlay;
-      cursor: default;
+      cursor: pointer;
       transition: opacity 0.3s ease;
-  
-      &:focus {
-        outline: 2px solid $primary-color;
-      }
     }
   
     .modal-content {
@@ -46,7 +44,9 @@ $mobile-breakpoint: 600px;
       width: 90%;
       max-width: 500px;
       max-height: 90vh;
+      max-height: calc(100dvh - 2rem);
       overflow-y: auto;
+      overscroll-behavior: contain;
       z-index: 1001;
       box-shadow: $shadow;
       animation: modalFadeIn 0.3s ease-out;
@@ -58,15 +58,14 @@ $mobile-breakpoint: 600px;
         background: none;
         border: none;
         font-size: 1.5rem;
-        cursor: default;
+        cursor: pointer;
         color: $text-color-light;
         transition: color 0.2s;
         padding: 0.5rem;
         line-height: 1;
   
-        &:hover, &:focus {
+        &:hover {
           color: #333;
-          outline: none;
         }
       }
   
@@ -103,7 +102,7 @@ $mobile-breakpoint: 600px;
           button {
             padding: 0.5rem 1.5rem;
             border-radius: 4px;
-            cursor: default;
+            cursor: pointer;
             font-weight: 500;
             border: none;
             transition: all 0.2s;
@@ -209,7 +208,7 @@ $mobile-breakpoint: 600px;
               position: relative;
               display: inline-flex;
               align-items: center;
-              cursor: default;
+              cursor: pointer;
   
               input {
                 opacity: 0;
@@ -309,7 +308,7 @@ $mobile-breakpoint: 600px;
         button {
           padding: 0.5rem 1rem;
           border-radius: 4px;
-          cursor: default;
+          cursor: pointer;
           transition: all 0.2s;
           font-weight: 500;
           font-size: 0.9rem;

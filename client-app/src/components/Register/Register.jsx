@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useAuth } from '../../services/AuthContext';
 import { create } from '../../services/authService';
 import './Register.scss';
@@ -10,7 +10,7 @@ import i18n from "../../i18n";
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const usernameRegex = /^[a-zA-Z0-9_-]+$/;
 
-const Register = ({ onClose, onLoginSuccess, onRegisterSuccess }) => {
+const Register = ({ onRegisterSuccess }) => {
   const { t } = useTranslation();
   const { login: authLogin } = useAuth();
   const [credentials, setCredentials] = useState({
@@ -21,66 +21,39 @@ const Register = ({ onClose, onLoginSuccess, onRegisterSuccess }) => {
     password: '',
   });
   const [retypedPassword, setRetypedPassword] = useState('');
+  const [focusedField, setFocusedField] = useState(null);
   const [errorMessage, setErrorMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [passwordFocused, setPasswordFocused] = useState(false);
   const [emailError, setEmailError] = useState('');
   const [usernameError, setUsernameError] = useState('');
 
-  const inputRefs = {
-    firstName: useRef(null),
-    lastName: useRef(null),
-    userName: useRef(null),
-    email: useRef(null),
-    password: useRef(null),
-    retypedPassword: useRef(null),
-  };
+  const isEmailValid = (email) => emailRegex.test(email);
+  const isUsernameValid = (username) =>
+    username.trim() !== '' && usernameRegex.test(username);
 
-  useEffect(() => {
-    Object.keys(inputRefs).forEach(key => {
-      if (inputRefs[key].current?.value) {
-        inputRefs[key].current.closest('.form-field').classList.add('has-content');
-      }
-    });
-  }, []);
-
-  const handleFocus = (e) => {
-    const container = e.target.closest('.form-field');
-    container.classList.add('is-focused');
-  };
-
-  const handleBlur = (e) => {
-    const container = e.target.closest('.form-field');
-    container.classList.remove('is-focused');
-    if (e.target.value) {
-      container.classList.add('has-content');
-    } else {
-      container.classList.remove('has-content');
-    }
-  };
-
-  const handlePasswordFocus = (e) => {
-    handleFocus(e);
+  const handlePasswordFocus = () => {
+    setFocusedField('password');
     setPasswordFocused(true);
   };
 
-  const handlePasswordBlur = (e) => {
-    handleBlur(e);
+  const handlePasswordBlur = () => {
+    setFocusedField(null);
     setPasswordFocused(false);
   };
 
-  const handleEmailBlur = (e) => {
-    handleBlur(e);
-    if (!isEmailValid(credentials.email)) {
+  const handleEmailBlur = () => {
+    setFocusedField(null);
+    if (credentials.email && !isEmailValid(credentials.email)) {
       setEmailError(t('register.invalidEmailError'));
     } else {
       setEmailError('');
     }
   };
 
-  const handleUsernameBlur = (e) => {
-    handleBlur(e);
-    if (!isUsernameValid(credentials.userName)) {
+  const handleUsernameBlur = () => {
+    setFocusedField(null);
+    if (credentials.userName && !isUsernameValid(credentials.userName)) {
       setUsernameError(t('register.invalidUsernameError'));
     } else {
       setUsernameError('');
@@ -89,7 +62,7 @@ const Register = ({ onClose, onLoginSuccess, onRegisterSuccess }) => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setCredentials(prev => ({ ...prev, [name]: value }));
+    setCredentials((prev) => ({ ...prev, [name]: value }));
 
     if (name === 'email' && emailError) {
       setEmailError('');
@@ -100,19 +73,7 @@ const Register = ({ onClose, onLoginSuccess, onRegisterSuccess }) => {
     }
   };
 
-  const handleRetypedPasswordChange = (e) => {
-    setRetypedPassword(e.target.value);
-  };
-
   const passwordsMatch = credentials.password === retypedPassword;
-
-  const isEmailValid = (email) => {
-    return emailRegex.test(email);
-  };
-
-  const isUsernameValid = (username) => {
-    return username.trim() !== '' && usernameRegex.test(username);
-  };
 
   const passwordCriteria = [
     { label: t('register.passwordLength'), isValid: credentials.password.length >= 8 },
@@ -124,7 +85,7 @@ const Register = ({ onClose, onLoginSuccess, onRegisterSuccess }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const language = i18n.language || 'en';
+    const language = i18n.language || 'bg';
     const payload = { ...credentials, language };
 
     if (!isUsernameValid(credentials.userName)) {
@@ -159,16 +120,17 @@ const Register = ({ onClose, onLoginSuccess, onRegisterSuccess }) => {
           token: response.token,
           refreshToken: response.refreshToken,
         });
-        onRegisterSuccess(t('register.successMessage'));
+        onRegisterSuccess?.(t('register.successMessage'));
       } else {
         setErrorMessage(response?.message || t('register.incompleteDataError'));
       }
     } catch (error) {
       console.error('Registration error:', error);
       const apiErrors = error.response?.data?.errors;
-      const apiErrorMessage = Array.isArray(apiErrors) && apiErrors.length > 0
-        ? apiErrors.join(' ')
-        : error.response?.data?.message;
+      const apiErrorMessage =
+        Array.isArray(apiErrors) && apiErrors.length > 0
+          ? apiErrors.join(' ')
+          : error.response?.data?.message;
       if (apiErrorMessage) {
         setErrorMessage(apiErrorMessage);
       } else {
@@ -179,86 +141,101 @@ const Register = ({ onClose, onLoginSuccess, onRegisterSuccess }) => {
     }
   };
 
+  const fieldClass = (name, value) =>
+    `form-field ${focusedField === name ? 'is-focused' : ''} ${value ? 'has-content' : ''}`;
+
   return (
     <form onSubmit={handleSubmit} className="register-form">
       <div className="form-grid two-columns">
-        <div className="form-field">
-          <label htmlFor="firstName" className="floating-label">{t('register.firstNameLabel')}</label>
+        <div className={fieldClass('firstName', credentials.firstName)}>
+          <label htmlFor="register-firstName" className="floating-label">
+            {t('register.firstNameLabel')}
+          </label>
           <input
             type="text"
-            id="firstName"
+            id="register-firstName"
             name="firstName"
-            ref={inputRefs.firstName}
+            autoComplete="given-name"
             value={credentials.firstName}
             onChange={handleChange}
-            onFocus={handleFocus}
-            onBlur={handleBlur}
+            onFocus={() => setFocusedField('firstName')}
+            onBlur={() => setFocusedField(null)}
             required
             className="form-input"
           />
-          <div className="input-line"></div>
+          <div className="input-line" aria-hidden="true"></div>
         </div>
 
-        <div className="form-field">
-          <label htmlFor="lastName" className="floating-label">{t('register.lastNameLabel')}</label>
+        <div className={fieldClass('lastName', credentials.lastName)}>
+          <label htmlFor="register-lastName" className="floating-label">
+            {t('register.lastNameLabel')}
+          </label>
           <input
             type="text"
-            id="lastName"
+            id="register-lastName"
             name="lastName"
-            ref={inputRefs.lastName}
+            autoComplete="family-name"
             value={credentials.lastName}
             onChange={handleChange}
-            onFocus={handleFocus}
-            onBlur={handleBlur}
+            onFocus={() => setFocusedField('lastName')}
+            onBlur={() => setFocusedField(null)}
             required
             className="form-input"
           />
-          <div className="input-line"></div>
+          <div className="input-line" aria-hidden="true"></div>
         </div>
       </div>
 
       <div className="form-grid">
-        <div className="form-field full-width">
-          <label htmlFor="userName" className="floating-label">{t('register.userNameLabel')}</label>
+        <div className={`${fieldClass('userName', credentials.userName)} full-width`}>
+          <label htmlFor="register-userName" className="floating-label">
+            {t('register.userNameLabel')}
+          </label>
           <input
             type="text"
-            id="userName"
+            id="register-userName"
             name="userName"
-            ref={inputRefs.userName}
+            autoComplete="username"
+            autocapitalize="none"
+            autoCorrect="off"
             value={credentials.userName}
             onChange={handleChange}
-            onFocus={handleFocus}
+            onFocus={() => setFocusedField('userName')}
             onBlur={handleUsernameBlur}
             required
+            aria-invalid={Boolean(usernameError)}
             className="form-input"
           />
-          <div className="input-line"></div>
+          <div className="input-line" aria-hidden="true"></div>
           {usernameError && (
-            <div className="error-message">
-              <FontAwesomeIcon icon={faExclamationCircle} className="error-icon" />
+            <div className="error-message" role="alert">
+              <FontAwesomeIcon icon={faExclamationCircle} className="error-icon" aria-hidden="true" />
               <span className="error-text">{usernameError}</span>
             </div>
           )}
         </div>
 
-        <div className="form-field full-width">
-          <label htmlFor="email" className="floating-label">{t('register.emailLabel')}</label>
+        <div className={`${fieldClass('email', credentials.email)} full-width`}>
+          <label htmlFor="register-email" className="floating-label">
+            {t('register.emailLabel')}
+          </label>
           <input
             type="email"
-            id="email"
+            id="register-email"
             name="email"
-            ref={inputRefs.email}
+            autoComplete="email"
             value={credentials.email}
             onChange={handleChange}
-            onFocus={handleFocus}
+            onFocus={() => setFocusedField('email')}
             onBlur={handleEmailBlur}
             required
+            aria-invalid={Boolean(emailError)}
             className="form-input"
           />
-          <div className="input-line"></div>
+          <div className="input-line" aria-hidden="true"></div>
           {emailError && (
-            <div className="error-message">
-              <FontAwesomeIcon icon={faExclamationCircle} className="error-icon" />
+            <div className="error-message" role="alert">
+              <FontAwesomeIcon icon={faExclamationCircle} className="error-icon" aria-hidden="true" />
               <span className="error-text">{emailError}</span>
             </div>
           )}
@@ -266,13 +243,15 @@ const Register = ({ onClose, onLoginSuccess, onRegisterSuccess }) => {
       </div>
 
       <div className="form-grid two-columns">
-        <div className="form-field">
-          <label htmlFor="password" className="floating-label">{t('register.passwordLabel')}</label>
+        <div className={fieldClass('password', credentials.password)}>
+          <label htmlFor="register-password" className="floating-label">
+            {t('register.passwordLabel')}
+          </label>
           <input
             type="password"
-            id="password"
+            id="register-password"
             name="password"
-            ref={inputRefs.password}
+            autoComplete="new-password"
             value={credentials.password}
             onChange={handleChange}
             onFocus={handlePasswordFocus}
@@ -280,13 +259,16 @@ const Register = ({ onClose, onLoginSuccess, onRegisterSuccess }) => {
             required
             className="form-input"
           />
-          <div className="input-line"></div>
+          <div className="input-line" aria-hidden="true"></div>
           {passwordFocused && (
             <div className="password-criteria">
               <ul>
                 {passwordCriteria.map((item, index) => (
                   <li key={index} className={item.isValid ? 'valid' : 'invalid'}>
-                    <FontAwesomeIcon icon={item.isValid ? faCheckCircle : faTimesCircle} />
+                    <FontAwesomeIcon
+                      icon={item.isValid ? faCheckCircle : faTimesCircle}
+                      aria-hidden="true"
+                    />
                     <span>{item.label}</span>
                   </li>
                 ))}
@@ -295,22 +277,27 @@ const Register = ({ onClose, onLoginSuccess, onRegisterSuccess }) => {
           )}
         </div>
 
-        <div className="form-field">
-          <label htmlFor="retypedPassword" className="floating-label">{t('register.retypePasswordLabel')}</label>
+        <div className={fieldClass('retypedPassword', retypedPassword)}>
+          <label htmlFor="register-retypedPassword" className="floating-label">
+            {t('register.retypePasswordLabel')}
+          </label>
           <input
             type="password"
-            id="retypedPassword"
+            id="register-retypedPassword"
+            autoComplete="new-password"
             value={retypedPassword}
-            onChange={handleRetypedPasswordChange}
-            onFocus={handleFocus}
-            onBlur={handleBlur}
-            ref={inputRefs.retypedPassword}
+            onChange={(e) => setRetypedPassword(e.target.value)}
+            onFocus={() => setFocusedField('retypedPassword')}
+            onBlur={() => setFocusedField(null)}
             required
             className="form-input"
           />
-          <div className="input-line"></div>
+          <div className="input-line" aria-hidden="true"></div>
           {retypedPassword.length > 0 && (
-            <div className={`password-match-icon ${passwordsMatch ? 'valid' : 'invalid'}`}>
+            <div
+              className={`password-match-icon ${passwordsMatch ? 'valid' : 'invalid'}`}
+              aria-hidden="true"
+            >
               <FontAwesomeIcon icon={passwordsMatch ? faCheckCircle : faTimesCircle} />
             </div>
           )}
@@ -318,8 +305,8 @@ const Register = ({ onClose, onLoginSuccess, onRegisterSuccess }) => {
       </div>
 
       {errorMessage && (
-        <div className="error-message">
-          <FontAwesomeIcon icon={faExclamationCircle} className="error-icon" />
+        <div className="error-message" role="alert">
+          <FontAwesomeIcon icon={faExclamationCircle} className="error-icon" aria-hidden="true" />
           <span className="error-text">{errorMessage}</span>
         </div>
       )}
@@ -327,14 +314,14 @@ const Register = ({ onClose, onLoginSuccess, onRegisterSuccess }) => {
       <button
         type="submit"
         className={`submit-button ${isLoading ? 'is-loading' : ''}`}
-        disabled={isLoading || !passwordsMatch || !isEmailValid(credentials.email) || !!usernameError}
+        disabled={
+          isLoading || !passwordsMatch || !isEmailValid(credentials.email) || Boolean(usernameError)
+        }
       >
         <span className="button-text">
           {isLoading ? t('register.creatingAccount') : t('register.signUpButton')}
         </span>
-        {isLoading && (
-          <span className="button-loader"></span>
-        )}
+        {isLoading && <span className="button-loader" aria-hidden="true"></span>}
       </button>
     </form>
   );

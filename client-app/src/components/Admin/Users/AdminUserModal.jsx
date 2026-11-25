@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
+import useModalAccessibility from '../../../services/useModalAccessibility';
 import './AdminUserModal.scss';
 
 const AdminUserModal = ({ user, onClose, onSave, onDelete }) => {
@@ -8,6 +9,7 @@ const AdminUserModal = ({ user, onClose, onSave, onDelete }) => {
   const [saveError, setSaveError] = useState('');
   const [isSaving, setIsSaving] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const modalRef = useRef(null);
 
   useEffect(() => {
     setEditedUser({ ...user });
@@ -18,26 +20,24 @@ const AdminUserModal = ({ user, onClose, onSave, onDelete }) => {
     setShowDeleteConfirm(false);
   }, [user]);
 
-  // Handle escape key press
-  useEffect(() => {
-    const handleKeyDown = (e) => {
-      if (e.key === 'Escape') {
-        if (showDeleteConfirm) {
-          setShowDeleteConfirm(false);
-        } else if (isEditing) {
-          setIsEditing(false);
-          setEditedUser({ ...user });
-          setErrors({});
-          setSaveError('');
-        } else {
-          onClose();
-        }
-      }
-    };
+  const handleEscapeOrClose = useCallback(() => {
+    if (showDeleteConfirm) {
+      setShowDeleteConfirm(false);
+    } else if (isEditing) {
+      setIsEditing(false);
+      setEditedUser({ ...user });
+      setErrors({});
+      setSaveError('');
+    } else {
+      onClose();
+    }
+  }, [showDeleteConfirm, isEditing, user, onClose]);
 
-    document.addEventListener('keydown', handleKeyDown);
-    return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [isEditing, user, onClose, showDeleteConfirm]);
+  useModalAccessibility({
+    isOpen: Boolean(user),
+    onClose: handleEscapeOrClose,
+    modalRef,
+  });
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -117,13 +117,12 @@ const AdminUserModal = ({ user, onClose, onSave, onDelete }) => {
     <div className="admin-user-modal">
       <div 
         className="modal-overlay" 
-        onClick={isEditing || showDeleteConfirm ? null : onClose}
-        role="button"
-        aria-label={isEditing || showDeleteConfirm ? null : "Close modal"}
-        tabIndex={isEditing || showDeleteConfirm ? -1 : 0}
+        onClick={isEditing || showDeleteConfirm ? undefined : onClose}
+        aria-hidden="true"
       />
       
       <div 
+        ref={modalRef}
         className="modal-content"
         role="dialog"
         aria-modal="true"

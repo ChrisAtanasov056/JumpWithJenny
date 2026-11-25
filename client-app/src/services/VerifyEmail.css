@@ -3,18 +3,21 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    height: 100vh;
+    min-height: 100vh;
+    min-height: 100dvh;
+    padding: 5rem 1rem 2rem;
     background-color: #f4f4f4;
 }
 
 /* Verification box styling */
 .verify-box {
     background: white;
-    padding: 20px;
+    padding: 24px;
     border-radius: 10px;
     box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
     text-align: center;
-    width: 400px;
+    width: 100%;
+    max-width: 400px;
 }
 
 /* Title */
@@ -63,18 +66,19 @@
 .return-home-btn {
     margin-top: 20px;
     padding: 12px 24px;
-    background-color: #ff6b6b;
+    min-height: 44px;
+    background-color: #C83728;
     color: #ffffff;
     font-size: 16px;
     font-weight: bold;
     border: none;
     border-radius: 8px;
-    cursor: default;
+    cursor: pointer;
     transition: background-color 0.3s ease, transform 0.2s ease;
 }
 
 .return-home-btn:hover {
-    background-color: #ff4c4c;
+    background-color: #A92D20;
     transform: translateY(-2px);
 }
 

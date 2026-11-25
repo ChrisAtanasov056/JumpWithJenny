@@ -1,4 +1,5 @@
 {
+    "skipToContent": "Skip to main content",
     "about": {
       "title": "About Me",
       "content": "Hi, I'm Jenny, a certified Kangoo Jump trainer. I'm passionate about combining fitness with fun, and I've found Kangoo Jumps to be the perfect way to do that. These low-impact, high-energy workouts are great for improving cardio, strength, and flexibility while keeping things exciting!\n\nI love helping people of all fitness levels feel confident and motivated. Whether you're new to fitness or an experienced athlete, my classes are designed to energize and challenge you in a fun way.\n\nJoin me for a Kangoo Jump session and experience a workout that's as enjoyable as it is effective!"
@@ -11,7 +12,10 @@
       "schedule": "Schedules",
       "contact": "Contact",
       "login_register": "Login/Register",
-      "admin_panel": "Admin Panel"
+      "admin_panel": "Admin Panel",
+      "ariaLabel": "Main navigation",
+      "toggleMenu": "Toggle navigation menu",
+      "languageSelect": "Select language"
     },
 
     "welcomeTitle": "Welcome to Jump With Jenny!",
@@ -22,6 +26,12 @@
     "galleryTitle": "Photo Gallery",
     "gallerySubtitle": "Explore photos from my Kangoo Jump classes. Each picture captures the fun and energy we share together!",
     "galleryAlt": "Gallery item",
+    "galleryPagination": "Gallery pagination",
+    "galleryPrevSlide": "Previous photo",
+    "galleryNextSlide": "Next photo",
+    "galleryPrevPage": "Previous page",
+    "galleryNextPage": "Next page",
+    "galleryPageInfo": "Page {{page}}",
 
     "schedule": {
         "title": "Weekly Schedule",
@@ -32,7 +42,15 @@
         "loading": "Loading...",
         "error": "Failed to fetch data. Please try again later.",
         "loginRequired": "You need to be logged in to register for a workout.",
-        "registerFailed": "Failed to register. Please try again."
+        "registerFailed": "Failed to register. Please try again.",
+        "noWorkouts": "There are currently no upcoming workouts scheduled."
+    },
+    "testimonials": {
+        "title": "What Our Clients Say",
+        "prevSlide": "Previous testimonial",
+        "nextSlide": "Next testimonial",
+        "goToSlide": "Go to testimonial {{index}}",
+        "ratingLabel": "Rated {{rating}} out of 5 stars"
     },
     "shoesTitle": "Kangoo Jumps Shoes",
     "selectCardTitle": "Select Workout Card",
@@ -116,7 +134,14 @@
           "sendResetLink": "Send Reset Link",
           "sending": "Sending...",
           "forgotPasswordSuccessMessage": "Check your email for the reset link!",
-          "forgotPasswordGenericError": "An error occurred. Please try again."
+          "forgotPasswordGenericError": "An error occurred. Please try again.",
+          "forgotPasswordSuccess": "Check your email for the reset link!",
+          "forgotPasswordError": "An error occurred while sending the email. Please try again.",
+          "continueWithGoogle": "Continue with Google",
+          "continueWithFacebook": "Continue with Facebook"
+        },
+        "successModal": {
+          "title": "Success!"
         },
         "login": {
           "emailLabel": "Email",

@@ -2,7 +2,7 @@
 $primary-color: #34495E; // Dark color for text and icons
 $secondary-color: #F8F9FA; // Light background
 $background-color: #FFFFFF; // White background for main panels
-$accent-color: #3498DB; // Blue for accents and active elements
+$accent-color: #1D6FA5; // Accessible blue for accents and active elements
 $white: #FFFFFF;
 $text-color: #2C3E50;
 $hover-color: #E7E9EC; // Light gray for hover effect
@@ -14,6 +14,7 @@ $border-radius: 8px;
 .admin-layout {
   display: flex;
   min-height: 100vh;
+  min-height: 100dvh;
   background-color: $secondary-color;
   flex-direction: row; // Default for desktop
 }
@@ -87,6 +88,7 @@ $border-radius: 8px;
     box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
     padding: 30px;
     min-height: calc(100vh - 60px);
+    min-height: calc(100dvh - 60px);
   }
 }
 
@@ -113,21 +115,17 @@ $border-radius: 8px;
 
       .admin-nav {
         display: flex;
-        justify-content: space-around; // Distribute navigation items evenly
+        justify-content: center;
         flex-wrap: wrap; // Allow items to wrap on smaller screens
+        gap: 8px;
 
         .nav-item {
-          margin: 0 5px; // Add some horizontal spacing
+          margin: 0;
 
           .nav-link {
-            padding: 10px 15px;
+            padding: 10px 14px;
             font-size: 14px;
             gap: 8px;
-            
-            // Adjust the icon and text visibility
-            .nav-link-text {
-              display: none; // Hide text on mobile nav links
-            }
           }
         }
       }

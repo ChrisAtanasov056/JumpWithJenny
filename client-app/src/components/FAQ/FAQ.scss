@@ -1,11 +1,12 @@
 @use "sass:color";
+
 $primary-color: #BDC3C7;
 $secondary-color: #FFFFFF;
 $background-color: #ECF0F1;
-$accent-color: #E74C3C;
+$accent-color: #C83728;
 $white: #FFFFFF;
 $text-color: #2C3E50;
-$hover-color: #C0392B;
+$hover-color: #A92D20;
 $mobile-breakpoint: 768px;
 $transition-speed: 0.3s;
 $border-radius: 8px;
@@ -13,16 +14,15 @@ $border-radius: 8px;
 .faq-section {
   padding: 5rem 2rem;
   background-color: $background-color;
-  font-family: 'Inter', sans-serif;
   text-align: center;
 
   h2 {
     font-size: 2.5rem;
     font-weight: 700;
     color: $text-color;
-    margin-bottom: 3.5rem;
+    margin-bottom: 3rem;
     position: relative;
-  
+
     &::after {
       content: '';
       display: block;
@@ -49,33 +49,16 @@ $border-radius: 8px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
   transition: box-shadow $transition-speed ease;
 
-  &:hover {
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
-  }
-}
-
-.faq-question {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 1.5rem 2rem;
-  font-size: 1.1rem;
-  font-weight: 600;
-  color: $text-color;
-  cursor: default;
-  border-bottom: 1px solid $primary-color;
-  transition: background-color $transition-speed ease, color $transition-speed ease;
-
-  .icon {
-    font-size: 1.2rem;
-    color: $accent-color;
-    transition: transform $transition-speed ease;
+  @media (hover: hover) and (pointer: fine) {
+    &:hover {
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+    }
   }
 
-  &.active {
+  &[open] > .faq-question {
     background-color: $hover-color;
     color: $white;
-    border-bottom: none;
+    border-bottom-color: transparent;
 
     .icon {
       color: $white;
@@ -84,31 +67,80 @@ $border-radius: 8px;
   }
 }
 
-.faq-answer {
-  padding: 0 2rem;
-  max-height: 0;
-  overflow: hidden;
-  background-color: color.adjust($background-color, $lightness: 2%);
-  color: #555;
-  transition: max-height 0.4s ease-in-out, padding 0.4s ease-in-out;
+.faq-question {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.35rem 1.75rem;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: $text-color;
+  cursor: pointer;
+  list-style: none;
+  border-bottom: 1px solid #e2e8f0;
+  transition: background-color $transition-speed ease, color $transition-speed ease;
 
-  &.active {
-    max-height: 250px; /* Увеличете при нужда */
-    padding: 1.5rem 2rem;
-    
-    p {
-      animation: fadeIn 0.5s ease-in-out;
-    }
+  &::-webkit-details-marker {
+    display: none;
+  }
+
+  .faq-question-text {
+    flex: 1;
+  }
+
+  .icon {
+    font-size: 1.15rem;
+    flex-shrink: 0;
+    color: $accent-color;
+    transition: transform $transition-speed ease, color $transition-speed ease;
   }
 }
 
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(-10px);
+.faq-answer {
+  padding: 1.35rem 1.75rem;
+  background-color: color.adjust($background-color, $lightness: 3%);
+  color: $text-color;
+  line-height: 1.65;
+
+  p {
+    margin: 0;
   }
-  to {
-    opacity: 1;
-    transform: translateY(0);
+}
+
+.faq-item::details-content {
+  overflow: clip;
+  contain: layout;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .faq-item::details-content {
+    interpolate-size: allow-keywords;
+    transition: block-size 0.3s ease, content-visibility 0.3s ease;
+    transition-behavior: allow-discrete;
+  }
+
+  .faq-item:not([open])::details-content {
+    block-size: 0;
+  }
+}
+
+@media (max-width: $mobile-breakpoint) {
+  .faq-section {
+    padding: 3rem 1rem;
+
+    h2 {
+      font-size: 1.9rem;
+      margin-bottom: 2rem;
+    }
+  }
+
+  .faq-question {
+    padding: 1.1rem 1.25rem;
+    font-size: 1rem;
+  }
+
+  .faq-answer {
+    padding: 1.1rem 1.25rem;
   }
 }

@@ -15,7 +15,11 @@ $transition-speed: 0.3s;
 $mobile-breakpoint: 768px;
 
 .not-found-container {
+    --mouse-x: 50;
+    --mouse-y: 50;
     min-height: 100vh;
+    min-height: 100dvh;
+    padding: 5.5rem 1rem 2rem;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -45,6 +49,7 @@ $mobile-breakpoint: 768px;
         height: 200px;
         top: 10%;
         left: 10%;
+        transform: translate(calc(var(--mouse-x) * 0.02px), calc(var(--mouse-y) * 0.02px));
         animation: float 6s ease-in-out infinite;
     }
     
@@ -53,6 +58,7 @@ $mobile-breakpoint: 768px;
         height: 150px;
         top: 60%;
         right: 10%;
+        transform: translate(calc(var(--mouse-x) * -0.03px), calc(var(--mouse-y) * -0.03px));
         animation: float 8s ease-in-out infinite reverse;
     }
     
@@ -61,6 +67,7 @@ $mobile-breakpoint: 768px;
         height: 100px;
         bottom: 20%;
         left: 20%;
+        transform: translate(calc(var(--mouse-x) * 0.04px), calc(var(--mouse-y) * 0.01px));
         animation: float 5s ease-in-out infinite;
         background: rgba($accent-color, 0.2);
     }

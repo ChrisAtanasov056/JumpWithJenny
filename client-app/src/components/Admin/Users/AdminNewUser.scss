@@ -1,23 +1,17 @@
 @use "sass:color";
 /* Color Palette & Fonts */
-$primary-color: #007bff;
-$secondary-color: #6c757d;
-$success-color: #28a745;
-$danger-color: #dc3545;
+$primary-color: #0069d9;
+$secondary-color: #545b62;
+$success-color: #218838;
+$danger-color: #c82333;
 $light-bg: #f8f9fa;
 $white-bg: #ffffff;
-$border-color: #e9ecef;
-$text-color: #343a40;
-$light-text-color: #adb5bd;
+$border-color: #ced4da;
+$text-color: #2c3e50;
+$light-text-color: #5a6268;
 
 // Mobile breakpoint
 $mobile-breakpoint: 600px;
-
-body {
-  font-family: 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-  background-color: $light-bg;
-  color: $text-color;
-}
 
 /* New User Form Container */
 .new-user-container {
@@ -80,7 +74,7 @@ button[type="submit"] {
   border: none;
   border-radius: 8px;
   font-weight: 600;
-  cursor: default;
+  cursor: pointer;
   transition: background-color 0.3s ease, transform 0.2s ease;
 
   &:hover:not(:disabled) {

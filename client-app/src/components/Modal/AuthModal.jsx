@@ -1,23 +1,23 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import './AuthModal.scss';
 import Login from '../Login/Login';
 import Register from '../Register/Register';
 import SuccessModal from '../Register/SuccessModal';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faFacebook, faInstagram } from '@fortawesome/free-brands-svg-icons';
+import { faFacebook } from '@fortawesome/free-brands-svg-icons';
 import { faSpinner } from '@fortawesome/free-solid-svg-icons';
 import ForgotPasswordModal from '../ForgotPassword/ForgotPasswordModal';
 import { useTranslation } from 'react-i18next';
 import { useGoogleLogin } from '@react-oauth/google';
 import { useAuth } from '../../services/AuthContext';
-import { googleLogin, facebookLogin, forgotPasswordEmail } from '../../services/authService';
+import { googleLogin, facebookLogin } from '../../services/authService';
 import { useFacebookSDK } from '../../services/FacebookSDKContext.jsx';
-// Custom hook for closing modal on outside click
-import useOutsideClick from '../../services/useOutsideClick'; 
+import useOutsideClick from '../../services/useOutsideClick';
+import useModalAccessibility from '../../services/useModalAccessibility';
 
-const AuthModal = ({ onClose, onLoginSuccess, setModalOpen }) => {
-  const { t, i18n } = useTranslation();
-  const [isLogin, setIsLogin] = useState(true);
+const AuthModal = ({ initialMode = 'login', onClose, onLoginSuccess }) => {
+  const { t } = useTranslation();
+  const [isLogin, setIsLogin] = useState(initialMode !== 'register');
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [showForgotModal, setShowForgotModal] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
@@ -27,16 +27,29 @@ const AuthModal = ({ onClose, onLoginSuccess, setModalOpen }) => {
 
   const { isFbSdkReady } = useFacebookSDK();
 
-  // Reference to the modal card element
   const modalCardRef = useRef(null);
+  const toggleTimerRef = useRef(null);
+  const isNestedModalOpen = showForgotModal || showSuccessModal;
 
-  // Close modal when clicking outside the card
-  useOutsideClick(modalCardRef, onClose);
+  useEffect(() => {
+    setIsLogin(initialMode !== 'register');
+    setErrorMessage('');
+  }, [initialMode]);
+
+  useEffect(() => {
+    return () => {
+      if (toggleTimerRef.current) {
+        clearTimeout(toggleTimerRef.current);
+      }
+    };
+  }, []);
+
+  useOutsideClick(modalCardRef, onClose, !isNestedModalOpen);
+  useModalAccessibility({ isOpen: true, onClose, modalRef: modalCardRef });
 
   const socialPlatforms = [
     { platform: 'Google', className: 'google-btn' },
     { platform: 'Facebook', icon: faFacebook, className: 'fb-btn' },
-    { platform: 'Instagram', icon: faInstagram, className: 'instagram-btn' },
   ];
 
   const handleGoogleLoginSuccess = async (credentialResponse) => {
@@ -53,10 +66,8 @@ const AuthModal = ({ onClose, onLoginSuccess, setModalOpen }) => {
         const { Token: token, RefreshToken: refreshToken, User: user } = response;
         if (user && token && refreshToken) {
           authGoogleLogin({ ...user, token, refreshToken });
-          onLoginSuccess({ ...user, token, refreshToken });
-          onClose();
-          setSuccessMessage(t('login.successMessage'));
-          setShowSuccessModal(true);
+          onLoginSuccess?.({ ...user, token, refreshToken });
+          onClose?.();
         } else {
           setErrorMessage(t('login.incompleteDataError'));
         }
@@ -82,10 +93,8 @@ const AuthModal = ({ onClose, onLoginSuccess, setModalOpen }) => {
         const { Token: token, RefreshToken: refreshToken, User: user } = response;
         if (user && token && refreshToken) {
           authFacebookLogin({ ...user, token, refreshToken });
-          onLoginSuccess({ ...user, token, refreshToken });
-          onClose();
-          setSuccessMessage(t('login.successMessage'));
-          setShowSuccessModal(true);
+          onLoginSuccess?.({ ...user, token, refreshToken });
+          onClose?.();
         } else {
           setErrorMessage(t('login.incompleteDataError'));
         }
@@ -108,28 +117,16 @@ const AuthModal = ({ onClose, onLoginSuccess, setModalOpen }) => {
     flow: 'auth-code',
   });
 
-  const handleForgotPassword = async (userData) => {
-    try {
-      await forgotPasswordEmail({
-        email: userData.email,
-        language: i18n.language,
-      });
-      setSuccessMessage(t('auth.forgotPasswordSuccess'));
-      setShowSuccessModal(true);
-      setShowForgotModal(false);
-    } catch (error) {
-      setSuccessMessage(t('auth.forgotPasswordError'));
-      setShowSuccessModal(true);
-    }
-  };
-
   const toggleForm = () => {
     setIsAnimating(true);
     setErrorMessage('');
-    setTimeout(() => {
-      setIsLogin(!isLogin);
+    if (toggleTimerRef.current) {
+      clearTimeout(toggleTimerRef.current);
+    }
+    toggleTimerRef.current = setTimeout(() => {
+      setIsLogin((prev) => !prev);
       setIsAnimating(false);
-    }, 300);
+    }, 220);
   };
 
   const handleSocialLogin = (platform) => {
@@ -152,8 +149,6 @@ const AuthModal = ({ onClose, onLoginSuccess, setModalOpen }) => {
         },
         { scope: 'public_profile,email' }
       );
-    } else if (platform === 'Instagram') {
-      // Вход с Instagram все още не е имплементиран
     }
   };
 
@@ -164,7 +159,7 @@ const AuthModal = ({ onClose, onLoginSuccess, setModalOpen }) => {
 
   const handleCloseSuccessModal = () => {
     setShowSuccessModal(false);
-    onClose();
+    onClose?.();
   };
 
   const renderSocialButtons = () => (
@@ -172,8 +167,14 @@ const AuthModal = ({ onClose, onLoginSuccess, setModalOpen }) => {
       {socialPlatforms.map(({ platform, icon, className }) => {
         if (platform === 'Google') {
           return (
-            <button onClick={() => handleSocialLogin('Google')} className={`social-btn ${className}`} key={platform}>
-              <div className="gsi-material-button-icon">
+            <button
+              type="button"
+              onClick={() => handleSocialLogin('Google')}
+              className={`social-btn ${className}`}
+              key={platform}
+              aria-label={t('auth.continueWithGoogle')}
+            >
+              <div className="gsi-material-button-icon" aria-hidden="true">
                 <svg
                   version="1.1"
                   xmlns="http://www.w3.org/2000/svg"
@@ -189,40 +190,51 @@ const AuthModal = ({ onClose, onLoginSuccess, setModalOpen }) => {
               </div>
             </button>
           );
-        } else if (platform === 'Facebook') {
-          return isFbSdkReady ? (
-            <button onClick={() => handleSocialLogin(platform)} className={`social-btn ${className}`} key={platform}>
-              <FontAwesomeIcon icon={icon} />
-            </button>
-          ) : (
-            <div className={`social-btn loading-btn`} key={platform}>
-              <FontAwesomeIcon icon={faSpinner} spin />
-            </div>
-          );
-        } else {
-          return (
-            <button onClick={() => handleSocialLogin(platform)} className={`social-btn ${className}`} key={platform}>
-              <FontAwesomeIcon icon={icon} />
-            </button>
-          );
         }
+        return isFbSdkReady ? (
+          <button
+            type="button"
+            onClick={() => handleSocialLogin(platform)}
+            className={`social-btn ${className}`}
+            key={platform}
+            aria-label={t('auth.continueWithFacebook')}
+          >
+            <FontAwesomeIcon icon={icon} aria-hidden="true" />
+          </button>
+        ) : (
+          <div className="social-btn loading-btn" key={platform} aria-hidden="true">
+            <FontAwesomeIcon icon={faSpinner} spin />
+          </div>
+        );
       })}
     </div>
   );
 
   return (
     <>
-      {/* ПРОВЕРКА: Клик върху overlay-я също може да затваря модала (допълнителен начин) */}
-      <div className="auth-modal-overlay" onClick={onClose}>
-        {/* ПРОВЕРКА: Прикачваме референцията и спираме разпространението на събитието! */}
-        <div className={`auth-modal-card`} ref={modalCardRef} onClick={(e) => e.stopPropagation()}>
-          <button className="auth-close-btn" onClick={onClose}>
+      <div className="auth-modal-overlay">
+        <div
+          className="auth-modal-card"
+          ref={modalCardRef}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="auth-modal-title"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <button
+            type="button"
+            className="auth-close-btn"
+            onClick={onClose}
+            aria-label={t('close')}
+          >
             ✕
           </button>
           <div className="auth-content">
             <div className="auth-form-container">
               <div className="auth-header">
-                <h2>{isLogin ? t('auth.loginTitle') : t('auth.registerTitle')}</h2>
+                <h2 id="auth-modal-title">
+                  {isLogin ? t('auth.loginTitle') : t('auth.registerTitle')}
+                </h2>
                 <p>{isLogin ? t('auth.welcomeBack') : t('auth.joinUs')}</p>
               </div>
 
@@ -230,7 +242,11 @@ const AuthModal = ({ onClose, onLoginSuccess, setModalOpen }) => {
                 {isLogin ? (
                   <>
                     <Login onClose={onClose} onLoginSuccess={onLoginSuccess} />
-                    <button className="forgot-password-btn" onClick={() => setShowForgotModal(true)}>
+                    <button
+                      type="button"
+                      className="forgot-password-btn"
+                      onClick={() => setShowForgotModal(true)}
+                    >
                       {t('auth.forgotPassword')}
                     </button>
                   </>
@@ -238,12 +254,16 @@ const AuthModal = ({ onClose, onLoginSuccess, setModalOpen }) => {
                   <Register onRegisterSuccess={handleRegisterSuccess} />
                 )}
               </div>
-              
+
               <div className="auth-footer">
-                {errorMessage && <div className="auth-error-msg">{errorMessage}</div>}
+                {errorMessage && (
+                  <div className="auth-error-msg" role="alert">
+                    {errorMessage}
+                  </div>
+                )}
                 <div className="switch-text">
                   {isLogin ? t('auth.dontHaveAccount') : t('auth.alreadyHaveAccount')}{' '}
-                  <button onClick={toggleForm} className="switch-mode-btn">
+                  <button type="button" onClick={toggleForm} className="switch-mode-btn">
                     {isLogin ? t('auth.register') : t('auth.login')}
                   </button>
                 </div>
@@ -255,13 +275,12 @@ const AuthModal = ({ onClose, onLoginSuccess, setModalOpen }) => {
         </div>
       </div>
 
-      {showSuccessModal && <SuccessModal message={successMessage} onClose={handleCloseSuccessModal} />}
+      {showSuccessModal && (
+        <SuccessModal message={successMessage} onClose={handleCloseSuccessModal} />
+      )}
 
       {showForgotModal && (
-        <ForgotPasswordModal
-          onClose={() => setShowForgotModal(false)}
-          onForgotPassword={handleForgotPassword}
-        />
+        <ForgotPasswordModal onClose={() => setShowForgotModal(false)} />
       )}
     </>
   );

@@ -4,53 +4,54 @@ import './AboutMe.scss';
 
 const AboutMe = () => {
   const { t } = useTranslation();
-  const textRef = useRef(null);
-  const imageRef = useRef(null);
-  const shoeRef = useRef(null);  
-  const [isVisible, setIsVisible] = useState(false);
+  const sectionRef = useRef(null);
+  const [isVisible, setIsVisible] = useState(() => {
+    if (typeof window === 'undefined') return true;
+    return window.matchMedia?.('(prefers-reduced-motion: reduce)').matches || !('IntersectionObserver' in window);
+  });
 
   useEffect(() => {
+    if (isVisible) return;
+
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
             setIsVisible(true);
-            observer.unobserve(entry.target);
+            observer.disconnect();
           }
         });
       },
-      { threshold: 0.4 }
+      { threshold: 0.1, rootMargin: '0px 0px -40px 0px' }
     );
 
-    const textNode = textRef.current;
-    const imageNode = imageRef.current;
-    const shoeNode = shoeRef.current; 
+    const node = sectionRef.current;
+    if (node) {
+      observer.observe(node);
+    }
 
-    if (textNode) observer.observe(textNode);
-    if (imageNode) observer.observe(imageNode);
-    if (shoeNode) observer.observe(shoeNode); 
+    return () => observer.disconnect();
+  }, [isVisible]);
 
-    return () => {
-      if (textNode) observer.unobserve(textNode);
-      if (imageNode) observer.unobserve(imageNode);
-      if (shoeNode) observer.unobserve(shoeNode); 
-    };
-  }, []);
+  const paragraphs = String(t('about.content')).split('\n\n').filter(Boolean);
 
   return (
-    <section id="about" className="about-section">
-      <div
-        ref={textRef}
-        className={`about-text ${isVisible ? 'active' : ''}`}
-      >
-        <h2>{t('about.title')}</h2>
-        <p>{t('about.content')}</p>
-      </div>
-      <div
-        ref={imageRef}
-        className={`about-image ${isVisible ? 'active' : ''}`}
-      >
-        <img src="/images/jenny.jpg" alt={t('about.title')} />
+    <section
+      id="about"
+      ref={sectionRef}
+      className="about-section"
+      aria-labelledby="about-heading"
+    >
+      <div className="about-container">
+        <div className={`about-text ${isVisible ? 'active' : ''}`}>
+          <h2 id="about-heading">{t('about.title')}</h2>
+          {paragraphs.map((paragraph, index) => (
+            <p key={index}>{paragraph}</p>
+          ))}
+        </div>
+        <div className={`about-image ${isVisible ? 'active' : ''}`}>
+          <img src="/images/jenny.jpg" alt={t('about.title')} loading="lazy" />
+        </div>
       </div>
     </section>
   );

@@ -89,13 +89,14 @@ $transition-speed: 0.3s;
 
   .footer-links-container {
     display: flex;
-    flex-direction: row; /* Променено от column на row */
-    gap: 20px; /* Увеличено разстоянието между линковете */
-    justify-content: center; /* Центриране на линковете */
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 12px 20px;
+    justify-content: center;
     margin-bottom: 1.5rem;
     
     .link {
-      color: rgba($white, 0.7);
+      color: rgba($white, 0.88);
       text-decoration: none;
       font-size: 0.9rem;
       transition: color $transition-speed ease;
@@ -108,8 +109,8 @@ $transition-speed: 0.3s;
   }
 
   .copyright {
-    font-size: 0.8rem;
-    color: rgba($white, 0.5);
+    font-size: 0.85rem;
+    color: rgba($white, 0.78);
   }
 }
 

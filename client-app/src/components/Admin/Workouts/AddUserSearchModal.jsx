@@ -1,4 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
+import useOutsideClick from '../../../services/useOutsideClick';
+import useModalAccessibility from '../../../services/useModalAccessibility';
 import './AddUserSearchModal.scss';
 
 const AddUserSearchModal = ({
@@ -16,6 +18,8 @@ const AddUserSearchModal = ({
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  const modalRef = useRef(null);
+
   useEffect(() => {
     const delayDebounce = setTimeout(async () => {
       if (searchTerm.trim()) {
@@ -29,7 +33,7 @@ const AddUserSearchModal = ({
     return () => clearTimeout(delayDebounce);
   }, [searchTerm, searchUsers]);
 
-  const handleClose = () => {
+  const handleClose = useCallback(() => {
     setSearchTerm('');
     setSearchResults([]);
     setSelectedUser(null);
@@ -39,7 +43,14 @@ const AddUserSearchModal = ({
     setError('');
     setIsSubmitting(false);
     onClose();
-  };
+  }, [onClose]);
+
+  useOutsideClick(modalRef, handleClose, visible && !isSubmitting);
+  useModalAccessibility({
+    isOpen: visible,
+    onClose: isSubmitting ? undefined : handleClose,
+    modalRef,
+  });
 
   const handleConfirm = async () => {
     if (!selectedUser || !cardType || (!usesOwnShoes && !shoeSize)) {
@@ -69,9 +80,22 @@ const AddUserSearchModal = ({
 
   return (
     <div className="add-user-modal-overlay">
-      <div className="add-user-modal">
-        <h3>Add Participant</h3>
-        <button type="button" className="close-icon" onClick={handleClose}>
+      <div
+        className="add-user-modal"
+        ref={modalRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="add-participant-title"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <h3 id="add-participant-title">Add Participant</h3>
+        <button
+          type="button"
+          className="close-icon"
+          onClick={handleClose}
+          disabled={isSubmitting}
+          aria-label="Close modal"
+        >
           &times;
         </button>
         {!selectedUser ? (
@@ -79,6 +103,7 @@ const AddUserSearchModal = ({
             <input
               type="text"
               placeholder="Search by name or email"
+              aria-label="Search by name or email"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
@@ -97,8 +122,9 @@ const AddUserSearchModal = ({
             <p><strong>{selectedUser.FullName}</strong> ({selectedUser.Email})</p>
 
             <div className="form-group">
-              <label>
+              <label htmlFor="add-user-own-shoes">
                 <input
+                  id="add-user-own-shoes"
                   type="checkbox"
                   checked={usesOwnShoes}
                   onChange={(e) => {
@@ -116,8 +142,9 @@ const AddUserSearchModal = ({
 
             {!usesOwnShoes && (
               <div className="form-group">
-                <label>Shoe Size</label>
+                <label htmlFor="add-user-shoe-size">Shoe Size</label>
                 <select
+                  id="add-user-shoe-size"
                   value={shoeSize}
                   onChange={(e) => {
                     setShoeSize(e.target.value);
@@ -134,8 +161,9 @@ const AddUserSearchModal = ({
             )}
 
             <div className="form-group">
-              <label>Card Type</label>
+              <label htmlFor="add-user-card-type">Card Type</label>
               <select
+                id="add-user-card-type"
                 value={cardType}
                 onChange={(e) => {
                   setCardType(e.target.value);
@@ -149,7 +177,7 @@ const AddUserSearchModal = ({
               </select>
             </div>
 
-            {error && <div className="error">{error}</div>}
+            {error && <div className="error" role="alert">{error}</div>}
 
             <div className="form-buttons">
               <button type="button" onClick={handleConfirm} disabled={isSubmitting}>

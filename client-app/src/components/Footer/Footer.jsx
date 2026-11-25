@@ -10,9 +10,9 @@ const Footer = () => {
   return (
     <footer className="footer-animated">
       <div className="footer-container">
-        <div className="jump-animation">
+        <div className="jump-animation" aria-hidden="true">
           <div>
-            <img src="/images/brand_logo_2.png" alt="Brand Logo" className='kangoo-shoe-img'/>
+            <img src="/images/brand_logo_2.png" alt="" className='kangoo-shoe-img'/>
           </div>
           <div className="shadow"></div>
         </div>
@@ -24,7 +24,7 @@ const Footer = () => {
             target="_blank"
             rel="noopener noreferrer"
           >
-            <FaFacebook className="icon" />
+            <FaFacebook className="icon" aria-hidden="true" />
             <span className="label">Facebook</span>
           </a>
           
@@ -34,7 +34,7 @@ const Footer = () => {
             target="_blank"
             rel="noopener noreferrer"
           >
-            <FaTiktok className="icon" />
+            <FaTiktok className="icon" aria-hidden="true" />
             <span className="label">TikTok</span>
           </a>
           
@@ -44,7 +44,7 @@ const Footer = () => {
             target="_blank"
             rel="noopener noreferrer"
           >
-            <FaInstagram className="icon" />
+            <FaInstagram className="icon" aria-hidden="true" />
             <span className="label">Instagram</span>
           </a>
         </div>

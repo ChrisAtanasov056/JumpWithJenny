@@ -1,31 +1,107 @@
-import React, { useState } from 'react';
-import { Link } from 'react-scroll';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import './NavBar.scss';
 import AuthModal from '../Modal/AuthModal';
 import ProfileModal from '../Profile/Profile';
 import { useAuth } from '../../services/AuthContext';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faUser } from '@fortawesome/free-solid-svg-icons';
-import { Link as RouterLink } from 'react-router-dom';
+import { Link as RouterLink, useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import LanguageDropdown from '../lang/LanguageDropdown.tsx';
+import useOutsideClick from '../../services/useOutsideClick';
+
+const NAV_SECTIONS = [
+  { id: 'welcome', key: 'navbar.home' },
+  { id: 'about', key: 'navbar.about' },
+  { id: 'gallery', key: 'navbar.gallery' },
+  { id: 'schedule', key: 'navbar.schedule' },
+  { id: 'faq', key: 'navbar.faq' },
+  { id: 'contacts', key: 'navbar.contact' },
+];
 
 const Navbar = () => {
   const [isModalOpen, setModalOpen] = useState(false);
   const [isProfileOpen, setProfileOpen] = useState(false);
-  const [isNavActive, setNavActive] = useState(false);
   const [menuActive, setMenuActive] = useState(false);
 
   const { isAuthenticated, user, logout } = useAuth();
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
+  const location = useLocation();
+  const navigate = useNavigate();
+  const navRef = useRef(null);
+
+  const closeMenu = useCallback(() => {
+    setMenuActive(false);
+  }, []);
 
   const toggleMenu = () => {
-    setMenuActive(!menuActive);
-    setNavActive(!isNavActive);
+    setMenuActive((prev) => !prev);
   };
 
-  const toggleModal = () => setModalOpen(!isModalOpen);
-  const toggleProfileModal = () => setProfileOpen(!isProfileOpen);
+  useOutsideClick(navRef, closeMenu, menuActive);
+
+  useEffect(() => {
+    closeMenu();
+  }, [location.pathname, closeMenu]);
+
+  useEffect(() => {
+    if (!menuActive) return;
+
+    const handleKeyDown = (event) => {
+      if (event.key === 'Escape') {
+        closeMenu();
+      }
+    };
+
+    const handleResize = () => {
+      if (window.innerWidth > 991) {
+        closeMenu();
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    window.addEventListener('resize', handleResize);
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('resize', handleResize);
+    };
+  }, [menuActive, closeMenu]);
+
+  const handleSectionNav = (event, sectionId) => {
+    event.preventDefault();
+    closeMenu();
+
+    const prefersReducedMotion =
+      typeof window !== 'undefined' &&
+      window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+
+    if (location.pathname === '/') {
+      const target = document.getElementById(sectionId);
+      if (target) {
+        target.scrollIntoView({
+          behavior: prefersReducedMotion ? 'auto' : 'smooth',
+          block: 'start',
+        });
+      }
+      const nextUrl = sectionId === 'welcome' ? '/' : `/#${sectionId}`;
+      window.history.replaceState(null, '', nextUrl);
+    } else {
+      navigate(sectionId === 'welcome' ? '/' : `/#${sectionId}`, {
+        state: { scrollTo: sectionId },
+      });
+    }
+  };
+
+  const openAuthModal = () => {
+    closeMenu();
+    setModalOpen(true);
+  };
+
+  const openProfileModal = () => {
+    closeMenu();
+    setProfileOpen(true);
+  };
+
   const handleLoginSuccess = () => setModalOpen(false);
 
   const handleLogout = () => {
@@ -33,97 +109,92 @@ const Navbar = () => {
     setProfileOpen(false);
   };
 
-  const changeLanguage = (language) => {
-    i18n.changeLanguage(language);
-  };
+  const isAdmin = user?.role === 'Administrator' || user?.role === 'Admin';
 
   return (
     <>
-      <nav className={`navbar navbar-expand-lg fixed-top ${menuActive ? 'menu-open' : ''}`}>
+      <nav
+        ref={navRef}
+        aria-label={t('navbar.ariaLabel')}
+        className={`navbar navbar-expand-lg fixed-top ${menuActive ? 'menu-open' : ''}`}
+      >
         <div className="container">
-          <a href="/" className="navbar-logo-link">
+          <RouterLink to="/" className="navbar-logo-link" onClick={closeMenu}>
             <img
               src="/images/brand_logo_2.png"
               alt="Jump With Jenny Logo"
               className="navbar-logo"
             />
-          </a>
+          </RouterLink>
 
-          <button
-            className={`navbar-toggler ${menuActive ? 'active' : ''}`}
-            onClick={toggleMenu}
-            aria-label="Toggle navigation"
+          <div className="navbar-actions">
+            <LanguageDropdown />
+            <button
+              type="button"
+              className={`navbar-toggler ${menuActive ? 'active' : ''}`}
+              onClick={toggleMenu}
+              aria-expanded={menuActive}
+              aria-controls="primary-navigation"
+              aria-label={t('navbar.toggleMenu')}
+            >
+              <span className="navbar-toggler-icon" aria-hidden="true">
+                <span className={`line ${menuActive ? 'active' : ''}`}></span>
+                <span className={`line ${menuActive ? 'active' : ''}`}></span>
+                <span className={`line ${menuActive ? 'active' : ''}`}></span>
+              </span>
+            </button>
+          </div>
+
+          <ul
+            id="primary-navigation"
+            className={`navbar-nav ${menuActive ? 'active' : ''}`}
           >
-            <div className="navbar-toggler-icon">
-              <div className={`line ${menuActive ? 'active' : ''}`}></div>
-              <div className={`line ${menuActive ? 'active' : ''}`}></div>
-              <div className={`line ${menuActive ? 'active' : ''}`}></div>
-            </div>
-          </button>
-
-          <div className={`navbar-nav ${isNavActive ? 'active' : ''}`}>
-            <li className="nav-item">
-              <Link to="welcome" className="nav-link" smooth duration={500} onClick={toggleMenu}>
-                {t('navbar.home')}
-              </Link>
-            </li>
-            <li className="nav-item">
-              <Link to="about" className="nav-link" smooth duration={500} onClick={toggleMenu}>
-                {t('navbar.about')}
-              </Link>
-            </li>
-            <li className="nav-item">
-              <Link to="gallery" className="nav-link" smooth duration={500} onClick={toggleMenu}>
-                {t('navbar.gallery')}
-              </Link>
-            </li>
-            <li className="nav-item">
-              <Link to="schedule" className="nav-link" smooth duration={500} onClick={toggleMenu}>
-                {t('navbar.schedule')}
-              </Link>
-            </li>
-            <li className="nav-item">
-              <Link to="faq" className="nav-link" smooth duration={500} onClick={toggleMenu}>
-                {t('navbar.faq')}
-              </Link>
-            </li>
-            <li className="nav-item">
-              <Link to="contacts" className="nav-link" smooth duration={500} onClick={toggleMenu}>
-                {t('navbar.contact')}
-              </Link>
-            </li>
+            {NAV_SECTIONS.map(({ id, key }) => (
+              <li className="nav-item" key={id}>
+                <a
+                  href={id === 'welcome' ? '/' : `/#${id}`}
+                  className="nav-link"
+                  onClick={(e) => handleSectionNav(e, id)}
+                >
+                  {t(key)}
+                </a>
+              </li>
+            ))}
 
             {isAuthenticated ? (
               <>
-                {user?.role === 'Administrator' && (
+                {isAdmin && (
                   <li className="nav-item">
-                    <RouterLink to="/admin" className="nav-link" onClick={toggleMenu}>
+                    <RouterLink to="/admin" className="nav-link" onClick={closeMenu}>
                       {t('navbar.admin_panel')}
                     </RouterLink>
                   </li>
                 )}
                 <li className="nav-item">
-                  <button className="profile-area" onClick={toggleProfileModal}>
-                    <FontAwesomeIcon icon={faUser} className="profile-icon" />
+                  <button
+                    type="button"
+                    className="profile-area"
+                    onClick={openProfileModal}
+                    aria-label={t('profile.title')}
+                  >
+                    <FontAwesomeIcon icon={faUser} className="profile-icon" aria-hidden="true" />
                   </button>
                 </li>
               </>
             ) : (
               <li className="nav-item">
-                <button onClick={toggleModal} className="login-btn">
+                <button type="button" onClick={openAuthModal} className="login-btn">
                   {t('navbar.login_register')}
                 </button>
               </li>
             )}
-          </div>
-
-          <LanguageDropdown changeLanguage={changeLanguage} />
+          </ul>
         </div>
       </nav>
 
       {isModalOpen && (
         <AuthModal
-          onClose={toggleModal}
+          onClose={() => setModalOpen(false)}
           onLoginSuccess={handleLoginSuccess}
           setModalOpen={setModalOpen}
         />
@@ -131,7 +202,7 @@ const Navbar = () => {
 
       {isProfileOpen && (
         <ProfileModal
-          onClose={toggleProfileModal}
+          onClose={() => setProfileOpen(false)}
           user={user}
           onLogout={handleLogout}
         />

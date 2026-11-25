@@ -1,6 +1,6 @@
 // src/components/Login/Login.jsx
 
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useAuth } from '../../services/AuthContext';
 import { login } from '../../services/authService';
 import './Login.scss';
@@ -12,34 +12,9 @@ const Login = ({ onClose, onLoginSuccess }) => {
   const { t } = useTranslation();
   const { login: authLogin } = useAuth();
   const [credentials, setCredentials] = useState({ email: '', password: '' });
+  const [focusedField, setFocusedField] = useState(null);
   const [errorMessage, setErrorMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const emailRef = useRef(null);
-  const passwordRef = useRef(null);
-
-  useEffect(() => {
-    if (emailRef.current?.value) {
-      emailRef.current.closest('.form-field').classList.add('has-content');
-    }
-    if (passwordRef.current?.value) {
-      passwordRef.current.closest('.form-field').classList.add('has-content');
-    }
-  }, []);
-
-  const handleFocus = (e) => {
-    const container = e.target.closest('.form-field');
-    container.classList.add('is-focused');
-  };
-
-  const handleBlur = (e) => {
-    const container = e.target.closest('.form-field');
-    container.classList.remove('is-focused');
-    if (e.target.value) {
-      container.classList.add('has-content');
-    } else {
-      container.classList.remove('has-content');
-    }
-  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -58,8 +33,8 @@ const Login = ({ onClose, onLoginSuccess }) => {
         const { token, refreshToken, user } = response;
         if (user?.id && user?.email && token && refreshToken) {
           authLogin({ ...user, token, refreshToken });
-          onLoginSuccess({ ...user, token, refreshToken });
-          onClose();
+          onLoginSuccess?.({ ...user, token, refreshToken });
+          onClose?.();
         } else {
           setErrorMessage(t('login.incompleteDataError'));
         }
@@ -81,7 +56,11 @@ const Login = ({ onClose, onLoginSuccess }) => {
 
   return (
     <form onSubmit={handleSubmit} className="login-form">
-      <div className="form-field">
+      <div
+        className={`form-field ${focusedField === 'email' ? 'is-focused' : ''} ${
+          credentials.email ? 'has-content' : ''
+        }`}
+      >
         <label htmlFor="login-email" className="floating-label">
           {t('login.emailLabel')}
         </label>
@@ -89,54 +68,56 @@ const Login = ({ onClose, onLoginSuccess }) => {
           type="email"
           id="login-email"
           name="email"
-          ref={emailRef}
+          autoComplete="email"
           value={credentials.email}
           onChange={handleChange}
-          onFocus={handleFocus}
-          onBlur={handleBlur}
+          onFocus={() => setFocusedField('email')}
+          onBlur={() => setFocusedField(null)}
           required
           className="form-input"
         />
-        <div className="input-line"></div>
+        <div className="input-line" aria-hidden="true"></div>
       </div>
 
-      <div className="form-field">
-        <label htmlFor="password" className="floating-label">
+      <div
+        className={`form-field ${focusedField === 'password' ? 'is-focused' : ''} ${
+          credentials.password ? 'has-content' : ''
+        }`}
+      >
+        <label htmlFor="login-password" className="floating-label">
           {t('login.passwordLabel')}
         </label>
         <input
           type="password"
-          id="password"
+          id="login-password"
           name="password"
-          ref={passwordRef}
+          autoComplete="current-password"
           value={credentials.password}
           onChange={handleChange}
-          onFocus={handleFocus}
-          onBlur={handleBlur}
+          onFocus={() => setFocusedField('password')}
+          onBlur={() => setFocusedField(null)}
           required
           className="form-input"
         />
-        <div className="input-line"></div>
+        <div className="input-line" aria-hidden="true"></div>
       </div>
 
       {errorMessage && (
-        <div className="error-message">
-          <FontAwesomeIcon icon={faExclamationCircle} className="error-icon" />
+        <div className="error-message" role="alert">
+          <FontAwesomeIcon icon={faExclamationCircle} className="error-icon" aria-hidden="true" />
           <span className="error-text">{errorMessage}</span>
         </div>
       )}
 
-      <button 
-        type="submit" 
+      <button
+        type="submit"
         className={`submit-button ${isLoading ? 'is-loading' : ''}`}
         disabled={isLoading}
       >
         <span className="button-text">
           {isLoading ? t('login.loading') : t('login.loginButton')}
         </span>
-        {isLoading && (
-          <span className="button-loader"></span>
-        )}
+        {isLoading && <span className="button-loader" aria-hidden="true"></span>}
       </button>
     </form>
   );

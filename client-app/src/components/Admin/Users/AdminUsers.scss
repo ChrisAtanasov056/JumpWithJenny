@@ -1,21 +1,15 @@
 @use "sass:color";
 /* Color Palette & Fonts */
-$primary-color: #007bff;
-$secondary-color: #6c757d;
-$success-color: #28a745;
-$danger-color: #dc3545;
+$primary-color: #0069d9;
+$secondary-color: #495057;
+$success-color: #218838;
+$danger-color: #c82333;
 $light-bg: #f8f9fa;
 $white-bg: #ffffff;
-$border-color: #e9ecef;
-$text-color: #343a40;
-$light-text-color: #adb5bd;
+$border-color: #dee2e6;
+$text-color: #2c3e50;
+$light-text-color: #5a6268;
 $mobile-breakpoint: 768px;
-
-body {
-  font-family: 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-  background-color: $light-bg;
-  color: $text-color;
-}
 
 /* Overall Container */
 .admin-users-container {

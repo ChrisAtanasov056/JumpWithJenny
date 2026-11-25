@@ -1,6 +1,5 @@
-// AdminLayout.jsx
 import React from 'react';
-import { Outlet, Link } from "react-router-dom";
+import { Outlet, NavLink, Link } from 'react-router-dom';
 import './AdminLayout.scss';
 
 const AdminLayout = () => {
@@ -10,35 +9,49 @@ const AdminLayout = () => {
         <div className="sidebar-header">
           <h2>Admin Panel</h2>
         </div>
-        <nav>
+        <nav aria-label="Admin navigation">
           <ul className="admin-nav">
             <li className="nav-item">
-              <Link to="/admin" className="nav-link">Dashboard</Link>
+              <NavLink
+                to="/admin/users"
+                className={({ isActive }) => `nav-link${isActive ? ' active' : ''}`}
+              >
+                Users
+              </NavLink>
             </li>
             <li className="nav-item">
-              <Link to="/admin/users" className="nav-link">Users</Link>
+              <NavLink
+                to="/admin/workouts"
+                className={({ isActive }) => `nav-link${isActive ? ' active' : ''}`}
+              >
+                Workouts
+              </NavLink>
             </li>
             <li className="nav-item">
-              <Link to="/admin/workouts" className="nav-link">Workouts</Link>
+              <NavLink
+                to="/admin/shoes"
+                className={({ isActive }) => `nav-link${isActive ? ' active' : ''}`}
+              >
+                Shoes
+              </NavLink>
             </li>
             <li className="nav-item">
-              <Link to="/admin/shoes" className="nav-link">Shoes</Link>
-            </li>
-            <li className="nav-item">
-              <Link to="/admin/photos" className="nav-link">Photos</Link>
-            </li>
-            <li className="nav-item">
-              <Link to="/admin/analytics" className="nav-link">Analytics</Link>
+              <NavLink
+                to="/admin/photos"
+                className={({ isActive }) => `nav-link${isActive ? ' active' : ''}`}
+              >
+                Photos
+              </NavLink>
             </li>
             <li className="nav-item">
               <Link to="/" className="nav-link">
-                <span role="img" aria-label="home">🏠</span> Back to Main Site
+                <span aria-hidden="true">🏠</span> Back to Main Site
               </Link>
             </li>
           </ul>
         </nav>
       </aside>
-      <main className="admin-main">
+      <main id="main-content" className="admin-main">
         <div className="admin-container">
           <Outlet />
         </div>

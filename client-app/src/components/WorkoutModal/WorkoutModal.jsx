@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { FaTimes, FaCheck, FaInfoCircle, FaCalendarAlt, FaShoePrints, FaCreditCard } from 'react-icons/fa';
 import './WorkoutModal.scss';
 import useOutsideClick from '../../services/useOutsideClick';
+import useModalAccessibility from '../../services/useModalAccessibility';
 
 const SHOE_SIZE_MAP = {
   S: 1,
@@ -41,7 +42,9 @@ const WorkoutModal = ({
 
   const modalRef = useRef(null);
   const timeoutRef = useRef(null);
-  useOutsideClick(modalRef, onClose);
+
+  useOutsideClick(modalRef, onClose, isOpen);
+  useModalAccessibility({ isOpen, onClose, modalRef });
 
   const [selectedSize, setSelectedSize] = useState('');
   const [selectedCard, setSelectedCard] = useState('');
@@ -112,7 +115,7 @@ const WorkoutModal = ({
   useEffect(() => {
     if (isOpen && selectedWorkout?.WorkoutShoes) {
       const counts = { S: 0, M: 0, L: 0, XL: 0 };
-      selectedWorkout.WorkoutShoes.forEach(ws => {
+      selectedWorkout.WorkoutShoes.forEach((ws) => {
         if (!ws.IsTaken && ws.Shoe) {
           switch (ws.Shoe.Size) {
             case 1: counts.S++; break;
@@ -240,54 +243,67 @@ const WorkoutModal = ({
           <motion.div
             className="modal-content"
             ref={modalRef}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby={isLoggedIn && user?.emailConfirmed ? 'workout-modal-title' : undefined}
+            aria-label={isLoggedIn && user?.emailConfirmed ? undefined : t('registerFor')}
             onClick={(e) => e.stopPropagation()}
-            initial={{ y: "100vh", opacity: 0 }}
+            initial={{ y: 40, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
-            exit={{ y: "100vh", opacity: 0 }}
-            transition={{ type: "spring", stiffness: 100, damping: 20 }}
+            exit={{ y: 40, opacity: 0 }}
+            transition={{ type: "spring", stiffness: 260, damping: 24 }}
           >
-            <button className="close-btn" onClick={onClose}><FaTimes /></button>
+            <button
+              type="button"
+              className="close-btn"
+              onClick={onClose}
+              aria-label={t('close')}
+            >
+              <FaTimes aria-hidden="true" />
+            </button>
 
             {isLoggedIn ? (
               !user?.emailConfirmed ? (
                 <div className="status-message info">
-                  <FaInfoCircle className="status-icon" />
+                  <FaInfoCircle className="status-icon" aria-hidden="true" />
                   <p>{t('errorAccountNotConfirmed')}</p>
-                  <button onClick={onClose} className="btn-close-prompt">{t('close')}</button>
+                  <button type="button" onClick={onClose} className="btn-close-prompt">
+                    {t('close')}
+                  </button>
                 </div>
               ) : (
                 <>
                   <div className="modal-header">
-                    <FaCalendarAlt className="header-icon" />
+                    <FaCalendarAlt className="header-icon" aria-hidden="true" />
                     <h3>{t('registerFor')}</h3>
-                    <h2>
+                    <h2 id="workout-modal-title">
                       {selectedWorkout?.Day ? t(`days.${selectedWorkout.Day.toLowerCase()}`) : ''} {t('at')} {selectedWorkout?.Time}
                     </h2>
                   </div>
 
                   <div className="modal-body">
                     {isCheckingRegistration || isSubmitting ? (
-                      <div className="status-message loading">
-                        <FaInfoCircle className="status-icon" />
+                      <div className="status-message loading" role="status">
+                        <FaInfoCircle className="status-icon" aria-hidden="true" />
                         <p>{t('checkingRegistration')}</p>
                       </div>
                     ) : cancelSuccess ? (
-                      <div className="status-message success">
-                        <FaCheck className="status-icon" />
+                      <div className="status-message success" role="status">
+                        <FaCheck className="status-icon" aria-hidden="true" />
                         <p>{t('registrationCancelled')}</p>
                       </div>
                     ) : isAlreadyRegistered ? (
                       <div className="status-message info">
-                        <FaInfoCircle className="status-icon" />
+                        <FaInfoCircle className="status-icon" aria-hidden="true" />
                         <p>{t('alreadyRegistered')}</p>
-                        {error && <div className="error-message">{error}</div>}
-                        <button onClick={handleCancelRegistration} className="btn-cancel">
+                        {error && <div className="error-message" role="alert">{error}</div>}
+                        <button type="button" onClick={handleCancelRegistration} className="btn-cancel">
                           {t('cancelRegistration')}
                         </button>
                       </div>
                     ) : isRegistrationSuccess ? (
-                      <div className="status-message success">
-                        <FaCheck className="status-icon" />
+                      <div className="status-message success" role="status">
+                        <FaCheck className="status-icon" aria-hidden="true" />
                         <p>{t('registrationSuccess')}</p>
                       </div>
                     ) : (
@@ -307,15 +323,18 @@ const WorkoutModal = ({
                             </div>
 
                             <div className="form-section">
-                              <h4 className="section-title"><FaShoePrints /> {t('shoesTitle')}</h4>
+                              <h4 className="section-title">
+                                <FaShoePrints aria-hidden="true" /> {t('shoesTitle')}
+                              </h4>
                               <div className="option-group">
-                                <label className="checkbox-container">
+                                <label className="checkbox-container" htmlFor="workout-own-shoes">
                                   <input
+                                    id="workout-own-shoes"
                                     type="checkbox"
                                     checked={usesOwnShoes}
                                     onChange={handleOwnShoesChange}
                                   />
-                                  <span className="checkmark"></span>
+                                  <span className="checkmark" aria-hidden="true"></span>
                                   {t('useOwnShoes')}
                                 </label>
                               </div>
@@ -330,6 +349,7 @@ const WorkoutModal = ({
                                       <button
                                         key={size}
                                         type="button"
+                                        aria-pressed={selectedSize === size}
                                         className={`size-btn ${selectedSize === size ? 'active' : ''} ${isDisabled ? 'disabled' : ''}`}
                                         onClick={() => !isDisabled && handleSizeClick(size)}
                                         disabled={isDisabled}
@@ -344,7 +364,9 @@ const WorkoutModal = ({
                                         </small>
                                         <br />
                                         <span className="availability">
-
+                                          {available > 0
+                                            ? `${available} ${available === 1 ? t('availableSingular') : t('available')}`
+                                            : t('noShoes')}
                                         </span>
                                       </button>
                                     );
@@ -354,9 +376,15 @@ const WorkoutModal = ({
                             </div>
 
                             <div className="form-section">
-                              <h4 className="section-title"><FaCreditCard /> {t('selectCardTitle')}</h4>
+                              <h4 className="section-title">
+                                <FaCreditCard aria-hidden="true" /> {t('selectCardTitle')}
+                              </h4>
                               <div className="card-select-wrapper">
+                                <label htmlFor="workout-card-select" className="visually-hidden">
+                                  {t('selectCardTitle')}
+                                </label>
                                 <select
+                                  id="workout-card-select"
                                   className="styled-select"
                                   value={selectedCard}
                                   onChange={handleCardChange}
@@ -370,17 +398,23 @@ const WorkoutModal = ({
                               </div>
                             </div>
 
-                            {error && <div className="error-message">{error}</div>}
+                            {error && <div className="error-message" role="alert">{error}</div>}
 
-                            <button type="submit" className="btn-submit" disabled={isSubmitting || !selectedCard || (!usesOwnShoes && !selectedSize)}>
+                            <button
+                              type="submit"
+                              className="btn-submit"
+                              disabled={isSubmitting || !selectedCard || (!usesOwnShoes && !selectedSize)}
+                            >
                               {t('submit')}
                             </button>
                           </>
                         ) : (
                           <div className="status-message full">
-                            <FaInfoCircle className="status-icon" />
+                            <FaInfoCircle className="status-icon" aria-hidden="true" />
                             <p>{t('fullNotice')}</p>
-                            <button onClick={onClose} className="btn-close-full">{t('close')}</button>
+                            <button type="button" onClick={onClose} className="btn-close-full">
+                              {t('close')}
+                            </button>
                           </div>
                         )}
                       </form>
@@ -390,10 +424,12 @@ const WorkoutModal = ({
               )
             ) : (
               <div className="login-prompt-card">
-                <FaInfoCircle className="prompt-icon" />
+                <FaInfoCircle className="prompt-icon" aria-hidden="true" />
                 <h3>{t('loginPromptTitle')}</h3>
                 <p>{t('loginPromptText')}</p>
-                <button onClick={onClose} className="btn-close-prompt">{t('close')}</button>
+                <button type="button" onClick={onClose} className="btn-close-prompt">
+                  {t('close')}
+                </button>
               </div>
             )}
           </motion.div>

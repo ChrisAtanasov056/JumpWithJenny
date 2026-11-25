@@ -2,21 +2,15 @@
 // AdminShoes.scss
 
 // Define a simple color palette
-$primary-color: #5d5d81;
-$secondary-color: #8c8cd9;
-$success-color: #4CAF50;
-$danger-color: #e57373;
-$cancel-color: #6c757d; // Added cancel color
+$primary-color: #49496b;
+$secondary-color: #5b5ba6;
+$success-color: #2e7d32;
+$danger-color: #c62828;
+$cancel-color: #545b62; // Added cancel color
 $background-color: #f7f9fc;
 $card-background: #ffffff;
-$border-color: #e0e0e0;
-$text-color: #333;
-
-body {
-  background-color: $background-color;
-  font-family: 'Arial', sans-serif;
-  color: $text-color;
-}
+$border-color: #d5d9df;
+$text-color: #2c3e50;
 
 .admin-shoes {
   max-width: 900px;
@@ -203,7 +197,7 @@ body {
 
     .btn-cancel-form {
       background-color: $cancel-color;
-      color: rgb(236, 11, 11);
+      color: #ffffff;
       
       &:hover {
         background-color: color.adjust($cancel-color, $lightness: -10%);

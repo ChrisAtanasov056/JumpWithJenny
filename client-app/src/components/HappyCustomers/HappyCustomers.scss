@@ -1,7 +1,8 @@
 @use "sass:color";
+
 // HappyCustomers.scss
-$primary-color: #ff6b6b; 
-$text-color: #333;
+$primary-color: #C83728;
+$text-color: #2C3E50;
 $bg-color: #f8f9fa;
 $card-bg: #fff;
 $shadow-color: rgba(0, 0, 0, 0.1);
@@ -10,148 +11,204 @@ $shadow-color: rgba(0, 0, 0, 0.1);
   padding: 60px 20px;
   background-color: $bg-color;
   text-align: center;
-  overflow: hidden; 
-}
+  overflow: hidden;
 
-.section-title {
-  font-size: 2.5rem;
-  color: $text-color;
-  margin-bottom: 50px;
-  font-weight: 700;
-  transform: translateY(20px);
-  opacity: 0;
-  animation: fadeInDown 0.8s forwards;
-}
-
-.carousel-container {
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
-  max-width: 1000px;
-  margin: 0 auto;
-}
-
-.testimonials-list {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 20px; 
-  transition: transform 0.7s ease-in-out; 
-}
-
-.testimonial-card {
-  background: $card-bg;
-  border-radius: 15px;
-  padding: 30px;
-  box-shadow: 0 4px 20px $shadow-color;
-  transition: all 0.5s ease;
-  min-height: 250px; 
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  text-align: left;
-  
-  &.inactive {
-    transform: scale(0.85); 
-    opacity: 0.5; 
-    default-events: none; 
-    box-shadow: none;
+  .section-title {
+    font-size: 2.4rem;
+    color: $text-color;
+    margin-bottom: 40px;
+    font-weight: 700;
+    animation: customersFadeInDown 0.7s ease-out both;
   }
-  
-  &.active {
-    transform: scale(1);
-    opacity: 1;
-    z-index: 10;
-    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
+
+  .carousel-container {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    max-width: 1080px;
+    margin: 0 auto;
+    padding: 0 3.5rem;
+    touch-action: pan-y;
+  }
+
+  .testimonials-list {
+    display: flex;
+    align-items: stretch;
+    justify-content: center;
+    gap: 20px;
+    width: 100%;
+  }
+
+  .testimonial-card {
+    background: $card-bg;
+    border-radius: 15px;
+    padding: 28px;
+    box-shadow: 0 4px 20px $shadow-color;
+    transition: transform 0.4s ease, opacity 0.4s ease, box-shadow 0.4s ease;
+    min-height: 230px;
+    flex: 1 1 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    text-align: left;
+
+    &.inactive {
+      transform: scale(0.9);
+      opacity: 0.55;
+      pointer-events: none;
+      box-shadow: none;
+    }
+
+    &.active {
+      transform: scale(1);
+      opacity: 1;
+      z-index: 10;
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+    }
+  }
+
+  .testimonial-comment {
+    font-style: italic;
+    font-size: 1.05rem;
+    line-height: 1.6;
+    color: $text-color;
+    margin-bottom: 20px;
+  }
+
+  .testimonial-author {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    margin-top: auto;
+  }
+
+  .author-name {
+    font-weight: 600;
+    color: $primary-color;
+    font-size: 1.15rem;
+    margin-bottom: 6px;
+  }
+
+  .star-rating .star {
+    color: #95a5a6;
+    font-size: 1rem;
+    margin-right: 2px;
+
+    &.filled {
+      color: #d98200;
+    }
+  }
+
+  .arrow-btn {
+    background: $card-bg;
+    border: 1px solid rgba($text-color, 0.14);
+    border-radius: 50%;
+    width: 44px;
+    height: 44px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+    color: $primary-color;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    transition: transform 0.25s ease, color 0.25s ease, background-color 0.25s ease;
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 20;
+
+    @media (hover: hover) and (pointer: fine) {
+      &:hover {
+        transform: translateY(-50%) scale(1.1);
+        background-color: $primary-color;
+        color: $card-bg;
+      }
+    }
+
+    &.left {
+      left: 0.25rem;
+    }
+    &.right {
+      right: 0.25rem;
+    }
+  }
+
+  .carousel-dots {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-top: 28px;
+    gap: 6px;
+  }
+
+  .carousel-dot {
+    position: relative;
+    width: 24px;
+    height: 24px;
+    padding: 0;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    &::before {
+      content: '';
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background-color: #8c9aa8;
+      transition: background-color 0.25s ease, transform 0.25s ease;
+    }
+
+    &.active::before {
+      background-color: $primary-color;
+      transform: scale(1.25);
+    }
   }
 }
 
-.testimonial-comment {
-  font-style: italic;
-  font-size: 1.1rem;
-  color: $text-color;
-  margin-bottom: 20px;
-}
-
-.testimonial-author {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  margin-top: auto;
-}
-
-.author-name {
-  font-weight: 600;
-  color: $primary-color;
-  font-size: 1.2rem;
-  margin-bottom: 5px;
-}
-
-.star-rating .star {
-  color: #ccc; 
-  font-size: 1rem;
-  margin-right: 2px;
-  
-  &.filled {
-    color: #ffc107; 
-  }
-}
-
-.arrow-btn {
-  background: none;
-  border: none;
-  font-size: 2rem;
-  color: $primary-color;
-  cursor: default;
-  transition: transform 0.3s ease, color 0.3s ease;
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-  z-index: 20;
-
-  &:hover {
-    transform: translateY(-50%) scale(1.2);
-    color: color.adjust($primary-color, $lightness: -15%);
-  }
-  
-  &.left {
-    left: -50px;
-  }
-  &.right {
-    right: -50px;
-  }
-}
-
-.pagination {
-  display: flex;
-  justify-content: center;
-  margin-top: 30px;
-  gap: 10px;
-}
-
-.dot {
-  width: 12px;
-  height: 12px;
-  background-color: #ccc;
-  border-radius: 50%;
-  cursor: default;
-  transition: background-color 0.3s ease, transform 0.3s ease;
-
-  &.active {
-    background-color: $primary-color;
-    transform: scale(1.2);
-  }
-}
-
-@keyframes fadeInDown {
+@keyframes customersFadeInDown {
   from {
     opacity: 0;
-    transform: translateY(-40px);
+    transform: translateY(-20px);
   }
   to {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+
+@media (max-width: 768px) {
+  .happy-customers {
+    padding: 40px 12px;
+
+    .section-title {
+      font-size: 1.85rem;
+      margin-bottom: 28px;
+    }
+
+    .carousel-container {
+      padding: 0 2.75rem;
+    }
+
+    .testimonial-card {
+      padding: 20px;
+      min-height: 200px;
+
+      &.inactive {
+        display: none;
+      }
+    }
+
+    .arrow-btn {
+      width: 38px;
+      height: 38px;
+      font-size: 1rem;
+    }
   }
 }

@@ -1,63 +1,81 @@
 .language-dropdown {
-    position: fixed;
-    cursor: default;
-    font-size: 0.9rem;
-    margin-left: auto; 
-    min-width: 60px;
-    right: 20px;
+  position: relative;
+  font-size: 0.9rem;
+  min-width: 72px;
+  z-index: 1002;
 
-    @media (max-width: 768px) {
-        right: 60px;
-      }
-  
-    .selected-language {
-      display: flex;
-      align-items: center;
-      gap: 5px;
-      padding: 5px 10px;
-      border-radius: 4px;
-      transition: background-color 0.2s;
-  
+  .selected-language {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 6px 10px;
+    min-height: 38px;
+    border-radius: 6px;
+    border: 1px solid rgba(255, 255, 255, 0.35);
+    background: rgba(255, 255, 255, 0.12);
+    color: #FFFFFF;
+    cursor: pointer;
+    transition: background-color 0.2s;
+
+    @media (hover: hover) and (pointer: fine) {
       &:hover {
-        background-color: #C0392B;
-      }
-  
-      .language-code {
-        font-weight: 500;
-      }
-  
-      .chevron {
-        font-size: 0.8em;
-        margin-left: auto;
+        background-color: #A92D20;
       }
     }
-  
-    .language-options {
-      position: absolute;
-      right: 0;
-      top: 100%;
-      background: white;
-      border-radius: 4px;
-      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
-      margin-top: 5px;
-      z-index: 1000;
-      min-width: 120px;
-  
-      .language-option {
-        padding: 8px 12px;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        transition: background-color 0.2s;
-  
+
+    &:focus-visible {
+      outline: 2px solid #FFFFFF;
+      outline-offset: 2px;
+    }
+
+    .language-code {
+      font-weight: 600;
+    }
+
+    .chevron {
+      font-size: 0.8em;
+      margin-left: auto;
+    }
+  }
+
+  .language-options {
+    position: absolute;
+    right: 0;
+    top: calc(100% + 6px);
+    background: #FFFFFF;
+    color: #2C3E50;
+    border-radius: 6px;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.18);
+    z-index: 1003;
+    min-width: 140px;
+    overflow: hidden;
+    border: 1px solid rgba(44, 62, 80, 0.12);
+
+    .language-option {
+      width: 100%;
+      border: none;
+      background: transparent;
+      color: #2C3E50;
+      text-align: left;
+      padding: 10px 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      font-size: 0.9rem;
+      transition: background-color 0.2s;
+
+      @media (hover: hover) and (pointer: fine) {
         &:hover {
-          background-color: rgba(0, 0, 0, 0.05);
+          background-color: rgba(44, 62, 80, 0.08);
         }
-  
-        &.active {
-          background-color: rgba(0, 0, 0, 0.1);
-          font-weight: 500;
-        }
+      }
+
+      &.active {
+        background-color: rgba(200, 55, 40, 0.12);
+        color: #A92D20;
+        font-weight: 600;
       }
     }
   }
+}

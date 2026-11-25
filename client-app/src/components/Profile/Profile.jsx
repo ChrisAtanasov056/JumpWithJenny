@@ -1,13 +1,23 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import i18n from "../../i18n";
-import { resendVerificationEmail, verifyEmail } from "../../services/authService";
+import { resendVerificationEmail } from "../../services/authService";
 import ChangePasswordModal from "../ChangePassword/ChangePasswordModal";
 import "./ProfileModal.scss";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faTimes, faUser, faEnvelope, faCheckCircle, faExclamationCircle, faLock, faSignOutAlt, faSpinner } from '@fortawesome/free-solid-svg-icons';
+import {
+  faTimes,
+  faUser,
+  faEnvelope,
+  faCheckCircle,
+  faExclamationCircle,
+  faLock,
+  faSignOutAlt,
+  faSpinner,
+} from '@fortawesome/free-solid-svg-icons';
 
-import useOutsideClick from '../../services/useOutsideClick'; 
+import useOutsideClick from '../../services/useOutsideClick';
+import useModalAccessibility from '../../services/useModalAccessibility';
 
 const ProfileModal = ({ onClose, user, onLogout }) => {
   const { t } = useTranslation();
@@ -18,7 +28,16 @@ const ProfileModal = ({ onClose, user, onLogout }) => {
 
   const modalCardRef = useRef(null);
 
-  useOutsideClick(modalCardRef, onClose);
+  useEffect(() => {
+    setLocalUser(user);
+  }, [user]);
+
+  useOutsideClick(modalCardRef, onClose, !isPasswordModalOpen);
+  useModalAccessibility({ isOpen: Boolean(localUser), onClose, modalRef: modalCardRef });
+
+  if (!localUser) {
+    return null;
+  }
 
   const handleResendVerification = async () => {
     setIsLoading(true);
@@ -33,69 +52,80 @@ const ProfileModal = ({ onClose, user, onLogout }) => {
     }
   };
 
-  const handleVerifyEmail = async () => {
-    try {
-      await verifyEmail(localUser.id, localUser.token);
-      setLocalUser((prevUser) => ({ ...prevUser, EmailConfirmed: true }));
-      setVerificationMessage(t("profile.emailVerified"));
-    } catch (error) {
-      setVerificationMessage(t("profile.emailVerificationFailed"));
-    }
-  };
-
   return (
-    // ПРОВЕРКА: Премахвам onClick={onClose} от overlay-я, за да не се дублира логиката.
-    <div className="profile-modal-overlay"> 
-      {/* Прикачваме референцията и спираме разпространението на събитието! */}
-      <div className="profile-modal-card" ref={modalCardRef} onClick={(e) => e.stopPropagation()}>
+    <div className="profile-modal-overlay">
+      <div
+        className="profile-modal-card"
+        ref={modalCardRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="profile-modal-title"
+        onClick={(e) => e.stopPropagation()}
+      >
         <div className="modal-header">
-          <h2 className="title">{t("profile.title")}</h2>
-          <button className="close-btn" onClick={onClose}>
-            <FontAwesomeIcon icon={faTimes} />
+          <h2 id="profile-modal-title" className="title">{t("profile.title")}</h2>
+          <button
+            type="button"
+            className="close-btn"
+            onClick={onClose}
+            aria-label={t("close")}
+          >
+            <FontAwesomeIcon icon={faTimes} aria-hidden="true" />
           </button>
         </div>
 
         <div className="profile-info-section">
           <div className="profile-detail">
-            <FontAwesomeIcon icon={faUser} className="detail-icon" />
+            <FontAwesomeIcon icon={faUser} className="detail-icon" aria-hidden="true" />
             <div className="detail-content">
               <span className="label">{t("profile.username")}</span>
               <span className="value">{localUser.username || t("profile.notAvailable")}</span>
             </div>
           </div>
           <div className="profile-detail">
-            <FontAwesomeIcon icon={faUser} className="detail-icon" />
+            <FontAwesomeIcon icon={faUser} className="detail-icon" aria-hidden="true" />
             <div className="detail-content">
               <span className="label">{t("profile.name")}</span>
-              <span className="value">{[localUser.firstname, localUser.lastname].filter(Boolean).join(" ") || t("profile.notAvailable")}</span>
+              <span className="value">
+                {[localUser.firstname, localUser.lastname].filter(Boolean).join(" ") ||
+                  t("profile.notAvailable")}
+              </span>
             </div>
           </div>
           <div className="profile-detail">
-            <FontAwesomeIcon icon={faEnvelope} className="detail-icon" />
+            <FontAwesomeIcon icon={faEnvelope} className="detail-icon" aria-hidden="true" />
             <div className="detail-content">
               <span className="label">{t("profile.email")}</span>
               <span className="value">{localUser.email || t("profile.notAvailable")}</span>
             </div>
           </div>
           <div className="profile-detail">
-            <FontAwesomeIcon 
-              icon={localUser.emailConfirmed ? faCheckCircle : faExclamationCircle} 
-              className={`detail-icon ${localUser.emailConfirmed ? 'verified' : 'not-verified'}`} 
+            <FontAwesomeIcon
+              icon={localUser.emailConfirmed ? faCheckCircle : faExclamationCircle}
+              className={`detail-icon ${localUser.emailConfirmed ? 'verified' : 'not-verified'}`}
+              aria-hidden="true"
             />
             <div className="detail-content">
               <span className="label">{t("profile.verified")}</span>
-              <span className="value">{localUser.emailConfirmed ? t("profile.yes") : t("profile.no")}</span>
+              <span className="value">
+                {localUser.emailConfirmed ? t("profile.yes") : t("profile.no")}
+              </span>
             </div>
           </div>
 
           {!localUser.emailConfirmed && (
             <div className="verification-status-box">
               <p className="message">{verificationMessage || t("profile.verificationPending")}</p>
-              <button className="btn resend-btn" onClick={handleResendVerification} disabled={isLoading}>
+              <button
+                type="button"
+                className="btn resend-btn"
+                onClick={handleResendVerification}
+                disabled={isLoading}
+              >
                 {isLoading ? (
-                  <FontAwesomeIcon icon={faSpinner} className="fa-spin" />
+                  <FontAwesomeIcon icon={faSpinner} className="fa-spin" aria-hidden="true" />
                 ) : (
-                  <FontAwesomeIcon icon={faEnvelope} className="btn-icon" />
+                  <FontAwesomeIcon icon={faEnvelope} className="btn-icon" aria-hidden="true" />
                 )}
                 {t("profile.resendVerificationEmail")}
               </button>
@@ -104,12 +134,16 @@ const ProfileModal = ({ onClose, user, onLogout }) => {
         </div>
 
         <div className="modal-footer">
-          <button className="btn change-password-btn" onClick={() => setPasswordModalOpen(true)}>
-            <FontAwesomeIcon icon={faLock} className="btn-icon" />
+          <button
+            type="button"
+            className="btn change-password-btn"
+            onClick={() => setPasswordModalOpen(true)}
+          >
+            <FontAwesomeIcon icon={faLock} className="btn-icon" aria-hidden="true" />
             {t("profile.changePassword")}
           </button>
-          <button className="btn logout-btn" onClick={onLogout}>
-            <FontAwesomeIcon icon={faSignOutAlt} className="btn-icon" />
+          <button type="button" className="btn logout-btn" onClick={onLogout}>
+            <FontAwesomeIcon icon={faSignOutAlt} className="btn-icon" aria-hidden="true" />
             {t("profile.logout")}
           </button>
         </div>

@@ -1,6 +1,5 @@
-// src/components/Home/Home.js
-import React, { useState } from 'react';
-import Navbar from '../NavBar/NavBar';
+import React, { useEffect } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import './Home.scss';
 import Schedule from '../Schedule/Schedule';
 import AboutMe from '../AboutMe/AboutMe';
@@ -12,18 +11,43 @@ import Gallery from '../Gallery/Gallery';
 import HappyCustomers from '../HappyCustomers/HappyCustomers';
 
 const Home = () => {
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const targetId = location.state?.scrollTo || (location.hash ? location.hash.slice(1) : null);
+    if (!targetId) return;
+
+    const prefersReducedMotion =
+      typeof window !== 'undefined' &&
+      window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+
+    const rafId = window.requestAnimationFrame(() => {
+      const targetElement = document.getElementById(targetId);
+      if (targetElement) {
+        targetElement.scrollIntoView({
+          behavior: prefersReducedMotion ? 'auto' : 'smooth',
+          block: 'start',
+        });
+      }
+      if (location.state?.scrollTo) {
+        navigate(`${location.pathname}${location.hash}`, { replace: true, state: {} });
+      }
+    });
+
+    return () => window.cancelAnimationFrame(rafId);
+  }, [location.pathname, location.hash, location.state, navigate]);
 
   return (
-    <div>
-      <Navbar/>
-      <Welcome/>
+    <div className="home-page">
+      <Welcome />
       <AboutMe />
       <Gallery />
       <Schedule />
-      <HappyCustomers/>
+      <HappyCustomers />
       <FAQ />
       <Contacts />
-      <Footer/>
+      <Footer />
     </div>
   );
 };
