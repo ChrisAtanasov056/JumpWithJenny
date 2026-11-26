@@ -52,8 +52,9 @@
     width: 46vmin;
     height: 46vmin;
     border-radius: 50%;
-    background: radial-gradient(circle, #ffd9a0 0 35%, #ff9a6b 60%, transparent 70%);
-    filter: blur(2px);
+    background: radial-gradient(circle, rgba(255, 206, 138, 0.72) 0 32%, rgba(255, 138, 92, 0.48) 58%, transparent 72%);
+    opacity: 0.55;
+    filter: blur(8px) brightness(0.85);
     transform: translateY(calc(var(--p, 0) * -60vh)) scale(calc(1 - var(--p, 0) * 0.4));
     will-change: transform;
   }

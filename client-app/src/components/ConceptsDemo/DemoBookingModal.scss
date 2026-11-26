@@ -88,6 +88,45 @@
     --modal-border: #dce5f5;
   }
 
+  &.concept-coastal {
+    background: #ffffff;
+    color: #0f1d36;
+    border: 1px solid #dce4ef;
+    box-shadow: 0 24px 60px rgba(15, 29, 54, 0.26);
+    font-family: 'Golos Text', sans-serif;
+    --modal-accent: #ff5a36;
+    --modal-avail: #15a878;
+    --modal-avail-ink: #ffffff;
+    --modal-surface: #f4f7fa;
+    --modal-border: #dce4ef;
+  }
+
+  &.concept-studio {
+    background: #ffffff;
+    color: #121826;
+    border: 1px solid #e2e6ee;
+    box-shadow: 0 24px 60px rgba(18, 24, 38, 0.2);
+    font-family: 'Golos Text', sans-serif;
+    --modal-accent: #ff4f2b;
+    --modal-avail: #0e9f6e;
+    --modal-avail-ink: #ffffff;
+    --modal-surface: #f7f7f5;
+    --modal-border: #e2e6ee;
+  }
+
+  &.concept-pulse-club {
+    background: #181d29;
+    color: #f7f9fc;
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.45);
+    font-family: 'Golos Text', sans-serif;
+    --modal-accent: #ff4757;
+    --modal-avail: #34d399;
+    --modal-avail-ink: #0b1914;
+    --modal-surface: #202738;
+    --modal-border: rgba(255, 255, 255, 0.14);
+  }
+
   .modal-grab-bar {
     display: none;
     width: 42px;

@@ -100,8 +100,9 @@ const Navbar = () => {
             src="/images/brand_logo_2.png"
             alt={t('navbar.logoAlt')}
             className="alt-navbar__logo"
+            width="82"
+            height="82"
           />
-          <span className="alt-navbar__title">{t('footer.copyright')}</span>
         </RouterLink>
 
         <ul

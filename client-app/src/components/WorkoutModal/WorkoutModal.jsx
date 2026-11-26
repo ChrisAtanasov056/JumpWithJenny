@@ -99,7 +99,6 @@ const WorkoutModal = ({
   const [phoneNumber, setPhoneNumber] = useState('');
   const [selectedSize, setSelectedSize] = useState('');
   const [usesOwnShoes, setUsesOwnShoes] = useState(false);
-  const [visitType, setVisitType] = useState('individual');
   const [error, setError] = useState('');
   const [isCheckingRegistration, setIsCheckingRegistration] = useState(false);
   const [existingBooking, setExistingBooking] = useState(null);
@@ -162,7 +161,6 @@ const WorkoutModal = ({
     setEmail(prefs.email);
     setPhoneNumber(prefs.phoneNumber);
     setUsesOwnShoes(prefs.usesOwnShoes);
-    setVisitType(prefs.visitType || 'individual');
     setSelectedSize(
       !prefs.usesOwnShoes && prefs.shoeSize && counts[prefs.shoeSize] > 0
         ? prefs.shoeSize
@@ -292,7 +290,6 @@ const WorkoutModal = ({
         phoneNumber: trimmedPhone,
         shoeSize: usesOwnShoes ? undefined : selectedSize,
         usesOwnShoes,
-        visitType,
       });
 
       setSubmittedEmail(trimmedEmail);
@@ -496,18 +493,6 @@ const WorkoutModal = ({
                               maxLength={30}
                               required
                             />
-                          </div>
-                          <div className="alt-modal-field">
-                            <label htmlFor="booking-visit-type">{t('selectCardTitle')}</label>
-                            <select
-                              id="booking-visit-type"
-                              value={visitType}
-                              onChange={(e) => setVisitType(e.target.value)}
-                            >
-                              <option value="individual">{t('individualWorkout')}</option>
-                              <option value="coolfit">{t('coolfitCard')}</option>
-                              <option value="pulse">{t('pulseCard')}</option>
-                            </select>
                           </div>
                         </div>
                       </div>

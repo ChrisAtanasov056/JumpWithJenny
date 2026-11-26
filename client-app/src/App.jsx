@@ -33,6 +33,7 @@ const AdminShoeForm = lazy(() => import('./components/Admin/Shoes/AdminShoeForm'
 const ShoeDetailsView = lazy(() => import('./components/Admin/Shoes/ShoeDetailsView'));
 const ConceptsDemo = lazy(() => import('./components/ConceptsDemo/ConceptsDemo'));
 const AltitudeDemo = lazy(() => import('./components/ConceptsDemo/AltitudeDemo'));
+const ReboundDemo = lazy(() => import('./components/ReboundDemo/ReboundDemo'));
 
 function App() {
   const { i18n } = useTranslation();
@@ -78,6 +79,7 @@ const NO_INDEX_PAGES = [
   '/admin/login',
   '/concepts-demo',
   '/altitude-demo',
+  '/rebound-demo',
 ];
 
 const CanonicalLink = () => {
@@ -114,7 +116,8 @@ const AppContent = () => {
   const isAdminRoute = location.pathname.startsWith('/admin');
   const isDemoRoute =
     location.pathname.startsWith('/concepts-demo') ||
-    location.pathname.startsWith('/altitude-demo');
+    location.pathname.startsWith('/altitude-demo') ||
+    location.pathname.startsWith('/rebound-demo');
 
   const routesElement = (
     <Routes>
@@ -132,6 +135,14 @@ const AppContent = () => {
         element={
           <Suspense fallback={<div className="admin-loading" role="status">{t('common.loading')}</div>}>
             <AltitudeDemo />
+          </Suspense>
+        }
+      />
+      <Route
+        path="/rebound-demo"
+        element={
+          <Suspense fallback={<div className="admin-loading" role="status">{t('common.loading')}</div>}>
+            <ReboundDemo />
           </Suspense>
         }
       />

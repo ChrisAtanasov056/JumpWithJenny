@@ -124,7 +124,6 @@
         ]
     },
     "shoesTitle": "Kangoo Jumps Shoes",
-    "selectCardTitle": "Visit Type (informational)",
     "days": {
         "monday": "Monday",
         "tuesday": "Tuesday",
@@ -262,13 +261,7 @@
     "classFull": "Class full",
     "useOwnShoes": "I will use my own shoes",
     "selectShoeSize": "Select Kangoo Jump Shoe Size:",
-    "selectCard": "Select Workout Card:",
-    "selectCardPlaceholder": "Select card type",
-    "coolfitCard": "CoolFit Card",
-    "pulseCard": "Pulse Fitness Card",
-    "individualWorkout": "Individual Workout",
     "errorSelectShoes": "Please select a shoe size or choose to use your own shoes.",
-    "errorSelectCard": "Please select a workout card type.",
     "submit": "Register",
     "fullNotice": "This class has reached maximum capacity.",
     "close": "Close",
@@ -668,19 +661,19 @@
             "altitudeMeters": "{{meters}} m"
         },
         "about": {
-            "lead": "Hi, I'm Jenny — a certified Kangoo Jumps instructor in Burgas. I believe every workout should bring joy, lightness, and a real surge of energy.",
+            "lead": "Hi, I'm Jenny — a pharmacist by training and a certified Kangoo Jumps instructor in Burgas. I believe movement is the best care for your health when it brings a smile and a real surge of energy.",
             "highlights": [
                 {
-                    "title": "Joint-friendly (up to 80% less impact)",
-                    "text": "The rebound spring system absorbs landing shock while keeping your heart rate in the optimal zone."
+                    "title": "Pharmacist with a health-first approach",
+                    "text": "My pharmacy background shapes how I coach — with careful attention to posture, breathing, and safe, sustainable load."
                 },
                 {
-                    "title": "Cardio, strength & balance in 1 hour",
-                    "text": "High-energy choreography in rhythm that tones your whole body and clears your mind after work."
+                    "title": "Certified Kangoo Jumps instructor",
+                    "text": "I design varied, rhythmic routines with clear technique cues that keep motivation high and make every class feel fresh."
                 },
                 {
-                    "title": "Tailored for every level",
-                    "text": "Whether it's your first time in Kangoo boots or you train regularly, the pace adapts to you."
+                    "title": "Personal attention & supportive community",
+                    "text": "I look out for everyone in the studio and build a welcoming atmosphere where you feel comfortable, confident, and recharged."
                 }
             ]
         },
@@ -692,6 +685,77 @@
         "reviews": {
             "showMore": "Show more reviews",
             "showLess": "Show fewer"
+        },
+        "workoutMetrics": {
+            "title": "The Workout in Numbers",
+            "subtitle": "What to expect from a single Kangoo Jumps session in the studio.",
+            "items": [
+                {
+                    "value": "-80%",
+                    "label": "Less joint impact",
+                    "desc": "The rebound spring system absorbs landing shock on every jump."
+                },
+                {
+                    "value": "600–1000",
+                    "label": "Calories burned",
+                    "desc": "High-energy rhythmic cardio that engages your entire body."
+                },
+                {
+                    "value": "50 min",
+                    "label": "Session length",
+                    "desc": "Warm-up, rhythmic choreography, strength work, and cool-down stretch."
+                },
+                {
+                    "value": "S – XL",
+                    "label": "Boots provided",
+                    "desc": "Sanitized Kangoo Jumps boots in EU sizes 36–46 waiting for you."
+                }
+            ]
+        },
+        "firstJump": {
+            "title": "Your First Jump",
+            "subtitle": "Never tried Kangoo Jumps before? Here is how your first class goes from booking to cool-down.",
+            "stepsTitle": "How the class flows",
+            "steps": [
+                {
+                    "title": "Pick a slot and boot size",
+                    "text": "Choose a convenient time from the schedule and your boot size (S 36–38, M 39–41, L 42–44, XL 44–46) online with no account needed."
+                },
+                {
+                    "title": "Arrive 10 minutes early",
+                    "text": "Give yourself a few relaxed minutes to put on the boots and get a feel for the bounce before the music starts."
+                },
+                {
+                    "title": "Fit check with Jenny",
+                    "text": "Jenny checks the buckles, helps you find your balance, and shows you the basic stance — most beginners feel steady within 3 minutes."
+                },
+                {
+                    "title": "50 minutes of music and energy",
+                    "text": "Move at your own pace. Every routine is beginner-friendly and easy to adapt so you feel confident right from class one."
+                }
+            ],
+            "bringTitle": "What to bring",
+            "requiredBadge": "Required",
+            "bringItems": [
+                {
+                    "title": "Tall athletic socks",
+                    "note": "Must reach above the ankle to protect your skin from the boot cuff.",
+                    "required": true
+                },
+                {
+                    "title": "Comfortable workout clothes",
+                    "note": "Leggings or shorts and a breathable top."
+                },
+                {
+                    "title": "Water bottle (at least 500 ml)",
+                    "note": "Stay hydrated during the short water breaks."
+                },
+                {
+                    "title": "Small towel",
+                    "note": "Your Kangoo Jumps boots will be waiting ready in the studio."
+                }
+            ],
+            "cta": "Book your first class"
         }
     }
 }

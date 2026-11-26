@@ -13,7 +13,7 @@
   &__inner {
     max-width: 1140px;
     margin: 0 auto;
-    padding: 12px 22px;
+    padding: 6px 22px;
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -27,23 +27,23 @@
     text-decoration: none;
     color: #ffffff;
     flex-shrink: 0;
+
+    @media (hover: hover) and (pointer: fine) {
+      &:hover .alt-navbar__logo {
+        transform: translateY(-2px);
+      }
+    }
   }
 
   &__logo {
-    width: 38px;
-    height: 38px;
+    width: 82px;
+    height: 82px;
+    margin: -8px 0;
     object-fit: contain;
-    border-radius: 50%;
-    background: rgba(255, 255, 255, 0.92);
-    padding: 3px;
-  }
-
-  &__title {
-    font-family: 'Rubik', sans-serif;
-    font-weight: 800;
-    font-size: 1.05rem;
-    letter-spacing: -0.01em;
-    color: #ffffff;
+    flex-shrink: 0;
+    display: block;
+    filter: drop-shadow(0 0 6px rgba(255, 255, 255, 0.22));
+    transition: transform 200ms var(--alt-ease-spring);
   }
 
   &__links {
@@ -141,7 +141,13 @@
 @media (max-width: 991px) {
   .alt-navbar {
     &__inner {
-      padding: 10px 16px;
+      padding: 6px 16px;
+    }
+
+    &__logo {
+      width: 64px;
+      height: 64px;
+      margin: -6px 0;
     }
 
     &__burger {
@@ -186,8 +192,12 @@
   }
 }
 
-@media (max-width: 480px) {
-  .alt-navbar__title {
-    font-size: 0.95rem;
+@media (prefers-reduced-motion: reduce) {
+  .alt-navbar__logo {
+    transition: none;
+  }
+
+  .alt-navbar__brand:hover .alt-navbar__logo {
+    transform: none;
   }
 }

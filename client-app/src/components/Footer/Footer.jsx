@@ -14,7 +14,10 @@ const Footer = () => {
           <img
             src="/images/brand_logo_2.png"
             alt=""
+            aria-hidden="true"
             className="alt-footer__logo"
+            width="52"
+            height="52"
             loading="lazy"
           />
           <span>

@@ -4,6 +4,8 @@ import './Home.scss';
 import { useScheduleWorkouts } from '../../hooks/useScheduleWorkouts';
 import Welcome from '../Welcome/Welcome';
 import Schedule from '../Schedule/Schedule';
+import WorkoutMetrics from '../WorkoutMetrics/WorkoutMetrics';
+import FirstJump from '../FirstJump/FirstJump';
 import AboutMe from '../AboutMe/AboutMe';
 import Gallery from '../Gallery/Gallery';
 import HappyCustomers from '../HappyCustomers/HappyCustomers';
@@ -47,6 +49,8 @@ const Home = () => {
         loadingWorkouts={scheduleState.loading}
       />
       <Schedule externalState={scheduleState} />
+      <WorkoutMetrics />
+      <FirstJump />
       <AboutMe />
       <Gallery />
       <HappyCustomers />
