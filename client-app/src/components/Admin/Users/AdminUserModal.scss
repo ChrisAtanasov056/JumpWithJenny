@@ -1,430 +1,53 @@
-@use "sass:color";
-// AdminUserModal.scss
-$primary-color: #3498db; // Акцентен цвят
-$text-color-dark: #2c3e50;
-$text-color-light: #666;
-$border-color-light: #ddd;
-$modal-bg: white;
-$modal-overlay: rgba(0, 0, 0, 0.5);
-$shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
-$delete-color: #e74c3c;
-$save-color: #2ecc71;
-$cancel-color: #f1f1f1;
+.admin-user-dialog {
+  max-width: 500px;
 
-$mobile-breakpoint: 600px;
-
-.admin-user-modal {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
+  .user-fields-list {
     display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 1000;
-    backdrop-filter: blur(2px);
-    padding: 1rem;
-    overflow-y: auto;
-    overscroll-behavior: contain;
-  
-    .modal-overlay {
-      position: absolute;
-      inset: 0;
-      background: $modal-overlay;
-      cursor: pointer;
-      transition: opacity 0.3s ease;
+    flex-direction: column;
+    gap: 14px;
+    margin-bottom: 18px;
+  }
+
+  .user-field-row {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+
+    .field-label {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--adm-text-muted);
     }
-  
-    .modal-content {
-      position: relative;
-      background: $modal-bg;
-      padding: 2rem;
-      border-radius: 8px;
-      width: 90%;
-      max-width: 500px;
-      max-height: 90vh;
-      max-height: calc(100dvh - 2rem);
-      overflow-y: auto;
-      overscroll-behavior: contain;
-      z-index: 1001;
-      box-shadow: $shadow;
-      animation: modalFadeIn 0.3s ease-out;
-  
-      .close-button {
-        position: absolute;
-        top: 1rem;
-        right: 1rem;
-        background: none;
-        border: none;
-        font-size: 1.5rem;
-        cursor: pointer;
-        color: $text-color-light;
-        transition: color 0.2s;
-        padding: 0.5rem;
-        line-height: 1;
-  
-        &:hover {
-          color: #333;
-        }
-      }
-  
-      h3 {
-        margin-top: 0;
-        color: $text-color-dark;
-        border-bottom: 1px solid #eee;
-        padding-bottom: 1rem;
-      }
-  
-      .delete-confirmation {
-        text-align: center;
-  
-        h3 {
-          color: $delete-color;
-          border-bottom: none;
-        }
-  
-        p {
-          margin: 1rem 0;
-        }
-  
-        .warning-text {
-          color: $delete-color;
-          font-weight: bold;
-        }
-  
-        .confirmation-actions {
-          display: flex;
-          justify-content: center;
-          gap: 1rem;
-          margin-top: 2rem;
-  
-          button {
-            padding: 0.5rem 1.5rem;
-            border-radius: 4px;
-            cursor: pointer;
-            font-weight: 500;
-            border: none;
-            transition: all 0.2s;
-  
-            &.btn-cancel {
-              background: $cancel-color;
-              border: 1px solid $border-color-light;
-  
-              &:hover, &:focus {
-                background: color.adjust($cancel-color, $lightness: -10%);
-              }
-            }
-  
-            &.btn-delete-confirm {
-              background: $delete-color;
-              color: white;
-  
-              &:hover, &:focus {
-                background: color.adjust($delete-color, $lightness: -10%);
-              }
-            }
-  
-            &:focus {
-              outline: none;
-              box-shadow: 0 0 0 2px rgba($primary-color, 0.5);
-            }
-          }
-        }
-      }
-  
-      .user-details {
-        margin: 1.5rem 0;
-  
-        .detail-row {
-          display: flex;
-          margin-bottom: 1rem;
-          align-items: center;
-          flex-wrap: wrap;
-  
-          .detail-label {
-            font-weight: bold;
-            width: 100px;
-            color: #555;
-            flex-shrink: 0;
-            margin-bottom: 0.5rem;
-          }
-  
-          .detail-value {
-            flex: 1;
-            min-width: 0;
-            word-break: break-word;
-            margin-bottom: 0.5rem;
-  
-            a {
-              color: $primary-color;
-              text-decoration: none;
-  
-              &:hover {
-                text-decoration: underline;
-              }
-            }
-          }
-  
-          .edit-field {
-            flex: 1;
-            min-width: 0;
-            margin-bottom: 0.5rem;
-  
-            input, select {
-              width: 100%;
-              padding: 0.5rem;
-              border: 1px solid $border-color-light;
-              border-radius: 4px;
-              font-size: 1rem;
-              transition: border-color 0.2s;
-  
-              &:focus {
-                outline: none;
-                border-color: $primary-color;
-                box-shadow: 0 0 0 2px rgba($primary-color, 0.2);
-              }
-  
-              &.error {
-                border-color: $delete-color;
-              }
-            }
-  
-            select {
-              appearance: none;
-              background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
-              background-repeat: no-repeat;
-              background-position: right 0.5rem center;
-              background-size: 1rem;
-            }
-  
-            .error-message {
-              color: $delete-color;
-              font-size: 0.8rem;
-              margin-top: 0.25rem;
-            }
-  
-            .toggle-switch {
-              position: relative;
-              display: inline-flex;
-              align-items: center;
-              cursor: pointer;
-  
-              input {
-                opacity: 0;
-                width: 0;
-                height: 0;
-  
-                &:checked + .slider {
-                  background-color: $save-color;
-                }
-  
-                &:focus + .slider {
-                  box-shadow: 0 0 0 2px rgba($save-color, 0.3);
-                }
-              }
-  
-              .slider {
-                position: relative;
-                width: 2.5rem;
-                height: 1.25rem;
-                background-color: $delete-color;
-                transition: .4s;
-                border-radius: 1.25rem;
-                margin-right: 0.5rem;
-  
-                &:before {
-                  position: absolute;
-                  content: "";
-                  height: 1rem;
-                  width: 1rem;
-                  left: 0.125rem;
-                  bottom: 0.125rem;
-                  background-color: white;
-                  transition: .4s;
-                  border-radius: 50%;
-                }
-              }
-  
-              input:checked + .slider:before {
-                transform: translateX(1.25rem);
-              }
-  
-              .toggle-label {
-                margin-left: 0.5rem;
-                font-size: 0.9rem;
-              }
-            }
-          }
-  
-          .role-badge {
-            display: inline-block;
-            padding: 0.25rem 0.5rem;
-            border-radius: 4px;
-            font-size: 0.8rem;
-            font-weight: 500;
-  
-            &.administrator {
-              background: #e3f2fd;
-              color: #1976d2;
-            }
-            &.moderator {
-              background: #fff3e0;
-              color: #ffa000;
-            }
-            &.user {
-              background: #e8f5e9;
-              color: #388e3c;
-            }
-            &.unknown {
-              background: #f5f5f5;
-              color: #666;
-            }
-          }
-  
-          .status-dot {
-            display: inline-block;
-            width: 10px;
-            height: 10px;
-            border-radius: 50%;
-            margin-right: 8px;
-  
-            &.active {
-              background: #2ecc71;
-            }
-            &.inactive {
-              background: #e74c3c;
-            }
-          }
-        }
-      }
-  
-      .modal-actions {
-        display: flex;
-        justify-content: flex-end;
-        gap: 1rem;
-        margin-top: 2rem;
-  
-        button {
-          padding: 0.5rem 1rem;
-          border-radius: 4px;
-          cursor: pointer;
-          transition: all 0.2s;
-          font-weight: 500;
-          font-size: 0.9rem;
-          border: none;
-  
-          &:focus {
-            outline: none;
-            box-shadow: 0 0 0 2px rgba($primary-color, 0.5);
-          }
-  
-          &.btn-edit {
-            background: $primary-color;
-            color: white;
-  
-            &:hover, &:focus {
-              background: color.adjust($primary-color, $lightness: -10%);
-            }
-          }
-  
-          &.btn-save {
-            background: $save-color;
-            color: white;
-  
-            &:hover, &:focus {
-              background: color.adjust($save-color, $lightness: -10%);
-            }
-          }
-  
-          &.btn-delete {
-            background: $delete-color;
-            color: white;
-            margin-right: auto;
-  
-            &:hover, &:focus {
-              background: color.adjust($delete-color, $lightness: -10%);
-            }
-          }
-  
-          &.btn-cancel {
-            background: $cancel-color;
-            border: 1px solid $border-color-light;
-  
-            &:hover, &:focus {
-              background: color.adjust($cancel-color, $lightness: -10%);
-            }
-          }
-  
-          &.btn-close {
-            background: $cancel-color;
-            border: 1px solid $border-color-light;
-  
-            &:hover, &:focus {
-              background: color.adjust($cancel-color, $lightness: -10%);
-            }
-          }
-        }
-      }
+
+    .field-input-wrap {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .field-err {
+      font-size: 0.78rem;
+      color: var(--adm-danger);
+    }
+
+    .role-badge {
+      display: inline-block;
+      align-self: flex-start;
+      padding: 3px 10px;
+      border-radius: 999px;
+      background: var(--adm-navy-soft);
+      color: var(--adm-navy);
+      font-size: 0.82rem;
+      font-weight: 600;
     }
   }
-  
-  @keyframes modalFadeIn {
-    from {
-      opacity: 0;
-      transform: translateY(-20px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
+
+  .user-modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    flex-wrap: wrap;
+    padding-top: 14px;
+    border-top: 1px solid var(--adm-border);
   }
-  
-  // Responsive adjustments
-  @media (max-width: $mobile-breakpoint) {
-    .admin-user-modal {
-      .modal-content {
-        padding: 1.5rem;
-  
-        .user-details {
-          .detail-row {
-            flex-direction: column;
-            align-items: flex-start;
-  
-            .detail-label {
-              width: 100%;
-              margin-bottom: 0.25rem;
-            }
-  
-            .detail-value, .edit-field {
-              width: 100%;
-            }
-          }
-        }
-  
-        .modal-actions {
-          flex-direction: column;
-          gap: 0.5rem;
-  
-          button {
-            width: 100%;
-            
-            &.btn-delete {
-              margin-right: 0;
-              order: -1; // Позиционира бутона "Delete" най-отгоре
-            }
-          }
-        }
-  
-        .delete-confirmation {
-          .confirmation-actions {
-            flex-direction: column;
-            
-            button {
-              width: 100%;
-            }
-          }
-        }
-      }
-    }
-  }
+}

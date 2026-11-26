@@ -1,3 +1,4 @@
+using ServerAPI.Models.Admin;
 using ServerAPI.Models.Common;
 using ServerAPI.Models.Schedule;
 using ServerAPI.ViewModels;
@@ -24,6 +25,11 @@ namespace ServerAPI.Services.Workouts
             int pageSize = 20,
             bool? upcomingOnly = null,
             string search = null,
+            string status = null,
             CancellationToken cancellationToken = default);
+
+        Task<AdminWorkoutViewModel> DuplicateWorkoutAsync(string id, DuplicateWorkoutRequest request);
+
+        Task<BatchCreateWorkoutsResult> CreateWorkoutsBatchAsync(BatchCreateWorkoutsRequest request);
     }
 }

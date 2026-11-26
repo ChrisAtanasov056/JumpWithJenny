@@ -21,6 +21,8 @@ import AltitudeShell from './components/AltitudeShell/AltitudeShell';
 import './styles/altitude-tokens.scss';
 
 const AdminLayout = lazy(() => import('./components/Admin/AdminLayout'));
+const AdminDashboard = lazy(() => import('./components/Admin/Dashboard/AdminDashboard'));
+const AdminClientsList = lazy(() => import('./components/Admin/Clients/AdminClientsList'));
 const AdminUsersList = lazy(() => import('./components/Admin/Users/AdminUsersList'));
 const AdminNewUser = lazy(() => import('./components/Admin/Users/AdminNewUser.jsx'));
 const AdminUserProfile = lazy(() => import('./components/Admin/Users/AdminUserProfile'));
@@ -170,7 +172,9 @@ const AppContent = () => {
           </ProtectedAdminRoute>
         }
       >
-        <Route index element={<Navigate to="workouts" replace />} />
+        <Route index element={<AdminDashboard />} />
+        <Route path="dashboard" element={<AdminDashboard />} />
+        <Route path="clients" element={<AdminClientsList />} />
         <Route path="users" element={<AdminUsersList />} />
         <Route path="users/new" element={<AdminNewUser />} />
         <Route path="users/:userId" element={<AdminUserProfile />} />
@@ -183,7 +187,7 @@ const AppContent = () => {
         <Route path="shoes/new" element={<AdminShoeForm />} />
         <Route path="shoes/:id" element={<AdminShoeForm />} />
         <Route path="shoes/details/:id" element={<ShoeDetailsView />} />
-        <Route path="analytics" element={<Navigate to="/admin/workouts" replace />} />
+        <Route path="analytics" element={<Navigate to="/admin" replace />} />
       </Route>
 
       <Route path="*" element={<NotFoundPage />} />

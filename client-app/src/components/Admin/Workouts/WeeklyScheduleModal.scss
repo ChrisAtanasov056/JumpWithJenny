@@ -1,0 +1,67 @@
+.weekly-schedule-modal {
+  max-width: 600px;
+
+  .modal-subtitle {
+    margin: 4px 0 0;
+    font-size: 0.88rem;
+    color: var(--adm-text-muted);
+  }
+
+  .weekly-form {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .form-field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+
+    label {
+      font-size: 0.88rem;
+      font-weight: 600;
+      color: var(--adm-text);
+    }
+  }
+
+  .slots-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    font-size: 0.9rem;
+    font-weight: 600;
+  }
+
+  .slots-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    max-height: 280px;
+    overflow-y: auto;
+    padding-right: 2px;
+  }
+
+  .slot-row {
+    display: grid;
+    grid-template-columns: 1.4fr 1fr 0.8fr auto;
+    gap: 8px;
+    align-items: center;
+  }
+
+  .modal-footer-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 4px;
+  }
+}
+
+@media (max-width: 540px) {
+  .weekly-schedule-modal {
+    .slot-row {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+}

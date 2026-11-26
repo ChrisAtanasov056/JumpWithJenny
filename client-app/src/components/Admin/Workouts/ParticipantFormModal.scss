@@ -1,0 +1,219 @@
+.participant-form-modal {
+  max-width: 540px;
+
+  .autocomplete-box {
+    position: relative;
+    margin-bottom: 18px;
+    padding: 12px;
+    border-radius: 12px;
+    background: var(--adm-navy-soft);
+
+    label {
+      display: block;
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--adm-navy);
+      margin-bottom: 6px;
+    }
+
+    .autocomplete-status {
+      margin-top: 6px;
+      font-size: 0.82rem;
+      color: var(--adm-text-muted);
+    }
+
+    .autocomplete-dropdown {
+      margin-top: 6px;
+      background: var(--adm-surface);
+      border: 1px solid var(--adm-border-strong);
+      border-radius: 10px;
+      box-shadow: var(--adm-shadow-md);
+      max-height: 210px;
+      overflow-y: auto;
+    }
+
+    .autocomplete-item {
+      width: 100%;
+      border: none;
+      border-bottom: 1px solid var(--adm-border);
+      background: transparent;
+      padding: 10px 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      text-align: left;
+      cursor: pointer;
+
+      &:last-child {
+        border-bottom: none;
+      }
+
+      @media (hover: hover) and (pointer: fine) {
+        &:hover {
+          background: var(--adm-surface-muted);
+        }
+      }
+
+      .ac-main {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+        min-width: 0;
+
+        strong {
+          font-size: 0.9rem;
+          color: var(--adm-text);
+        }
+
+        span {
+          font-size: 0.8rem;
+          color: var(--adm-text-muted);
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+        }
+      }
+
+      .ac-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        font-size: 0.76rem;
+        font-weight: 600;
+        color: var(--adm-navy);
+        background: var(--adm-navy-soft);
+        padding: 3px 8px;
+        border-radius: 999px;
+        flex-shrink: 0;
+      }
+    }
+  }
+
+  .participant-form {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  .form-field {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+
+    label {
+      font-size: 0.88rem;
+      font-weight: 600;
+      color: var(--adm-text);
+    }
+
+    .field-hint {
+      font-size: 0.78rem;
+      color: var(--adm-text-subtle);
+    }
+  }
+
+  .checkbox-row {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    cursor: pointer;
+
+    input[type='checkbox'] {
+      width: 17px;
+      height: 17px;
+      accent-color: var(--adm-navy);
+      flex-shrink: 0;
+    }
+  }
+
+  .shoes-picker-section {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 12px;
+    border: 1px solid var(--adm-border);
+    border-radius: 12px;
+    background: var(--adm-surface-muted);
+  }
+
+  .shoe-size-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .shoe-size-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    padding: 10px 6px;
+    border-radius: 10px;
+    border: 1.5px solid var(--adm-border-strong);
+    background: var(--adm-surface);
+    cursor: pointer;
+    transition: border-color 140ms var(--adm-ease-out), background-color 140ms var(--adm-ease-out), transform 120ms var(--adm-ease-out);
+
+    .size-letter {
+      font-family: 'Rubik', sans-serif;
+      font-weight: 700;
+      font-size: 1.05rem;
+      color: var(--adm-text);
+    }
+
+    .size-eu {
+      font-size: 0.76rem;
+      color: var(--adm-text-muted);
+    }
+
+    .size-free {
+      font-size: 0.74rem;
+      font-weight: 600;
+      color: var(--adm-success);
+      margin-top: 2px;
+    }
+
+    &.selected {
+      border-color: var(--adm-coral);
+      background: var(--adm-coral-soft);
+
+      .size-letter {
+        color: var(--adm-coral);
+      }
+    }
+
+    &.depleted {
+      opacity: 0.52;
+      cursor: not-allowed;
+
+      .size-free {
+        color: var(--adm-danger);
+      }
+    }
+  }
+
+  .overbooking-box {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 0;
+  }
+
+  .modal-footer-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 6px;
+  }
+}
+
+@media (max-width: 520px) {
+  .participant-form-modal {
+    .shoe-size-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+}

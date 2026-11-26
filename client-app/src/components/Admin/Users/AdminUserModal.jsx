@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import useModalAccessibility from '../../../services/useModalAccessibility';
+import useOutsideClick from '../../../services/useOutsideClick';
 import './AdminUserModal.scss';
 
 const AdminUserModal = ({ user, onClose, onSave, onDelete }) => {
@@ -10,7 +11,6 @@ const AdminUserModal = ({ user, onClose, onSave, onDelete }) => {
   const [errors, setErrors] = useState({});
   const [saveError, setSaveError] = useState('');
   const [isSaving, setIsSaving] = useState(false);
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const modalRef = useRef(null);
 
   useEffect(() => {
@@ -19,13 +19,11 @@ const AdminUserModal = ({ user, onClose, onSave, onDelete }) => {
     setErrors({});
     setSaveError('');
     setIsSaving(false);
-    setShowDeleteConfirm(false);
   }, [user]);
 
-  const handleEscapeOrClose = useCallback(() => {
-    if (showDeleteConfirm) {
-      setShowDeleteConfirm(false);
-    } else if (isEditing) {
+  const handleClose = useCallback(() => {
+    if (isSaving) return;
+    if (isEditing) {
       setIsEditing(false);
       setEditedUser({ ...user });
       setErrors({});
@@ -33,51 +31,42 @@ const AdminUserModal = ({ user, onClose, onSave, onDelete }) => {
     } else {
       onClose();
     }
-  }, [showDeleteConfirm, isEditing, user, onClose]);
+  }, [isSaving, isEditing, user, onClose]);
 
+  useOutsideClick(modalRef, onClose, Boolean(user) && !isEditing && !isSaving);
   useModalAccessibility({
     isOpen: Boolean(user),
-    onClose: handleEscapeOrClose,
+    onClose: handleClose,
     modalRef,
   });
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setEditedUser(prev => ({
-      ...prev,
-      [name]: value
-    }));
-    
+    setEditedUser((prev) => ({ ...prev, [name]: value }));
     if (errors[name]) {
-      setErrors(prev => ({ ...prev, [name]: null }));
+      setErrors((prev) => ({ ...prev, [name]: null }));
     }
   };
 
   const validateForm = () => {
     const newErrors = {};
-    
     if (!editedUser.Username?.trim()) {
       newErrors.Username = t('admin.users.validation.usernameRequired');
     }
-    
     if (!editedUser.Email?.trim()) {
       newErrors.Email = t('admin.users.validation.emailRequired');
     } else if (!/^\S+@\S+\.\S+$/.test(editedUser.Email)) {
       newErrors.Email = t('admin.users.validation.emailInvalid');
     }
-    
     if (!editedUser.FirstName?.trim()) {
       newErrors.FirstName = t('admin.users.validation.firstNameRequired');
     }
-    
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
   const handleSave = async () => {
-    if (!validateForm()) {
-      return;
-    }
+    if (!validateForm()) return;
 
     setIsSaving(true);
     setSaveError('');
@@ -102,17 +91,6 @@ const AdminUserModal = ({ user, onClose, onSave, onDelete }) => {
     }
   };
 
-  const handleDeleteConfirm = () => {
-    onDelete(user.Id);
-    setShowDeleteConfirm(false);
-    onClose();
-  };
-
-  const getRoleClass = () => {
-    if (!editedUser.Role) return 'unknown';
-    return editedUser.Role.toLowerCase();
-  };
-
   const getRoleLabel = (role) => {
     if (!role) return t('admin.roles.unknown');
     const normalized = role.toLowerCase();
@@ -121,156 +99,111 @@ const AdminUserModal = ({ user, onClose, onSave, onDelete }) => {
     if (normalized === 'user') return t('admin.roles.user');
     return role;
   };
-  
+
   return (
-    <div className="admin-user-modal">
-      <div 
-        className="modal-overlay" 
-        onClick={isEditing || showDeleteConfirm ? undefined : onClose}
-        aria-hidden="true"
-      />
-      
-      <div 
+    <div className="adm-modal-overlay" role="presentation">
+      <div
         ref={modalRef}
-        className="modal-content"
+        className="adm-modal-dialog admin-user-dialog"
         role="dialog"
         aria-modal="true"
-        aria-labelledby="modal-title"
+        aria-labelledby="admin-user-modal-title"
+        onClick={(e) => e.stopPropagation()}
       >
-        {showDeleteConfirm ? (
-          <div className="delete-confirmation">
-            <h3>{t('admin.users.deleteModal.title')}</h3>
-            <p>{t('admin.users.deleteModal.prompt', { username: user.Username })}</p>
-            <p className="warning-text">{t('admin.users.deleteModal.warning')}</p>
-            
-            <div className="confirmation-actions">
-              <button 
-                className="btn-cancel"
-                onClick={() => setShowDeleteConfirm(false)}
-              >
-                {t('admin.common.cancel')}
-              </button>
-              <button 
-                className="btn-delete-confirm"
-                onClick={handleDeleteConfirm}
-              >
-                {t('admin.users.deleteModal.confirm')}
-              </button>
-            </div>
-          </div>
-        ) : (
-          <>
-            <button 
-              className="close-button"
-              onClick={isEditing ? () => {
-                setIsEditing(false);
-                setEditedUser({ ...user });
-                setErrors({});
-                setSaveError('');
-              } : onClose}
-              aria-label={isEditing ? t('admin.users.cancelEditAria') : t('admin.users.closeModalAria')}
-            >
-              &times;
-            </button>
-            
-            <h3 id="modal-title">
-              {isEditing ? t('admin.users.editTitle') : t('admin.users.detailsTitle')}
-            </h3>
-            
-            <div className="user-details">
-            <div className="detail-row">
-            <span className="detail-label">{t('admin.users.fields.id')}:</span>
-            <span className="detail-value">{user.Id || t('admin.common.notAvailable')}</span>
-          </div>
-          
-          <div className="detail-row">
-            <span className="detail-label">{t('admin.users.fields.username')}:</span>
+        <div className="adm-modal-header">
+          <h3 id="admin-user-modal-title">
+            {isEditing ? t('admin.users.editTitle') : t('admin.users.detailsTitle')}
+          </h3>
+          <button
+            type="button"
+            className="adm-modal-close"
+            onClick={handleClose}
+            disabled={isSaving}
+            aria-label={isEditing ? t('admin.users.cancelEditAria') : t('admin.users.closeModalAria')}
+          >
+            &times;
+          </button>
+        </div>
+
+        <div className="user-fields-list">
+          <div className="user-field-row">
+            <span className="field-label">{t('admin.users.fields.username')}</span>
             {isEditing ? (
-              <div className="edit-field">
+              <div className="field-input-wrap">
                 <input
                   type="text"
                   name="Username"
+                  className="adm-input"
                   value={editedUser.Username || ''}
                   onChange={handleInputChange}
-                  className={errors.Username ? 'error' : ''}
                 />
-                {errors.Username && (
-                  <span className="error-message">{errors.Username}</span>
-                )}
+                {errors.Username && <span className="field-err">{errors.Username}</span>}
               </div>
             ) : (
-              <span className="detail-value">{editedUser.Username || t('admin.common.notAvailable')}</span>
+              <strong>{editedUser.Username || t('admin.common.notAvailable')}</strong>
             )}
           </div>
-          
-          <div className="detail-row">
-            <span className="detail-label">{t('admin.users.fields.email')}:</span>
+
+          <div className="user-field-row">
+            <span className="field-label">{t('admin.users.fields.email')}</span>
             {isEditing ? (
-              <div className="edit-field">
+              <div className="field-input-wrap">
                 <input
                   type="email"
                   name="Email"
+                  className="adm-input"
                   value={editedUser.Email || ''}
                   onChange={handleInputChange}
-                  className={errors.Email ? 'error' : ''}
                 />
-                {errors.Email && (
-                  <span className="error-message">{errors.Email}</span>
-                )}
+                {errors.Email && <span className="field-err">{errors.Email}</span>}
               </div>
             ) : (
-              <span className="detail-value">
-                {editedUser.Email ? (
-                  <a href={`mailto:${editedUser.Email}`}>{editedUser.Email}</a>
-                ) : (
-                  t('admin.common.notAvailable')
-                )}
-              </span>
+              <span>{editedUser.Email || t('admin.common.notAvailable')}</span>
             )}
           </div>
-          
-          <div className="detail-row">
-            <span className="detail-label">{t('admin.users.fields.firstName')}:</span>
+
+          <div className="user-field-row">
+            <span className="field-label">{t('admin.users.fields.firstName')}</span>
             {isEditing ? (
-              <div className="edit-field">
+              <div className="field-input-wrap">
                 <input
                   type="text"
                   name="FirstName"
+                  className="adm-input"
                   value={editedUser.FirstName || ''}
                   onChange={handleInputChange}
-                  className={errors.FirstName ? 'error' : ''}
                 />
-                {errors.FirstName && (
-                  <span className="error-message">{errors.FirstName}</span>
-                )}
+                {errors.FirstName && <span className="field-err">{errors.FirstName}</span>}
               </div>
             ) : (
-              <span className="detail-value">{editedUser.FirstName || t('admin.common.notAvailable')}</span>
+              <span>{editedUser.FirstName || t('admin.common.notAvailable')}</span>
             )}
           </div>
-          
-          <div className="detail-row">
-            <span className="detail-label">{t('admin.users.fields.lastName')}:</span>
+
+          <div className="user-field-row">
+            <span className="field-label">{t('admin.users.fields.lastName')}</span>
             {isEditing ? (
-              <div className="edit-field">
+              <div className="field-input-wrap">
                 <input
                   type="text"
                   name="LastName"
+                  className="adm-input"
                   value={editedUser.LastName || ''}
                   onChange={handleInputChange}
                 />
               </div>
             ) : (
-              <span className="detail-value">{editedUser.LastName || t('admin.common.notAvailable')}</span>
+              <span>{editedUser.LastName || t('admin.common.notAvailable')}</span>
             )}
           </div>
-          
-          <div className="detail-row">
-            <span className="detail-label">{t('admin.users.fields.role')}:</span>
+
+          <div className="user-field-row">
+            <span className="field-label">{t('admin.users.fields.role')}</span>
             {isEditing ? (
-              <div className="edit-field">
+              <div className="field-input-wrap">
                 <select
                   name="Role"
+                  className="adm-select"
                   value={editedUser.Role || 'User'}
                   onChange={handleInputChange}
                 >
@@ -279,67 +212,55 @@ const AdminUserModal = ({ user, onClose, onSave, onDelete }) => {
                 </select>
               </div>
             ) : (
-              <span className={`detail-value role-badge ${getRoleClass()}`}>
-                {getRoleLabel(editedUser.Role)}
-              </span>
+              <span className="role-badge">{getRoleLabel(editedUser.Role)}</span>
             )}
           </div>
-            </div>
+        </div>
 
-            {saveError && (
-              <div className="error-message" style={{ color: '#dc3545', marginBottom: '1rem', fontSize: '0.9rem' }}>
-                {saveError}
-              </div>
-            )}
+        {saveError && <div className="adm-alert adm-alert--error">{saveError}</div>}
 
-            <div className="modal-actions">
-              {isEditing ? (
-                <>
-                  <button 
-                    className="btn-cancel"
-                    disabled={isSaving}
-                    onClick={() => {
-                      setIsEditing(false);
-                      setEditedUser({ ...user });
-                      setErrors({});
-                      setSaveError('');
-                    }}
-                  >
-                    {t('admin.common.cancel')}
-                  </button>
-                  <button 
-                    className="btn-save"
-                    disabled={isSaving}
-                    onClick={handleSave}
-                  >
-                    {isSaving ? t('admin.common.saving') : t('admin.users.saveChanges')}
-                  </button>
-                </>
-              ) : (
-                <>
-                  <button 
-                    className="btn-delete"
-                    onClick={() => setShowDeleteConfirm(true)}
-                  >
-                    {t('admin.users.deleteButton')}
-                  </button>
-                  <button 
-                    className="btn-edit"
-                    onClick={() => setIsEditing(true)}
-                  >
-                    {t('admin.users.editButton')}
-                  </button>
-                  <button 
-                    className="btn-close"
-                    onClick={onClose}
-                  >
-                    {t('admin.common.close')}
-                  </button>
-                </>
-              )}
-            </div>
-          </>
-        )}
+        <div className="user-modal-actions">
+          {isEditing ? (
+            <>
+              <button
+                type="button"
+                className="adm-btn adm-btn--secondary"
+                disabled={isSaving}
+                onClick={handleClose}
+              >
+                {t('admin.common.cancel')}
+              </button>
+              <button
+                type="button"
+                className="adm-btn adm-btn--primary"
+                disabled={isSaving}
+                onClick={handleSave}
+              >
+                {isSaving ? t('admin.common.saving') : t('admin.users.saveChanges')}
+              </button>
+            </>
+          ) : (
+            <>
+              <button
+                type="button"
+                className="adm-btn adm-btn--danger-soft"
+                onClick={() => onDelete(user.Id)}
+              >
+                {t('admin.users.deleteButton')}
+              </button>
+              <button
+                type="button"
+                className="adm-btn adm-btn--navy"
+                onClick={() => setIsEditing(true)}
+              >
+                {t('admin.users.editButton')}
+              </button>
+              <button type="button" className="adm-btn adm-btn--secondary" onClick={onClose}>
+                {t('admin.common.close')}
+              </button>
+            </>
+          )}
+        </div>
       </div>
     </div>
   );

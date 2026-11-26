@@ -14,6 +14,7 @@ using ServerAPI.Data.Repositories;
 using ServerAPI.Data.Seeding;
 using ServerAPI.Models;
 using ServerAPI.Services;
+using ServerAPI.Services.Admin;
 using ServerAPI.Services.AuthService;
 using ServerAPI.Services.Contacts;
 using ServerAPI.Services.Schedule;
@@ -261,6 +262,7 @@ public partial class Program
         services.AddSingleton<IEmailTemplateService, EmailTemplateService>();
         services.AddScoped<IContactService, ContactService>();
         services.AddScoped<IShoesService, ShoesService>();
+        services.AddScoped<IAdminInsightsService, AdminInsightsService>();
 
         // Swagger
         services.AddEndpointsApiExplorer();

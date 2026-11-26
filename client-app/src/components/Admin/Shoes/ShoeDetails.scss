@@ -1,113 +1,68 @@
-.shoe-details-container {
+.shoe-details-page {
+  .shoe-details-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+  }
+
+  .detail-panel {
+    padding: 20px;
+
+    h3 {
+      margin: 0 0 14px;
+      font-size: 1.05rem;
+    }
+
+    .muted-copy {
+      margin: 0;
+      color: var(--adm-text-muted);
+      font-size: 0.9rem;
+    }
+  }
+
+  .linked-list {
     display: flex;
-    justify-content: center;
-    align-items: flex-start;
-    padding: 2rem;
-    background-color: #f5f7fa;
-    min-height: 100vh;
-    min-height: 100dvh;
+    flex-direction: column;
+    gap: 8px;
+    max-height: 420px;
+    overflow-y: auto;
   }
-  
-  .shoe-details-card {
-    background: #ffffff;
-    border-radius: 12px;
-    padding: 2rem;
-    width: 100%;
-    max-width: 600px;
-    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.1);
-  
-    h2 {
-      margin-bottom: 1rem;
-      font-size: 1.6rem;
-      color: #2c3e50;
+
+  .linked-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 10px 12px;
+    border-radius: 10px;
+    background: var(--adm-surface-muted);
+    border: 1px solid var(--adm-border);
+    text-decoration: none;
+    color: var(--adm-text);
+
+    span {
+      font-size: 0.86rem;
+      color: var(--adm-text-muted);
     }
-  
-    .details-section {
-      margin-bottom: 1.5rem;
-  
-      h3 {
-        margin-bottom: 0.5rem;
-        font-size: 1.2rem;
-        color: #34495e;
-      }
-  
-      p {
-        color: #555;
-        margin: 0.2rem 0;
-      }
-  
-      ul {
-        list-style: none;
-        padding: 0;
-  
-        li {
-          background: #ecf0f1;
-          padding: 0.6rem 1rem;
-          margin-bottom: 0.5rem;
-          border-radius: 6px;
-          color: #2c3e50;
-          font-size: 0.95rem;
-        }
-      }
-    }
-  
-    .add-user {
-      display: flex;
-      gap: 0.5rem;
-      margin-top: 0.8rem;
-  
-      input {
-        flex: 1;
-        padding: 0.5rem 0.8rem;
-        border: 1px solid #bdc3c7;
-        border-radius: 6px;
-        font-size: 0.95rem;
-        outline: none;
-        transition: border 0.3s ease;
-  
-        &:focus {
-          border-color: #3498db;
-        }
-      }
-  
-      button {
-        background: #3498db;
-        color: #fff;
-        border: none;
-        border-radius: 6px;
-        padding: 0.5rem 1rem;
-        cursor: pointer;
-        font-size: 0.95rem;
-        transition: background 0.3s ease;
-  
-        &:hover {
-          background: #2980b9;
-        }
-      }
-    }
-  
-    .btn-back {
-      margin-top: 1rem;
-      background: #e74c3c;
-      color: #fff;
-      border: none;
-      border-radius: 6px;
-      padding: 0.6rem 1.2rem;
-      cursor: pointer;
-      font-size: 0.95rem;
-      transition: background 0.3s ease;
-  
+
+    @media (hover: hover) and (pointer: fine) {
       &:hover {
-        background: #c0392b;
+        border-color: var(--adm-navy);
       }
     }
   }
-  
-  .loading,
-  .error,
-  .not-found {
-    text-align: center;
-    margin-top: 2rem;
-    font-size: 1.1rem;
+
+  .users-list {
+    margin: 0;
+    padding-left: 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
   }
-  
+}
+
+@media (max-width: 768px) {
+  .shoe-details-page .shoe-details-grid {
+    grid-template-columns: 1fr;
+  }
+}

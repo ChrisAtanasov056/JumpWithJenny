@@ -7,6 +7,7 @@ using ServerAPI.Common;
 using ServerAPI.Data;
 using ServerAPI.Data.Common.Repositories;
 using ServerAPI.Models;
+using ServerAPI.Models.Admin;
 using ServerAPI.Models.Enums;
 using ServerAPI.Models.Schedule;
 
@@ -41,7 +42,9 @@ namespace ServerAPI.Services.Schedule
             ApplyForWorkoutRequest request,
             bool allowPastWorkout = false,
             bool enforceBookingLimits = true,
-            bool sendConfirmationEmail = true)
+            bool sendConfirmationEmail = true,
+            bool requireEmail = true,
+            bool allowOverbooking = false)
         {
             if (request == null || string.IsNullOrWhiteSpace(request.WorkoutId))
             {
@@ -60,13 +63,30 @@ namespace ServerAPI.Services.Schedule
                     "Full name must be between 2 and 120 characters.");
             }
 
-            var trimmedEmail = request.Email?.Trim() ?? string.Empty;
-            if (!IsValidEmailAddress(trimmedEmail))
+            string trimmedEmail = null;
+            string normalizedEmail = null;
+            if (string.IsNullOrWhiteSpace(request.Email))
             {
-                throw new ScheduleBookingException(
-                    BookingErrorCode.InvalidEmail,
-                    "INVALID_EMAIL",
-                    "Please enter a valid email address.");
+                if (requireEmail)
+                {
+                    throw new ScheduleBookingException(
+                        BookingErrorCode.InvalidEmail,
+                        "INVALID_EMAIL",
+                        "Please enter a valid email address.");
+                }
+            }
+            else
+            {
+                trimmedEmail = request.Email.Trim();
+                if (!IsValidEmailAddress(trimmedEmail))
+                {
+                    throw new ScheduleBookingException(
+                        BookingErrorCode.InvalidEmail,
+                        "INVALID_EMAIL",
+                        "Please enter a valid email address.");
+                }
+
+                normalizedEmail = trimmedEmail.ToLowerInvariant();
             }
 
             var trimmedPhone = request.PhoneNumber?.Trim() ?? string.Empty;
@@ -86,7 +106,6 @@ namespace ServerAPI.Services.Schedule
                     "Please select a valid shoe size.");
             }
 
-            var normalizedEmail = trimmedEmail.ToLowerInvariant();
             var workoutId = request.WorkoutId.Trim();
             var nowSofia = BulgariaTimeHelper.GetCurrentSofiaTime();
             var cancellationToken = GenerateCancellationToken();
@@ -97,8 +116,9 @@ namespace ServerAPI.Services.Schedule
 
             await using (var transaction = await _context.Database.BeginTransactionAsync())
             {
-                // Serialize concurrent bookings for the same email so duplicate & max-3 limits cannot race.
-                await _context.Database.ExecuteSqlInterpolatedAsync($"SELECT pg_advisory_xact_lock(hashtext({normalizedEmail}))");
+                var lockKey = normalizedEmail ?? $"phone:{trimmedPhone}";
+                // Serialize concurrent bookings for the same email/phone so duplicate & max-3 limits cannot race.
+                await _context.Database.ExecuteSqlInterpolatedAsync($"SELECT pg_advisory_xact_lock(hashtext({lockKey}))");
 
                 var workout = await _workoutRepository.AllAsSplitQuery()
                     .Include(w => w.WorkoutShoes)
@@ -122,18 +142,37 @@ namespace ServerAPI.Services.Schedule
                         "Cannot register for a workout that has already started or passed.");
                 }
 
-                var existingAppointment = await _appointmentRepository.AllWithDeleted()
-                    .FirstOrDefaultAsync(a => a.WorkoutId == workoutId && a.NormalizedEmail == normalizedEmail);
-
-                if (existingAppointment != null && !existingAppointment.IsDeleted)
+                Appointment existingAppointment = null;
+                if (normalizedEmail != null)
                 {
-                    throw new ScheduleBookingException(
-                        BookingErrorCode.AlreadyRegistered,
-                        "ALREADY_REGISTERED",
-                        "This email is already registered for this workout.");
+                    existingAppointment = await _appointmentRepository.AllWithDeleted()
+                        .FirstOrDefaultAsync(a => a.WorkoutId == workoutId && a.NormalizedEmail == normalizedEmail);
+
+                    if (existingAppointment != null && !existingAppointment.IsDeleted)
+                    {
+                        throw new ScheduleBookingException(
+                            BookingErrorCode.AlreadyRegistered,
+                            "ALREADY_REGISTERED",
+                            "This email is already registered for this workout.");
+                    }
+                }
+                else
+                {
+                    var duplicateNoEmail = workout.Appointments.Any(a =>
+                        !a.IsDeleted &&
+                        string.Equals(a.FullName?.Trim(), trimmedName, StringComparison.OrdinalIgnoreCase) &&
+                        string.Equals(a.PhoneNumber?.Trim(), trimmedPhone, StringComparison.OrdinalIgnoreCase));
+
+                    if (duplicateNoEmail)
+                    {
+                        throw new ScheduleBookingException(
+                            BookingErrorCode.AlreadyRegistered,
+                            "ALREADY_REGISTERED",
+                            "This participant is already registered for this workout.");
+                    }
                 }
 
-                if (enforceBookingLimits)
+                if (enforceBookingLimits && normalizedEmail != null)
                 {
                     var activeUpcomingCount = await _appointmentRepository.AllAsNoTracking()
                         .CountAsync(a =>
@@ -152,7 +191,7 @@ namespace ServerAPI.Services.Schedule
                     }
                 }
 
-                if (!string.Equals(workout.Status, "Available", StringComparison.OrdinalIgnoreCase))
+                if (string.Equals(workout.Status, "Cancelled", StringComparison.OrdinalIgnoreCase))
                 {
                     throw new ScheduleBookingException(
                         BookingErrorCode.WorkoutNotAvailable,
@@ -160,12 +199,23 @@ namespace ServerAPI.Services.Schedule
                         "This workout is not open for registration.");
                 }
 
-                if (workout.AvailableSpots <= 0)
+                if (!allowOverbooking)
                 {
-                    throw new ScheduleBookingException(
-                        BookingErrorCode.NoAvailableSpots,
-                        "NO_AVAILABLE_SPOTS",
-                        "No available spots left for this workout.");
+                    if (!string.Equals(workout.Status, "Available", StringComparison.OrdinalIgnoreCase))
+                    {
+                        throw new ScheduleBookingException(
+                            BookingErrorCode.WorkoutNotAvailable,
+                            "WORKOUT_NOT_AVAILABLE",
+                            "This workout is not open for registration.");
+                    }
+
+                    if (workout.AvailableSpots <= 0)
+                    {
+                        throw new ScheduleBookingException(
+                            BookingErrorCode.NoAvailableSpots,
+                            "NO_AVAILABLE_SPOTS",
+                            "No available spots left for this workout.");
+                    }
                 }
 
                 Shoes assignedShoe = null;
@@ -205,6 +255,8 @@ namespace ServerAPI.Services.Schedule
                     existingAppointment.ShoeId = assignedShoe?.Id;
                     existingAppointment.UsesOwnShoes = request.UsesOwnShoes;
                     existingAppointment.IsConfirmed = true;
+                    existingAppointment.IsAttended = false;
+                    existingAppointment.AttendedAt = null;
 
                     if (!workout.Appointments.Any(a => a.Id == existingAppointment.Id))
                     {
@@ -226,6 +278,8 @@ namespace ServerAPI.Services.Schedule
                         ShoeId = assignedShoe?.Id,
                         UsesOwnShoes = request.UsesOwnShoes,
                         IsConfirmed = true,
+                        IsAttended = false,
+                        AttendedAt = null,
                     };
 
                     await _appointmentRepository.AddAsync(appointment);
@@ -236,11 +290,18 @@ namespace ServerAPI.Services.Schedule
                     }
                 }
 
-                workout.AvailableSpots -= 1;
+                if (workout.AvailableSpots > 0)
+                {
+                    workout.AvailableSpots -= 1;
+                }
+
                 if (workout.AvailableSpots <= 0)
                 {
                     workout.AvailableSpots = 0;
-                    workout.Status = "Booked";
+                    if (string.Equals(workout.Status, "Available", StringComparison.OrdinalIgnoreCase))
+                    {
+                        workout.Status = "Booked";
+                    }
                 }
 
                 try
@@ -285,7 +346,7 @@ namespace ServerAPI.Services.Schedule
                 resultViewModel = MapToWorkoutViewModel(workout);
             }
 
-            if (sendConfirmationEmail)
+            if (sendConfirmationEmail && !string.IsNullOrWhiteSpace(trimmedEmail))
             {
                 try
                 {
@@ -319,6 +380,249 @@ namespace ServerAPI.Services.Schedule
                 Workout = resultViewModel,
                 CancellationToken = cancellationToken,
             };
+        }
+
+        public async Task<string> UpdateParticipantAsync(string appointmentId, AdminUpdateParticipantRequest request)
+        {
+            if (string.IsNullOrWhiteSpace(appointmentId))
+            {
+                throw new ScheduleBookingException(
+                    BookingErrorCode.BookingNotFound,
+                    "BOOKING_NOT_FOUND",
+                    "Booking ID is required.");
+            }
+
+            if (request == null)
+            {
+                throw new ArgumentException("Participant payload is required.");
+            }
+
+            var trimmedName = request.FullName?.Trim() ?? string.Empty;
+            if (trimmedName.Length < 2 || trimmedName.Length > 120)
+            {
+                throw new ScheduleBookingException(
+                    BookingErrorCode.InvalidFullName,
+                    "INVALID_FULL_NAME",
+                    "Full name must be between 2 and 120 characters.");
+            }
+
+            string trimmedEmail = null;
+            string normalizedEmail = null;
+            if (!string.IsNullOrWhiteSpace(request.Email))
+            {
+                trimmedEmail = request.Email.Trim();
+                if (!IsValidEmailAddress(trimmedEmail))
+                {
+                    throw new ScheduleBookingException(
+                        BookingErrorCode.InvalidEmail,
+                        "INVALID_EMAIL",
+                        "Please enter a valid email address.");
+                }
+
+                normalizedEmail = trimmedEmail.ToLowerInvariant();
+            }
+
+            var trimmedPhone = request.PhoneNumber?.Trim() ?? string.Empty;
+            if (!IsValidPhoneNumber(trimmedPhone))
+            {
+                throw new ScheduleBookingException(
+                    BookingErrorCode.InvalidPhoneNumber,
+                    "INVALID_PHONE_NUMBER",
+                    "Please enter a valid phone number.");
+            }
+
+            if (!request.UsesOwnShoes && (!request.ShoeSize.HasValue || !Enum.IsDefined(typeof(ShoesSize), request.ShoeSize.Value)))
+            {
+                throw new ScheduleBookingException(
+                    BookingErrorCode.InvalidShoeSize,
+                    "INVALID_SHOE_SIZE",
+                    "Please select a valid shoe size.");
+            }
+
+            var normalizedAppointmentId = appointmentId.Trim();
+
+            await using var transaction = await _context.Database.BeginTransactionAsync();
+
+            var appointment = await _appointmentRepository.All()
+                .FirstOrDefaultAsync(a => a.Id == normalizedAppointmentId);
+
+            if (appointment == null)
+            {
+                throw new ScheduleBookingException(
+                    BookingErrorCode.BookingNotFound,
+                    "BOOKING_NOT_FOUND",
+                    "Participant registration not found.");
+            }
+
+            var workout = await _workoutRepository.AllAsSplitQuery()
+                .Include(w => w.WorkoutShoes)
+                    .ThenInclude(ws => ws.Shoe)
+                .Include(w => w.Appointments)
+                .FirstOrDefaultAsync(w => w.Id == appointment.WorkoutId);
+
+            if (workout == null)
+            {
+                throw new ScheduleBookingException(
+                    BookingErrorCode.WorkoutNotFound,
+                    "WORKOUT_NOT_FOUND",
+                    "Workout not found.");
+            }
+
+            if (normalizedEmail != null)
+            {
+                var emailTaken = workout.Appointments.Any(a =>
+                    a.Id != appointment.Id &&
+                    !a.IsDeleted &&
+                    string.Equals(a.NormalizedEmail, normalizedEmail, StringComparison.OrdinalIgnoreCase));
+
+                if (emailTaken)
+                {
+                    throw new ScheduleBookingException(
+                        BookingErrorCode.AlreadyRegistered,
+                        "ALREADY_REGISTERED",
+                        "This email is already registered for this workout.");
+                }
+            }
+            else
+            {
+                var duplicateNoEmail = workout.Appointments.Any(a =>
+                    a.Id != appointment.Id &&
+                    !a.IsDeleted &&
+                    a.NormalizedEmail == null &&
+                    string.Equals(a.FullName?.Trim(), trimmedName, StringComparison.OrdinalIgnoreCase) &&
+                    string.Equals(a.PhoneNumber?.Trim(), trimmedPhone, StringComparison.OrdinalIgnoreCase));
+
+                if (duplicateNoEmail)
+                {
+                    throw new ScheduleBookingException(
+                        BookingErrorCode.AlreadyRegistered,
+                        "ALREADY_REGISTERED",
+                        "This participant is already registered for this workout.");
+                }
+            }
+
+            var oldWorkoutShoe = !string.IsNullOrEmpty(appointment.ShoeId)
+                ? workout.WorkoutShoes.FirstOrDefault(ws => !ws.IsDeleted && ws.ShoeId == appointment.ShoeId)
+                : null;
+
+            if (request.UsesOwnShoes)
+            {
+                if (oldWorkoutShoe != null)
+                {
+                    oldWorkoutShoe.IsTaken = false;
+                }
+
+                appointment.ShoeId = null;
+                appointment.UsesOwnShoes = true;
+            }
+            else
+            {
+                var requestedSize = request.ShoeSize.Value;
+                var keepsCurrentShoe = oldWorkoutShoe != null &&
+                    oldWorkoutShoe.Shoe != null &&
+                    !oldWorkoutShoe.Shoe.IsDeleted &&
+                    oldWorkoutShoe.Shoe.Size == requestedSize;
+
+                if (!keepsCurrentShoe)
+                {
+                    var newWorkoutShoe = workout.WorkoutShoes
+                        .FirstOrDefault(ws =>
+                            !ws.IsDeleted &&
+                            ws.Shoe != null &&
+                            !ws.Shoe.IsDeleted &&
+                            ws.Shoe.Size == requestedSize &&
+                            !ws.IsTaken);
+
+                    if (newWorkoutShoe == null)
+                    {
+                        throw new ScheduleBookingException(
+                            BookingErrorCode.NoAvailableShoes,
+                            "NO_AVAILABLE_SHOES",
+                            "No available shoes of the requested size.");
+                    }
+
+                    if (oldWorkoutShoe != null)
+                    {
+                        oldWorkoutShoe.IsTaken = false;
+                    }
+
+                    newWorkoutShoe.IsTaken = true;
+                    appointment.ShoeId = newWorkoutShoe.ShoeId;
+                }
+
+                appointment.UsesOwnShoes = false;
+            }
+
+            appointment.FullName = trimmedName;
+            appointment.Email = trimmedEmail;
+            appointment.NormalizedEmail = normalizedEmail;
+            appointment.PhoneNumber = trimmedPhone;
+
+            try
+            {
+                await _context.SaveChangesAsync();
+                await transaction.CommitAsync();
+                return workout.Id;
+            }
+            catch (DbUpdateConcurrencyException ex)
+            {
+                await transaction.RollbackAsync();
+                _logger.LogWarning(ex, "Concurrency conflict while updating appointment {AppointmentId}", appointment.Id);
+                throw new ScheduleBookingException(
+                    BookingErrorCode.ConcurrencyConflict,
+                    "CONCURRENCY_CONFLICT",
+                    "Workout availability changed concurrently. Please try again.",
+                    ex);
+            }
+            catch (DbUpdateException ex)
+            {
+                await transaction.RollbackAsync();
+                if (ex.InnerException is PostgresException pgEx &&
+                    string.Equals(pgEx.ConstraintName, "IX_Appointments_WorkoutId_NormalizedEmail", StringComparison.Ordinal))
+                {
+                    throw new ScheduleBookingException(
+                        BookingErrorCode.AlreadyRegistered,
+                        "ALREADY_REGISTERED",
+                        "This email is already registered for this workout.",
+                        ex);
+                }
+
+                _logger.LogWarning(ex, "Database conflict while updating appointment {AppointmentId}", appointment.Id);
+                throw new ScheduleBookingException(
+                    BookingErrorCode.ConcurrencyConflict,
+                    "CONCURRENCY_CONFLICT",
+                    "Could not update participant due to a concurrent update. Please try again.",
+                    ex);
+            }
+        }
+
+        public async Task<bool> SetParticipantAttendanceAsync(string appointmentId, bool isAttended)
+        {
+            if (string.IsNullOrWhiteSpace(appointmentId))
+            {
+                throw new ScheduleBookingException(
+                    BookingErrorCode.BookingNotFound,
+                    "BOOKING_NOT_FOUND",
+                    "Booking ID is required.");
+            }
+
+            var normalizedId = appointmentId.Trim();
+            var appointment = await _appointmentRepository.All()
+                .FirstOrDefaultAsync(a => a.Id == normalizedId);
+
+            if (appointment == null)
+            {
+                throw new ScheduleBookingException(
+                    BookingErrorCode.BookingNotFound,
+                    "BOOKING_NOT_FOUND",
+                    "Participant registration not found.");
+            }
+
+            appointment.IsAttended = isAttended;
+            appointment.AttendedAt = isAttended ? DateTime.UtcNow : null;
+
+            await _context.SaveChangesAsync();
+            return true;
         }
 
         public async Task<BookingCancellationDetailsDto> GetCancellationDetailsByTokenAsync(string token)

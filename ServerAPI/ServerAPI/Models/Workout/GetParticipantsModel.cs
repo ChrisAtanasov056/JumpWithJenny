@@ -15,5 +15,11 @@ namespace ServerAPI.ViewModels.Workout
         public ShoesSize? ShoeSize { get; set; }
 
         public bool UsesOwnShoes { get; set; }
+
+        public bool IsAttended { get; set; }
+
+        public DateTime? AttendedAt { get; set; }
+
+        public DateTime CreatedOn { get; set; }
     }
 }

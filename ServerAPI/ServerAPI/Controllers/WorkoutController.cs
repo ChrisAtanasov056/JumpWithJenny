@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ServerAPI.Common;
+using ServerAPI.Models.Admin;
 using ServerAPI.Services.Schedule;
 using ServerAPI.Services.Workouts;
 using ServerAPI.ViewModels;
@@ -67,6 +68,7 @@ namespace ServerAPI.Controllers
             [FromQuery] int pageSize = 20,
             [FromQuery] bool? upcomingOnly = null,
             [FromQuery] string search = null,
+            [FromQuery] string status = null,
             CancellationToken cancellationToken = default)
         {
             var workouts = await _workoutService.GetWorkoutsPagedAsync(
@@ -74,9 +76,24 @@ namespace ServerAPI.Controllers
                 pageSize,
                 upcomingOnly,
                 search,
+                status,
                 cancellationToken);
             _logger.LogInformation("Retrieved {Count} of {TotalCount} workouts (page {Page})", workouts.Items.Count, workouts.TotalCount, workouts.Page);
             return Ok(workouts);
+        }
+
+        [HttpPost("{id}/duplicate")]
+        public async Task<IActionResult> DuplicateWorkout(string id, [FromBody] DuplicateWorkoutRequest request = null)
+        {
+            var duplicated = await _workoutService.DuplicateWorkoutAsync(id, request);
+            return CreatedAtAction(nameof(GetWorkout), new { id = duplicated.Id }, duplicated);
+        }
+
+        [HttpPost("batch")]
+        public async Task<IActionResult> CreateWorkoutsBatch([FromBody] BatchCreateWorkoutsRequest request)
+        {
+            var result = await _workoutService.CreateWorkoutsBatchAsync(request);
+            return Ok(result);
         }
     }
 }

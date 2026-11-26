@@ -3,6 +3,8 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ServerAPI.Common;
 using ServerAPI.DTOs;
+using ServerAPI.Models.Admin;
+using ServerAPI.Models.Enums;
 using ServerAPI.Services;
 
 namespace ServerAPI.Controllers
@@ -25,6 +27,14 @@ namespace ServerAPI.Controllers
         {
             var shoesDto = await _shoesService.GetAllShoesAsync();
             return Ok(shoesDto);
+        }
+
+        // GET: api/shoes/inventory
+        [HttpGet("inventory")]
+        public async Task<IActionResult> GetShoesInventory()
+        {
+            var inventory = await _shoesService.GetShoesInventoryAsync();
+            return Ok(inventory);
         }
 
         // GET: api/shoes/{id}
@@ -52,6 +62,19 @@ namespace ServerAPI.Controllers
 
             var newShoe = await _shoesService.AddShoeAsync(newShoeDto);
             return CreatedAtAction(nameof(GetShoeById), new { id = newShoe.Id }, newShoe);
+        }
+
+        // POST: api/shoes/batch
+        [HttpPost("batch")]
+        public async Task<IActionResult> AddShoesBatch([FromBody] BatchAddShoesRequest request)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var created = await _shoesService.AddShoesBatchAsync(request.Size, request.Count);
+            return Ok(created);
         }
 
         // PUT: api/shoes/{id}
@@ -85,6 +108,19 @@ namespace ServerAPI.Controllers
             if (!result)
             {
                 return NotFound();
+            }
+
+            return NoContent();
+        }
+
+        // DELETE: api/shoes/by-size/{size}
+        [HttpDelete("by-size/{size}")]
+        public async Task<IActionResult> DeleteOneBySize(ShoesSize size)
+        {
+            var result = await _shoesService.DeleteOneFreeShoeBySizeAsync(size);
+            if (!result)
+            {
+                return NotFound(new { message = "No shoes found for this size." });
             }
 
             return NoContent();

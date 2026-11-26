@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../../services/AuthContext';
 import Login from '../../Login/Login';
 import ForgotPasswordModal from '../../ForgotPassword/ForgotPasswordModal';
+import '../shared/admin-tokens.scss';
 import './AdminLoginPage.scss';
 
 const isAdminRole = (role) => role === 'Admin' || role === 'Administrator';
@@ -16,7 +17,7 @@ const AdminLoginPage = () => {
   const [showForgotModal, setShowForgotModal] = useState(false);
   const [accessDeniedMessage, setAccessDeniedMessage] = useState('');
 
-  const redirectTarget = location.state?.from || '/admin/workouts';
+  const redirectTarget = location.state?.from || '/admin';
 
   useEffect(() => {
     if (isAuthenticated && user) {
@@ -39,7 +40,7 @@ const AdminLoginPage = () => {
   };
 
   return (
-    <div className="admin-login-page">
+    <div className="admin-scope admin-login-page">
       <div className="admin-login-card">
         <div className="admin-login-header">
           <img src="/images/brand_logo_2.png" alt={t('navbar.logoAlt')} className="admin-login-logo" />
@@ -48,7 +49,7 @@ const AdminLoginPage = () => {
         </div>
 
         {accessDeniedMessage && (
-          <div className="admin-login-alert" role="alert">
+          <div className="adm-alert adm-alert--error" role="alert">
             {accessDeniedMessage}
           </div>
         )}

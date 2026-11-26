@@ -1,12 +1,16 @@
-// src/services/ShoeService.js
 import axios from '../api/axius';
 
 const ShoeService = {
   getAllShoes: async () => {
-    const response = await axios.get("/api/shoes");
+    const response = await axios.get('/api/shoes');
     if (!response || !response.data) {
-      throw new Error("Failed to fetch shoes");
+      throw new Error('Failed to fetch shoes');
     }
+    return response.data;
+  },
+
+  getInventory: async () => {
+    const response = await axios.get('/api/shoes/inventory');
     return response.data;
   },
 
@@ -16,7 +20,15 @@ const ShoeService = {
   },
 
   addShoe: async (shoeData) => {
-    const response = await axios.post("/api/shoes", shoeData);
+    const response = await axios.post('/api/shoes', shoeData);
+    return response.data;
+  },
+
+  addShoesBatch: async (size, count) => {
+    const response = await axios.post('/api/shoes/batch', {
+      Size: Number(size),
+      Count: Number(count),
+    });
     return response.data;
   },
 
@@ -27,6 +39,11 @@ const ShoeService = {
 
   deleteShoe: async (id) => {
     const response = await axios.delete(`/api/shoes/${id}`);
+    return response.data;
+  },
+
+  deleteOneBySize: async (size) => {
+    const response = await axios.delete(`/api/shoes/by-size/${Number(size)}`);
     return response.data;
   },
 };

@@ -1,229 +1,215 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { toast } from 'react-toastify';
 import WorkoutService from '../../../services/WorkoutSevices';
-import AddUserSearchModal from './AddUserSearchModal';
-import { formatWorkoutDateForInput } from '../../../utils/workoutDate';
+import {
+  getSofiaDateParts,
+  getWeekdayNameFromDatePart,
+} from '../../../utils/workoutDate';
 import './WorkoutForm.scss';
 
-const shoeSizeLabels = {
-  1: 'S',
-  2: 'M',
-  3: 'L',
-  4: 'XL',
-};
+const QUICK_TIMES = ['09:00', '10:00', '14:00', '15:00', '18:00', '19:00', '20:00'];
 
 const WorkoutForm = () => {
   const { t } = useTranslation();
   const { id } = useParams();
   const navigate = useNavigate();
 
-  const [workout, setWorkout] = useState({
-    Day: 'Monday',
-    Time: '09:00',
-    Date: '',
-    Status: 'Available',
-    AvailableSpots: 20,
-    Appointments: [],
-  });
+  const initialToday = getSofiaDateParts(new Date()).datePart;
 
-  const [loading, setLoading] = useState(false);
+  const [datePart, setDatePart] = useState(initialToday);
+  const [timePart, setTimePart] = useState('18:00');
+  const [status, setStatus] = useState('Available');
+  const [availableSpots, setAvailableSpots] = useState(20);
+  const [takenCount, setTakenCount] = useState(0);
+
+  const [initialLoading, setInitialLoading] = useState(Boolean(id));
+  const [saving, setSaving] = useState(false);
   const [error, setError] = useState(null);
-  const [successMessage, setSuccessMessage] = useState('');
-  const [showUserSearch, setShowUserSearch] = useState(false);
-
-  const addParticipant = async (participant) => {
-    const updatedWorkout = await WorkoutService.addParticipantToWorkout(id, participant);
-    setWorkout({
-      ...updatedWorkout,
-      Date: formatWorkoutDateForInput(updatedWorkout.Date),
-    });
-  };
-
-  const removeParticipant = async (appointmentId) => {
-    try {
-      await WorkoutService.removeParticipantFromWorkout(appointmentId);
-      const refreshed = await WorkoutService.getWorkoutById(id);
-      setWorkout({
-        ...refreshed,
-        Date: formatWorkoutDateForInput(refreshed.Date),
-      });
-    } catch (err) {
-      const serverMessage = err.response?.data?.message || err.message;
-      setError(serverMessage || t('admin.workouts.removeParticipantError'));
-    }
-  };
 
   useEffect(() => {
+    if (!id) return;
+
     const fetchWorkout = async () => {
+      setInitialLoading(true);
       try {
         const data = await WorkoutService.getWorkoutById(id);
-        setWorkout({
-          ...data,
-          Date: formatWorkoutDateForInput(data.Date),
-        });
+        const parts = getSofiaDateParts(data.Date);
+        setDatePart(parts.datePart || initialToday);
+        setTimePart(data.Time || parts.timePart || '18:00');
+        setStatus(data.Status || 'Available');
+        setAvailableSpots(Number(data.AvailableSpots ?? 0));
+        setTakenCount(data.TakenSpots ?? data.Appointments?.length ?? 0);
       } catch (err) {
-        const serverMessage = err.response?.data?.message || err.message;
-        setError(serverMessage || t('admin.workouts.loadSingleError'));
+        const msg = err?.response?.data?.message || err?.message;
+        setError(msg || t('admin.workouts.loadSingleError'));
+      } finally {
+        setInitialLoading(false);
       }
     };
 
-    if (id) fetchWorkout();
-  }, [id, t]);
+    fetchWorkout();
+  }, [id, initialToday, t]);
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setWorkout((prev) => ({ ...prev, [name]: value }));
-  };
+  const derivedDay = getWeekdayNameFromDatePart(datePart);
+  const translatedDerivedDay = derivedDay
+    ? t(`days.${derivedDay.toLowerCase()}`, { defaultValue: derivedDay })
+    : '—';
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true);
+    setSaving(true);
     setError(null);
-    setSuccessMessage('');
 
+    const normalizedTime = timePart || '18:00';
     const payload = {
-      ...workout,
-      AvailableSpots: Number(workout.AvailableSpots),
+      Id: id || undefined,
+      Day: derivedDay || 'Monday',
+      Time: normalizedTime,
+      Date: `${datePart}T${normalizedTime}:00`,
+      Status: status,
+      AvailableSpots: Number(availableSpots),
     };
 
     try {
       if (id) {
         await WorkoutService.updateWorkout(id, payload);
-        setSuccessMessage(t('admin.workouts.updateSuccess'));
+        toast.success(t('admin.workouts.updateSuccess'));
+        navigate(`/admin/workouts/${id}/view`);
       } else {
-        await WorkoutService.createWorkout(payload);
-        setSuccessMessage(t('admin.workouts.createSuccess'));
+        const created = await WorkoutService.createWorkout(payload);
+        toast.success(t('admin.workouts.createSuccess'));
+        if (created?.Id) {
+          navigate(`/admin/workouts/${created.Id}/view`);
+        } else {
+          navigate('/admin/workouts');
+        }
       }
-      setTimeout(() => navigate('/admin/workouts'), 2000);
     } catch (err) {
-      const serverMessage = err.response?.data?.message || err.message;
-      setError(serverMessage || t('admin.workouts.saveError'));
+      const msg = err?.response?.data?.message || err?.response?.data?.detail || err?.message;
+      setError(msg || t('admin.workouts.saveError'));
     } finally {
-      setLoading(false);
+      setSaving(false);
     }
   };
 
+  if (initialLoading) {
+    return <div className="adm-loading" role="status">{t('admin.common.loading')}</div>;
+  }
+
   return (
-    <div className="workout-form">
-      <h2>{id ? t('admin.workouts.editTitle') : t('admin.workouts.addTitle')}</h2>
-
-      {successMessage && <div className="success">{successMessage}</div>}
-      {error && <div className="error">{error}</div>}
-
-      <form onSubmit={handleSubmit}>
-        <div className="form-row">
-          <div className="form-group">
-            <label htmlFor="workout-day">{t('admin.workouts.table.day')}</label>
-            <select id="workout-day" name="Day" value={workout.Day} onChange={handleChange} required>
-              {['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'].map((day) => (
-                <option key={day} value={day}>{t(`days.${day.toLowerCase()}`)}</option>
-              ))}
-            </select>
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="workout-time">{t('admin.workouts.table.time')}</label>
-            <input id="workout-time" type="time" name="Time" value={workout.Time} onChange={handleChange} required />
-          </div>
+    <div className="admin-workout-form-page">
+      <div className="adm-page-header">
+        <div className="adm-title-group">
+          <h1>{id ? t('admin.workouts.editTitle') : t('admin.workouts.addTitle')}</h1>
+          <p>{t('admin.workouts.formSubtitle')}</p>
         </div>
 
-        <div className="form-row">
-          <div className="form-group">
-            <label htmlFor="workout-date">{t('admin.workouts.dateTime')}</label>
+        <div className="adm-header-actions">
+          {id && (
+            <Link to={`/admin/workouts/${id}/view`} className="adm-btn adm-btn--navy">
+              {t('admin.workouts.manageParticipantsLink', { count: takenCount })}
+            </Link>
+          )}
+          <Link to="/admin/workouts" className="adm-btn adm-btn--secondary">
+            {t('admin.common.backToList')}
+          </Link>
+        </div>
+      </div>
+
+      {error && <div className="adm-alert adm-alert--error">{error}</div>}
+
+      <form onSubmit={handleSubmit} className="adm-card workout-form-card">
+        <div className="form-grid">
+          <div className="form-field">
+            <label htmlFor="workout-date-part">{t('admin.workouts.dateLabel')}</label>
             <input
-              id="workout-date"
-              type="datetime-local"
-              name="Date"
-              value={workout.Date}
-              onChange={handleChange}
+              id="workout-date-part"
+              type="date"
+              className="adm-input"
+              value={datePart}
+              onChange={(e) => setDatePart(e.target.value)}
               required
             />
+            <div className="derived-day-pill">
+              <span>{t('admin.workouts.autoDayLabel')}</span>
+              <strong>{translatedDerivedDay}</strong>
+            </div>
           </div>
-        </div>
 
-        <div className="form-row">
-          <div className="form-group">
+          <div className="form-field">
+            <label htmlFor="workout-time-part">{t('admin.workouts.timeLabel')}</label>
+            <input
+              id="workout-time-part"
+              type="time"
+              className="adm-input"
+              value={timePart}
+              onChange={(e) => setTimePart(e.target.value)}
+              required
+            />
+            <div className="quick-times">
+              <span className="quick-times-label">{t('admin.workouts.quickTimesLabel')}</span>
+              <div className="quick-times-chips">
+                {QUICK_TIMES.map((qt) => (
+                  <button
+                    key={qt}
+                    type="button"
+                    className={`quick-time-chip tabular-nums${timePart === qt ? ' active' : ''}`}
+                    onClick={() => setTimePart(qt)}
+                  >
+                    {qt}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <div className="form-field">
             <label htmlFor="workout-status">{t('admin.workouts.table.status')}</label>
-            <select id="workout-status" name="Status" value={workout.Status} onChange={handleChange}>
-              {['Available', 'Booked', 'Completed', 'Cancelled'].map((status) => (
-                <option key={status} value={status}>{t(`admin.workouts.statuses.${status.toLowerCase()}`)}</option>
+            <select
+              id="workout-status"
+              className="adm-select"
+              value={status}
+              onChange={(e) => setStatus(e.target.value)}
+            >
+              {['Available', 'Booked', 'Completed', 'Cancelled'].map((s) => (
+                <option key={s} value={s}>
+                  {t(`admin.workouts.statuses.${s.toLowerCase()}`)}
+                </option>
               ))}
             </select>
           </div>
 
-          <div className="form-group">
+          <div className="form-field">
             <label htmlFor="workout-spots">{t('admin.workouts.table.availableSpots')}</label>
             <input
               id="workout-spots"
               type="number"
-              name="AvailableSpots"
+              className="adm-input"
               min="0"
-              max="50"
-              value={workout.AvailableSpots}
-              onChange={handleChange}
+              max="100"
+              value={availableSpots}
+              onChange={(e) => setAvailableSpots(e.target.value)}
               required
             />
           </div>
         </div>
 
-        {id && (
-          <div className="participants-section">
-            <h3>{t('admin.workouts.participants')}</h3>
-            {workout.Appointments?.length === 0 && <p>{t('admin.workouts.noParticipants')}</p>}
-
-            {workout.Appointments?.map((appointment) => {
-              const shoeText = appointment.UsesOwnShoes
-                ? t('admin.workouts.view.ownShoes')
-                : (shoeSizeLabels[Number(appointment.ShoeSize)] || t('admin.workouts.view.notAssigned'));
-
-              return (
-                <div key={appointment.Id} className="participant-display">
-                  <span>
-                    {appointment.UserFullName} ({appointment.UserEmail}{appointment.PhoneNumber ? ` · ${appointment.PhoneNumber}` : ''}) — {shoeText}
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() => removeParticipant(appointment.Id)}
-                    className="btn-remove"
-                    aria-label={t('admin.workouts.removeParticipantAria')}
-                  >
-                    ×
-                  </button>
-                </div>
-              );
-            })}
-
-            <div className="add-participant">
-              <button
-                type="button"
-                onClick={() => setShowUserSearch(true)}
-                className="btn-add-participant"
-              >
-                {t('admin.workouts.addParticipant')}
-              </button>
-            </div>
-          </div>
-        )}
-
         <div className="form-actions">
-          <button type="submit" disabled={loading} className="btn-save">
-            {loading ? t('admin.common.saving') : t('admin.workouts.saveButton')}
-          </button>
           <button
             type="button"
+            className="adm-btn adm-btn--secondary"
             onClick={() => navigate('/admin/workouts')}
-            className="btn-cancel"
+            disabled={saving}
           >
             {t('admin.common.cancel')}
           </button>
+          <button type="submit" className="adm-btn adm-btn--primary" disabled={saving}>
+            {saving ? t('admin.common.saving') : t('admin.workouts.saveButton')}
+          </button>
         </div>
       </form>
-      <AddUserSearchModal
-        visible={showUserSearch}
-        onClose={() => setShowUserSearch(false)}
-        onConfirm={addParticipant}
-      />
     </div>
   );
 };

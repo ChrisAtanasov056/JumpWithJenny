@@ -19,12 +19,9 @@
         [MaxLength(120)]
         public string FullName { get; set; }
 
-        [Required]
-        [EmailAddress]
         [MaxLength(254)]
         public string Email { get; set; }
 
-        [Required]
         [MaxLength(254)]
         public string NormalizedEmail { get; set; }
 
@@ -45,5 +42,9 @@
         public bool IsConfirmed { get; set; } = false;
 
         public bool UsesOwnShoes { get; set; }
+
+        public bool IsAttended { get; set; } = false;
+
+        public DateTime? AttendedAt { get; set; }
     }
 }

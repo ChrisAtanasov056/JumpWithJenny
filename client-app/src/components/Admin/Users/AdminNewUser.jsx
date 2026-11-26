@@ -1,10 +1,9 @@
-// src/components/Admin/Users/AdminNewUser.js
-
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { toast } from 'react-toastify';
 import UserService from '../../../services/UserServices';
-import './AdminNewUser.scss'; 
+import './AdminNewUser.scss';
 
 const AdminNewUser = () => {
   const { t } = useTranslation();
@@ -15,14 +14,15 @@ const AdminNewUser = () => {
     password: '',
     firstName: '',
     lastName: '',
-    role: 'User' 
+    role: 'Administrator',
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prevData => ({ ...prevData, [name]: value }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
+    setError(null);
   };
 
   const handleSubmit = async (e) => {
@@ -31,98 +31,140 @@ const AdminNewUser = () => {
     setError(null);
     try {
       await UserService.createUserAdmin({
-        Username: formData.username,
-        Email: formData.email,
+        Username: formData.username.trim(),
+        Email: formData.email.trim(),
         Password: formData.password,
-        FirstName: formData.firstName,
-        LastName: formData.lastName,
-        Role: formData.role
+        FirstName: formData.firstName.trim(),
+        LastName: formData.lastName.trim(),
+        Role: formData.role,
       });
-      // Redirect to the user list page after successful creation
-      navigate('/admin/users', { state: { message: t('admin.users.createSuccess') } });
+      toast.success(t('admin.users.createSuccess'));
+      navigate('/admin/users');
     } catch (err) {
-      console.error('Error creating user:', err);
-      setError(err.message || t('admin.users.createError'));
+      const apiErrors = err?.response?.data?.Errors || err?.response?.data?.errors;
+      const firstErr = Array.isArray(apiErrors)
+        ? apiErrors[0]?.Description || apiErrors[0]?.description || apiErrors[0]
+        : null;
+      setError(
+        firstErr ||
+          err?.response?.data?.Message ||
+          err?.response?.data?.message ||
+          err?.message ||
+          t('admin.users.createError')
+      );
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="new-user-container">
-      <h2 className="form-title">{t('admin.users.addNew')}</h2>
-      <form onSubmit={handleSubmit} className="new-user-form">
-        {error && <div className="error-message">{error}</div>}
-        
-        <div className="form-group">
-          <label htmlFor="username">{t('admin.users.fields.username')}</label>
-          <input
-            type="text"
-            id="username"
-            name="username"
-            value={formData.username}
-            onChange={handleChange}
-            required
-          />
+    <div className="admin-new-user-page">
+      <div className="adm-page-header">
+        <div className="adm-title-group">
+          <h1>{t('admin.users.addNew').replace(/^\+\s*/, '')}</h1>
         </div>
-        <div className="form-group">
-          <label htmlFor="email">{t('admin.users.fields.email')}</label>
-          <input
-            type="email"
-            id="email"
-            name="email"
-            value={formData.email}
-            onChange={handleChange}
-            required
-          />
-        </div>
-        <div className="form-group">
-          <label htmlFor="password">{t('admin.users.fields.password')}</label>
-          <input
-            type="password"
-            id="password"
-            name="password"
-            value={formData.password}
-            onChange={handleChange}
-            required
-          />
-        </div>
-        <div className="form-group">
-          <label htmlFor="firstName">{t('admin.users.fields.firstName')}</label>
-          <input
-            type="text"
-            id="firstName"
-            name="firstName"
-            value={formData.firstName}
-            onChange={handleChange}
-          />
-        </div>
-        <div className="form-group">
-          <label htmlFor="lastName">{t('admin.users.fields.lastName')}</label>
-          <input
-            type="text"
-            id="lastName"
-            name="lastName"
-            value={formData.lastName}
-            onChange={handleChange}
-          />
-        </div>
-        <div className="form-group">
-          <label htmlFor="role">{t('admin.users.fields.role')}</label>
-          <select
-            id="role"
-            name="role"
-            value={formData.role}
-            onChange={handleChange}
-          >
-            <option value="User">{t('admin.roles.user')}</option>
-            <option value="Administrator">{t('admin.roles.admin')}</option>
-          </select>
+        <Link to="/admin/users" className="adm-btn adm-btn--secondary">
+          {t('admin.users.backToUsers')}
+        </Link>
+      </div>
+
+      {error && <div className="adm-alert adm-alert--error">{error}</div>}
+
+      <form onSubmit={handleSubmit} className="adm-card new-user-card">
+        <div className="form-grid">
+          <div className="form-field">
+            <label htmlFor="username">{t('admin.users.fields.username')}</label>
+            <input
+              id="username"
+              name="username"
+              type="text"
+              className="adm-input"
+              value={formData.username}
+              onChange={handleChange}
+              required
+            />
+          </div>
+
+          <div className="form-field">
+            <label htmlFor="email">{t('admin.users.fields.email')}</label>
+            <input
+              id="email"
+              name="email"
+              type="email"
+              className="adm-input"
+              value={formData.email}
+              onChange={handleChange}
+              required
+            />
+          </div>
+
+          <div className="form-field">
+            <label htmlFor="firstName">{t('admin.users.fields.firstName')}</label>
+            <input
+              id="firstName"
+              name="firstName"
+              type="text"
+              className="adm-input"
+              value={formData.firstName}
+              onChange={handleChange}
+              required
+            />
+          </div>
+
+          <div className="form-field">
+            <label htmlFor="lastName">{t('admin.users.fields.lastName')}</label>
+            <input
+              id="lastName"
+              name="lastName"
+              type="text"
+              className="adm-input"
+              value={formData.lastName}
+              onChange={handleChange}
+            />
+          </div>
+
+          <div className="form-field">
+            <label htmlFor="password">{t('admin.users.fields.password')}</label>
+            <input
+              id="password"
+              name="password"
+              type="password"
+              className="adm-input"
+              value={formData.password}
+              onChange={handleChange}
+              required
+            />
+            <span className="field-hint">{t('admin.users.passwordHint')}</span>
+          </div>
+
+          <div className="form-field">
+            <label htmlFor="role">{t('admin.users.fields.role')}</label>
+            <select
+              id="role"
+              name="role"
+              className="adm-select"
+              value={formData.role}
+              onChange={handleChange}
+            >
+              <option value="Administrator">{t('admin.roles.administrator')}</option>
+              <option value="User">{t('admin.roles.user')}</option>
+            </select>
+          </div>
         </div>
 
-        <button type="submit" disabled={loading}>
-          {loading ? t('admin.users.creating') : t('admin.users.createButton')}
-        </button>
+        <div className="form-actions">
+          <button
+            type="button"
+            className="adm-btn adm-btn--secondary"
+            onClick={() => navigate('/admin/users')}
+            disabled={loading}
+          >
+            {t('admin.common.cancel')}
+          </button>
+          <button type="submit" className="adm-btn adm-btn--primary" disabled={loading}>
+            {loading ? t('admin.users.creating') : t('admin.users.createButton')}
+          </button>
+        </div>
       </form>
     </div>
   );

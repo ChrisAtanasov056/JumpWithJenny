@@ -1,70 +1,39 @@
-// src/services/userService.js
 import api from '../api/axius';
 
 const UserService = {
-  // Get all users
   getAllUsers: async () => {
-    try {
-      const response = await api.get('/User/all');
-      return response.data;
-    } catch (error) {
-      console.error('Error fetching users:', error);
-      throw error;
-    }
+    const response = await api.get('/User/all');
+    return response.data;
   },
 
-  // Get single user by ID
+  getUsersPaged: async ({ page = 1, pageSize = 25, search } = {}) => {
+    const params = {
+      page,
+      pageSize,
+      ...(search ? { search } : {}),
+    };
+    const response = await api.get('/User/all', { params });
+    return response.data;
+  },
+
   getUserById: async (userId) => {
-    try {
-      const response = await api.get(`/User/${userId}`);
-      return response.data;
-    } catch (error) {
-      console.error(`Error fetching user ${userId}:`, error);
-      throw error;
-    }
-  },
-
-  // Create new user
-  createUser: async (userData) => {
-    try {
-      const response = await api.post('/User', userData);
-      return response.data;
-    } catch (error) {
-      console.error('Error creating user:', error);
-      throw error;
-    }
+    const response = await api.get(`/User/${userId}`);
+    return response.data;
   },
 
   createUserAdmin: async (userData) => {
-    try {
-      const response = await api.post('/api/Admin/users/create', userData);
-      return response.data;
-    } catch (error) {
-      console.error('Error creating user:', error);
-      throw error;
-    }
+    const response = await api.post('/api/Admin/users/create', userData);
+    return response.data;
   },
 
-  // Update user
   updateUser: async (userId, userData) => {
-    try {
-      const response = await api.put(`/User/${userId}`, userData);
-      return response.data;
-    } catch (error) {
-      console.error(`Error updating user ${userId}:`, error);
-      throw error;
-    }
+    const response = await api.put(`/User/${userId}`, userData);
+    return response.data;
   },
 
-  // Delete user
   deleteUser: async (userId) => {
-    try {
-      const response = await api.delete(`/User/${userId}`);
-      return response.data;
-    } catch (error) {
-      console.error(`Error deleting user ${userId}:`, error);
-      throw error;
-    }
+    const response = await api.delete(`/User/${userId}`);
+    return response.data;
   },
 };
 

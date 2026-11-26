@@ -1,0 +1,28 @@
+.adm-confirm-dialog {
+  max-width: 440px;
+
+  .adm-confirm-message {
+    margin: 0 0 8px;
+    font-size: 0.98rem;
+    line-height: 1.5;
+    color: var(--adm-text);
+  }
+
+  .adm-confirm-warning {
+    margin: 0 0 18px;
+    font-size: 0.88rem;
+    color: var(--adm-danger);
+    background: var(--adm-danger-bg);
+    border: 1px solid #fecaca;
+    padding: 8px 12px;
+    border-radius: var(--adm-radius-sm);
+  }
+
+  .adm-confirm-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 20px;
+    flex-wrap: wrap;
+  }
+}

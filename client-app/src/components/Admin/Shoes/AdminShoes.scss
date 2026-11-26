@@ -1,218 +1,218 @@
-@use "sass:color";
-// AdminShoes.scss
+.admin-shoes-page {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
 
-// Define a simple color palette
-$primary-color: #49496b;
-$secondary-color: #5b5ba6;
-$success-color: #2e7d32;
-$danger-color: #c62828;
-$cancel-color: #545b62; // Added cancel color
-$background-color: #f7f9fc;
-$card-background: #ffffff;
-$border-color: #d5d9df;
-$text-color: #2c3e50;
+  .size-cards-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 14px;
+  }
 
-.admin-shoes {
-  max-width: 900px;
-  margin: 40px auto;
-  padding: 20px;
-  background: $card-background;
-  border-radius: 12px;
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.05);
-
-  .header {
+  .size-inventory-card {
+    padding: 18px;
     display: flex;
-    justify-content: space-between;
+    flex-direction: column;
+    gap: 14px;
+
+    .size-card-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .size-badge-wrap {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .size-badge {
+      width: 38px;
+      height: 38px;
+      border-radius: 10px;
+      background: var(--adm-navy);
+      color: #ffffff;
+      display: grid;
+      place-items: center;
+      font-family: 'Rubik', sans-serif;
+      font-weight: 700;
+      font-size: 1.05rem;
+    }
+
+    .size-eu {
+      font-size: 0.84rem;
+      color: var(--adm-text-muted);
+      font-weight: 500;
+    }
+
+    .size-total {
+      font-family: 'Rubik', sans-serif;
+      font-size: 1.65rem;
+      font-weight: 700;
+    }
+
+    .size-card-stats {
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      padding: 8px 10px;
+      border-radius: 8px;
+      background: var(--adm-surface-muted);
+      font-size: 0.84rem;
+      color: var(--adm-text-muted);
+    }
+
+    .size-card-actions {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+    }
+  }
+
+  .batch-add-card {
+    padding: 16px 20px;
+    display: flex;
     align-items: center;
-    margin-bottom: 30px;
-    border-bottom: 2px solid $border-color;
-    padding-bottom: 15px;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
 
-    h2 {
-      font-size: 2em;
+    .batch-controls {
+      display: flex;
+      align-items: flex-end;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .batch-field {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      font-size: 0.82rem;
       font-weight: 600;
-      color: $primary-color;
+      color: var(--adm-text-muted);
+
+      .adm-select,
+      .adm-input {
+        min-height: 40px;
+      }
     }
   }
 
-  .btn-add {
-    padding: 12px 25px;
-    background: linear-gradient(45deg, $success-color, color.adjust($success-color, $lightness: -10%));
-    color: white;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    font-size: 16px;
-    font-weight: 600;
-    transition: all 0.3s ease;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-
-    &:hover {
-      background: linear-gradient(45deg, color.adjust($success-color, $lightness: -5%), color.adjust($success-color, $lightness: -15%));
-      transform: translateY(-2px);
-      box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
-    }
-  }
-
-  .shoes-table {
-    width: 100%;
-    background-color: $card-background;
-    border-radius: 8px;
+  .shoes-inventory-list-card {
     overflow: hidden;
 
-    table {
+    .inventory-list-header {
+      padding: 18px 20px;
+      border-bottom: 1px solid var(--adm-border);
+
+      h2 {
+        margin: 0;
+        font-size: 1.1rem;
+      }
+    }
+
+    .inventory-table-wrap {
+      overflow-x: auto;
+    }
+
+    .shoes-table {
       width: 100%;
       border-collapse: collapse;
 
-      thead {
-        background-color: $primary-color;
-        color: white;
-        th {
-          padding: 15px;
-          text-align: left;
-          font-weight: 600;
-        }
+      th,
+      td {
+        padding: 13px 18px;
+        text-align: left;
+        border-bottom: 1px solid var(--adm-border);
+        vertical-align: middle;
       }
 
-      tbody {
-        tr {
-          transition: background-color 0.3s ease;
-          td {
-            padding: 15px;
-            border-bottom: 1px solid $border-color;
-          }
-          &:nth-child(even) {
-            background-color: color.adjust($background-color, $lightness: 2%);
-          }
-          &:hover {
-            background-color: color.adjust($secondary-color, $lightness: 30%);
-          }
-        }
+      th {
+        background: var(--adm-surface-muted);
+        font-size: 0.82rem;
+        font-weight: 600;
+        color: var(--adm-text-muted);
       }
 
-      .actions {
-        display: flex;
-        gap: 12px;
-
-        .btn-edit, .btn-delete {
-          padding: 10px 15px;
-          border: none;
-          border-radius: 6px;
-          cursor: pointer;
-          font-size: 14px;
-          font-weight: 500;
-          transition: all 0.3s ease;
-          box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-
-          &:hover {
-            transform: translateY(-1px);
-          }
-        }
-
-        .btn-edit {
-          background-color: $secondary-color;
-          color: white;
-
-          &:hover {
-            background-color: color.adjust($secondary-color, $lightness: -10%);
-          }
-        }
-
-        .btn-delete {
-          background-color: $danger-color;
-          color: white;
-
-          &:hover {
-            background-color: color.adjust($danger-color, $lightness: -10%);
-          }
-        }
+      tbody tr:last-child td {
+        border-bottom: none;
       }
     }
-  }
 
-  .admin-shoe-form {
-    padding: 30px;
-    background: $card-background;
-    border-radius: 12px;
-    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.05);
+    .size-pill {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: 7px;
+      background: var(--adm-navy-soft);
+      color: var(--adm-navy);
+      font-weight: 700;
+      font-size: 0.84rem;
+    }
 
-    h2 {
-      text-align: center;
-      margin-bottom: 30px;
-      color: $primary-color;
+    .status-pill {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 0.8rem;
       font-weight: 600;
-    }
 
-    .form-group {
-      margin-bottom: 25px;
-      label {
-        display: block;
-        margin-bottom: 8px;
-        font-weight: 600;
-        color: $text-color;
+      &.free {
+        background: var(--adm-success-bg);
+        color: var(--adm-success);
       }
-      select {
-        width: 100%;
-        padding: 12px;
-        border: 1px solid $border-color;
-        border-radius: 6px;
-        font-size: 16px;
-        transition: border-color 0.3s ease;
 
-        &:focus {
-          border-color: $secondary-color;
-          outline: none;
-          box-shadow: 0 0 0 3px color.adjust($secondary-color, $lightness: 20%);
-        }
+      &.reserved {
+        background: var(--adm-warning-bg);
+        color: var(--adm-warning);
       }
     }
 
-    .form-actions { // New container for form buttons
-        display: flex;
-        justify-content: flex-end;
-        gap: 15px;
-        margin-top: 30px;
-    }
-
-    .btn-save, .btn-cancel-form {
-        padding: 12px 20px;
-        border: none;
-        border-radius: 6px;
-        cursor: pointer;
-        font-size: 16px;
-        font-weight: 600;
-        transition: all 0.3s ease;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    }
-
-    .btn-save {
-      background: linear-gradient(45deg, $secondary-color, color.adjust($secondary-color, $lightness: -10%));
-      color: white;
-
-      &:hover {
-        background: linear-gradient(45deg, color.adjust($secondary-color, $lightness: -5%), color.adjust($secondary-color, $lightness: -15%));
-        transform: translateY(-2px);
-      }
-    }
-
-    .btn-cancel-form {
-      background-color: $cancel-color;
-      color: #ffffff;
-      
-      &:hover {
-        background-color: color.adjust($cancel-color, $lightness: -10%);
-        transform: translateY(-1px);
-      }
+    .row-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
     }
   }
+}
 
-  .no-results {
-    text-align: center;
-    padding: 25px;
-    font-size: 1.1em;
-    color: #888;
-    background-color: color.adjust($background-color, $lightness: 1%);
-    border-radius: 8px;
-    margin-top: 20px;
+.admin-shoe-form-page {
+  .shoe-form-card {
+    max-width: 460px;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+
+    .form-field {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+
+      label {
+        font-size: 0.9rem;
+        font-weight: 600;
+      }
+    }
+
+    .form-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+    }
+  }
+}
+
+@media (max-width: 1024px) {
+  .admin-shoes-page .size-cards-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 540px) {
+  .admin-shoes-page .size-cards-grid {
+    grid-template-columns: 1fr;
   }
 }

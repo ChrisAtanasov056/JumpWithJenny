@@ -1,0 +1,216 @@
+.admin-clients-page {
+  .clients-toolbar {
+    padding: 14px 18px;
+    margin-bottom: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+
+    .adm-search-field {
+      flex: 1;
+      max-width: 420px;
+    }
+
+    .sort-control {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+
+      label {
+        font-size: 0.86rem;
+        font-weight: 600;
+        color: var(--adm-text-muted);
+        white-space: nowrap;
+      }
+
+      .adm-select {
+        width: auto;
+        min-width: 190px;
+      }
+    }
+  }
+
+  .clients-table-card {
+    overflow-x: auto;
+  }
+
+  .clients-table {
+    width: 100%;
+    border-collapse: collapse;
+
+    th,
+    td {
+      padding: 14px 16px;
+      text-align: left;
+      border-bottom: 1px solid var(--adm-border);
+      vertical-align: middle;
+    }
+
+    th {
+      background: var(--adm-surface-muted);
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--adm-text-muted);
+    }
+
+    tbody tr:last-child td {
+      border-bottom: none;
+    }
+  }
+
+  .contacts-col {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+
+    .contact-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.85rem;
+      color: var(--adm-text-muted);
+      text-decoration: none;
+
+      @media (hover: hover) and (pointer: fine) {
+        &:hover {
+          color: var(--adm-coral);
+        }
+      }
+    }
+
+    .muted-tag {
+      font-size: 0.78rem;
+      color: var(--adm-text-subtle);
+    }
+  }
+
+  .upcoming-pill {
+    display: inline-block;
+    margin-left: 8px;
+    padding: 2px 7px;
+    border-radius: 999px;
+    background: var(--adm-success-bg);
+    color: var(--adm-success);
+    font-size: 0.75rem;
+    font-weight: 600;
+  }
+
+  .shoe-badge {
+    display: inline-block;
+    padding: 3px 9px;
+    border-radius: 7px;
+    background: var(--adm-navy-soft);
+    color: var(--adm-navy);
+    font-size: 0.8rem;
+    font-weight: 600;
+  }
+
+  .clients-mobile-list {
+    display: none;
+  }
+}
+
+.client-history-modal {
+  max-width: 580px;
+
+  .history-subtitle {
+    margin: 4px 0 0;
+    font-size: 0.86rem;
+    color: var(--adm-text-muted);
+  }
+
+  .history-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .history-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+    padding: 12px;
+    border-radius: 10px;
+    background: var(--adm-surface-muted);
+    border: 1px solid var(--adm-border);
+
+    .history-meta {
+      font-size: 0.82rem;
+      color: var(--adm-text-muted);
+    }
+
+    .history-right {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .att-tag {
+      padding: 3px 8px;
+      border-radius: 999px;
+      font-size: 0.76rem;
+      font-weight: 600;
+      background: var(--adm-slate-bg);
+      color: var(--adm-text-muted);
+
+      &.yes {
+        background: var(--adm-success-bg);
+        color: var(--adm-success);
+      }
+    }
+  }
+}
+
+@media (max-width: 768px) {
+  .admin-clients-page {
+    .clients-toolbar {
+      .adm-search-field {
+        max-width: none;
+        width: 100%;
+      }
+
+      .sort-control {
+        width: 100%;
+
+        .adm-select {
+          flex: 1;
+        }
+      }
+    }
+
+    .clients-table-card {
+      display: none;
+    }
+
+    .clients-mobile-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .client-mobile-card {
+      padding: 15px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+
+      .client-mobile-top,
+      .client-mobile-bottom {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+      }
+
+      .client-mobile-bottom {
+        font-size: 0.84rem;
+        color: var(--adm-text-muted);
+      }
+    }
+  }
+}

@@ -1,306 +1,63 @@
-@use "sass:color";
-/* Color Palette & Fonts */
-$primary-color: #0069d9;
-$secondary-color: #495057;
-$success-color: #218838;
-$danger-color: #c82333;
-$light-bg: #f8f9fa;
-$white-bg: #ffffff;
-$border-color: #dee2e6;
-$text-color: #2c3e50;
-$light-text-color: #5a6268;
-$mobile-breakpoint: 768px;
-
-/* Overall Container */
-.admin-users-container {
-  padding: 2rem;
-  max-width: 1200px;
-  margin: 0 auto;
-}
-
-/* Page Header & Actions Bar */
-.page-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 2rem;
-
-  .page-title {
-    font-size: 2rem;
-    font-weight: 600;
-  }
-}
-
-.actions-bar {
-  display: flex;
-  gap: 1rem;
-  align-items: center;
-}
-
-/* Search Input */
-.search-group {
-  position: relative;
-  
-  .search-icon {
-    position: absolute;
-    left: 10px;
-    top: 50%;
-    transform: translateY(-50%);
-    color: $light-text-color;
-    font-size: 1rem;
-  }
-
-  .search-input {
-    padding: 0.75rem 0.75rem 0.75rem 2.5rem;
-    border: 1px solid $border-color;
-    border-radius: 8px;
-    font-size: 1rem;
-    transition: all 0.3s ease;
-    width: 250px;
-
-    &:focus {
-      outline: none;
-      border-color: $primary-color;
-      box-shadow: 0 0 0 3px rgba($primary-color, 0.2);
-    }
-  }
-}
-
-/* Buttons */
-.btn-primary {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.75rem 1.5rem;
-  background-color: $primary-color;
-  color: $white-bg;
-  border: none;
-  border-radius: 8px;
-  font-weight: 600;
-  text-decoration: none;
-  transition: background-color 0.3s ease, transform 0.2s ease;
-
-  &:hover {
-    background-color: color.adjust($primary-color, $lightness: -10%);
-    transform: translateY(-2px);
-  }
-  
-  .btn-icon {
-    font-size: 1rem;
-  }
-}
-
-/* Table */
-.users-table-wrapper {
-  background-color: $white-bg;
-  border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-  overflow: hidden;
-}
-
-.users-table {
-  width: 100%;
-  border-collapse: separate;
-  border-spacing: 0;
-  font-size: 0.9rem;
-
-  thead {
-    th {
-      font-weight: 600;
-      text-align: left;
-      padding: 1rem 1.5rem;
-      border-bottom: 2px solid $border-color;
-      color: $secondary-color;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-    }
-  }
-
-  tbody {
-    tr.user-row {
-      transition: background-color 0.3s ease;
-      
-      &:hover {
-        background-color: $light-bg;
-      }
-    }
-
-    td {
-      padding: 1rem 1.5rem;
-      border-bottom: 1px solid $border-color;
-    }
-  }
-}
-
-.actions {
-  display: flex;
-  gap: 0.5rem;
-}
-
-.action-btn {
-  background: none;
-  border: none;
-  cursor: pointer;
-  font-size: 1.1rem;
-  transition: color 0.2s ease, transform 0.2s ease;
-
-  &.btn-edit {
-    color: $primary-color;
-    &:hover {
-      color: color.adjust($primary-color, $lightness: -10%);
-    }
-  }
-
-  &.btn-delete {
-    color: $danger-color;
-    &:hover {
-      color: color.adjust($danger-color, $lightness: -10%);
-    }
-  }
-}
-
-/* Status Messages */
-.message-alert {
-  padding: 1rem;
-  margin-bottom: 1.5rem;
-  border-radius: 8px;
-  font-weight: 500;
-  text-align: center;
-  
-  &.success-alert {
-    background-color: color.adjust($success-color, $lightness: 40%);
-    color: $success-color;
-  }
-
-  &.error-alert {
-    background-color: color.adjust($danger-color, $lightness: 38%);
-    color: $danger-color;
-  }
-}
-
-/* Empty State */
-.no-results-cell {
-  text-align: center;
-  padding: 2rem 1rem;
-  font-style: italic;
-  color: $light-text-color;
-}
-
-/* Loading & Error States */
-.state-message {
+.admin-users-page {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  height: 60vh;
-  text-align: center;
-  color: $secondary-color;
+  gap: 18px;
 
-  .spinner-icon {
-    font-size: 3rem;
-    animation: spin 1.5s linear infinite;
-  }
-  
-  p {
-    margin-top: 1rem;
-    font-size: 1.2rem;
-  }
+  .users-toolbar {
+    padding: 14px 18px;
 
-  .btn-reload {
-    margin-top: 1rem;
-    padding: 0.75rem 1.5rem;
-    border: 1px solid $secondary-color;
-    border-radius: 8px;
-    background: none;
-    color: $secondary-color;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-
-    &:hover {
-      background-color: $border-color;
+    .adm-search-field {
+      max-width: 420px;
     }
   }
-}
 
-@keyframes spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
-}
-
-// ----------------------------------------------------
-// Mobile Styles (@media query)
-// ----------------------------------------------------
-@media (max-width: $mobile-breakpoint) {
-  /* Adjustments for smaller screens */
-  .admin-users-container {
-    padding: 1rem;
+  .users-table-card {
+    overflow-x: auto;
   }
 
-  .page-header {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 1rem;
-  }
-
-  .actions-bar {
-    flex-direction: column;
-    width: 100%;
-    align-items: stretch;
-  }
-
-  .search-group {
-    width: 100%;
-  }
-
-  .search-input {
-    width: 100%; // Make search input fill the container
-  }
-
-  .btn-primary {
-    width: 100%;
-    justify-content: center; // Center icon and text
-  }
-
-  /* Table becomes a stack of cards */
   .users-table {
-    border: none;
-    thead {
-      display: none; // Hide table headers
+    width: 100%;
+    border-collapse: collapse;
+
+    th,
+    td {
+      padding: 13px 16px;
+      text-align: left;
+      border-bottom: 1px solid var(--adm-border);
+      vertical-align: middle;
     }
 
-    tbody {
-      display: block; // Make tbody a block element
-      width: 100%;
-      
-      tr.user-row {
-        display: block;
-        margin-bottom: 1rem;
-        border: 1px solid $border-color;
-        border-radius: 8px;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-        background-color: $white-bg;
-      }
-
-      td {
-        display: block; // Each cell becomes a block
-        text-align: right;
-        border-bottom: 1px solid $border-color;
-        padding: 0.75rem 1rem;
-        position: relative; // For pseudo-element
-
-        &:before {
-          content: attr(data-label); // Show the label from the data-label attribute
-          position: absolute;
-          left: 1rem;
-          font-weight: 600;
-          color: $secondary-color;
-          text-align: left;
-        }
-
-        &:last-child {
-          border-bottom: none;
-        }
-      }
+    th {
+      background: var(--adm-surface-muted);
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--adm-text-muted);
     }
+
+    tbody tr:last-child td {
+      border-bottom: none;
+    }
+  }
+
+  .role-pill {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 999px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    background: var(--adm-slate-bg);
+    color: var(--adm-text-muted);
+
+    &.administrator,
+    &.admin {
+      background: var(--adm-navy-soft);
+      color: var(--adm-navy);
+    }
+  }
+
+  .row-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
   }
 }

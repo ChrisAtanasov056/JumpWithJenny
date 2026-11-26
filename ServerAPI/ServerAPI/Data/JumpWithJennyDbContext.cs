@@ -66,7 +66,7 @@
             builder.Entity<Appointment>()
                 .HasIndex(a => new { a.WorkoutId, a.NormalizedEmail })
                 .IsUnique()
-                .HasFilter("\"IsDeleted\" = false");
+                .HasFilter("\"NormalizedEmail\" IS NOT NULL AND \"IsDeleted\" = false");
 
             builder.Entity<Appointment>()
                 .HasIndex(a => a.CancellationToken)
@@ -74,6 +74,9 @@
 
             builder.Entity<Appointment>()
                 .HasIndex(a => new { a.NormalizedEmail, a.IsDeleted });
+
+            builder.Entity<Appointment>()
+                .HasIndex(a => new { a.PhoneNumber, a.IsDeleted });
 
             builder.Entity<Appointment>()
                 .HasIndex(a => new { a.WorkoutId, a.ShoeId })

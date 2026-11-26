@@ -1,7 +1,9 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ServerAPI.Common;
+using ServerAPI.Models.Admin;
 using ServerAPI.Models.Schedule;
+using ServerAPI.Services.Admin;
 using ServerAPI.Services.Schedule;
 using ServerAPI.Services.Users;
 using ServerAPI.Services.Workouts;
@@ -21,17 +23,51 @@ namespace ServerAPI.Controllers
         private readonly IWorkoutServices _workoutService;
         private readonly ILogger<AdminController> _logger;
         private readonly IScheduleService _scheduleService;
+        private readonly IAdminInsightsService _adminInsightsService;
 
         public AdminController(
             IUserService userService,
             IWorkoutServices workoutService,
             ILogger<AdminController> logger,
-            IScheduleService scheduleService)
+            IScheduleService scheduleService,
+            IAdminInsightsService adminInsightsService)
         {
             _userService = userService;
             _workoutService = workoutService;
             _logger = logger;
             _scheduleService = scheduleService;
+            _adminInsightsService = adminInsightsService;
+        }
+
+        // GET: api/admin/dashboard
+        [HttpGet("dashboard")]
+        public async Task<IActionResult> GetDashboard(CancellationToken cancellationToken = default)
+        {
+            var dashboard = await _adminInsightsService.GetDashboardAsync(cancellationToken);
+            return Ok(dashboard);
+        }
+
+        // GET: api/admin/clients
+        [HttpGet("clients")]
+        public async Task<IActionResult> GetClients(
+            [FromQuery] int page = 1,
+            [FromQuery] int pageSize = 25,
+            [FromQuery] string search = null,
+            [FromQuery] string sortBy = "lastVisit",
+            CancellationToken cancellationToken = default)
+        {
+            var clients = await _adminInsightsService.GetClientsPagedAsync(page, pageSize, search, sortBy, cancellationToken);
+            return Ok(clients);
+        }
+
+        // GET: api/admin/clients/autocomplete
+        [HttpGet("clients/autocomplete")]
+        public async Task<IActionResult> AutocompleteClients(
+            [FromQuery] string query,
+            CancellationToken cancellationToken = default)
+        {
+            var matches = await _adminInsightsService.AutocompleteClientsAsync(query, cancellationToken);
+            return Ok(matches);
         }
 
         // POST: api/admin/users/create
@@ -106,7 +142,7 @@ namespace ServerAPI.Controllers
 
         // POST: /api/Admin/add/participant
         [HttpPost("add/participant")]
-        public async Task<IActionResult> AddParticipantToWorkout([FromQuery] string id = null, [FromBody] ApplyForWorkoutRequest request = null)
+        public async Task<IActionResult> AddParticipantToWorkout([FromQuery] string id = null, [FromBody] AdminAddParticipantRequest request = null)
         {
             if (request == null)
             {
@@ -114,17 +150,57 @@ namespace ServerAPI.Controllers
             }
 
             var workoutId = !string.IsNullOrWhiteSpace(request.WorkoutId) ? request.WorkoutId : id;
-            request.WorkoutId = workoutId;
+            var applyRequest = new ApplyForWorkoutRequest
+            {
+                WorkoutId = workoutId,
+                FullName = request.FullName,
+                Email = request.Email,
+                PhoneNumber = request.PhoneNumber,
+                ShoeSize = request.ShoeSize,
+                UsesOwnShoes = request.UsesOwnShoes,
+                Language = string.IsNullOrWhiteSpace(request.Language) ? "bg" : request.Language,
+            };
 
             await _scheduleService.ApplyForWorkoutAsync(
-                request,
+                applyRequest,
                 allowPastWorkout: true,
                 enforceBookingLimits: false,
-                sendConfirmationEmail: false);
+                sendConfirmationEmail: request.SendConfirmationEmail && !string.IsNullOrWhiteSpace(request.Email),
+                requireEmail: false,
+                allowOverbooking: request.AllowOverbooking);
 
             var adminWorkout = await _workoutService.GetWorkoutByIdAsync(workoutId);
-            _logger.LogInformation("Participant {Email} added to workout {WorkoutId}", request.Email, workoutId);
+            _logger.LogInformation("Participant {FullName} added to workout {WorkoutId}", request.FullName, workoutId);
             return Ok(adminWorkout);
+        }
+
+        // PUT: /api/Admin/participants/{appointmentId}
+        [HttpPut("participants/{appointmentId}")]
+        public async Task<IActionResult> UpdateParticipant(string appointmentId, [FromBody] AdminUpdateParticipantRequest request)
+        {
+            if (request == null)
+            {
+                return BadRequest(new { code = "INVALID_REQUEST", message = "Request body is required." });
+            }
+
+            var workoutId = await _scheduleService.UpdateParticipantAsync(appointmentId, request);
+            var adminWorkout = await _workoutService.GetWorkoutByIdAsync(workoutId);
+            _logger.LogInformation("Participant appointment {AppointmentId} updated in workout {WorkoutId}", appointmentId, workoutId);
+            return Ok(adminWorkout);
+        }
+
+        // PATCH: /api/Admin/participants/{appointmentId}/attendance
+        [HttpPatch("participants/{appointmentId}/attendance")]
+        public async Task<IActionResult> SetParticipantAttendance(string appointmentId, [FromBody] SetAttendanceRequest request)
+        {
+            if (request == null)
+            {
+                return BadRequest(new { code = "INVALID_REQUEST", message = "Request body is required." });
+            }
+
+            await _scheduleService.SetParticipantAttendanceAsync(appointmentId, request.IsAttended);
+            _logger.LogInformation("Participant appointment {AppointmentId} attendance set to {IsAttended}", appointmentId, request.IsAttended);
+            return Ok(new { Id = appointmentId, IsAttended = request.IsAttended });
         }
 
         [HttpDelete("remove/participant")]
@@ -159,6 +235,7 @@ namespace ServerAPI.Controllers
             [FromQuery] int? pageSize = null,
             [FromQuery] bool? upcomingOnly = null,
             [FromQuery] string search = null,
+            [FromQuery] string status = null,
             CancellationToken cancellationToken = default)
         {
             if (page.HasValue || pageSize.HasValue)
@@ -168,6 +245,7 @@ namespace ServerAPI.Controllers
                     pageSize ?? 20,
                     upcomingOnly,
                     search,
+                    status,
                     cancellationToken);
                 return Ok(pagedWorkouts);
             }
@@ -177,6 +255,7 @@ namespace ServerAPI.Controllers
                 pageSize: 100,
                 upcomingOnly: upcomingOnly,
                 search: search,
+                status: status,
                 cancellationToken: cancellationToken);
             return Ok(result.Items);
         }

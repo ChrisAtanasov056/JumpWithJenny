@@ -121,6 +121,61 @@ const getInitials = (name) =>
     .join('')
     .toUpperCase();
 
+const ReboundBrandMark = ({ className = '' }) => (
+  <svg
+    className={className}
+    viewBox="0 0 40 40"
+    width="36"
+    height="36"
+    aria-hidden="true"
+    focusable="false"
+  >
+    <path
+      d="M25.5 6.2 C29.5 7.4 32.4 10.2 33.6 13.8"
+      fill="none"
+      stroke="#ffd23f"
+      strokeWidth="2"
+      strokeLinecap="round"
+      opacity="0.92"
+    />
+    <path
+      d="M11.5 5.5 C11.5 4.7 12.1 4 13 4 H20 C20.9 4 21.5 4.7 21.5 5.5 V13.5 L28.2 15.8 C30 16.4 31 17.8 31 19.6 V21.2 H10.5 V6.2 Z"
+      fill="#ffffff"
+    />
+    <rect x="13" y="7.8" width="9.8" height="2.7" rx="1.35" fill="#ff5a36" />
+    <rect
+      x="14.2"
+      y="12.5"
+      width="9.5"
+      height="2.7"
+      rx="1.35"
+      transform="rotate(-14 19 13.85)"
+      fill="#ff5a36"
+    />
+    <rect x="10" y="20.2" width="21.5" height="3.2" rx="1.6" fill="#ff5a36" />
+    <ellipse
+      cx="20.8"
+      cy="29.6"
+      rx="10.4"
+      ry="6.2"
+      fill="none"
+      stroke="#ffd23f"
+      strokeWidth="2.5"
+    />
+    <line
+      x1="10.2"
+      y1="29.6"
+      x2="31.4"
+      y2="29.6"
+      stroke="#ffffff"
+      strokeWidth="2.1"
+      strokeLinecap="round"
+    />
+    <circle cx="10.6" cy="29.6" r="1.5" fill="#ff5a36" />
+    <circle cx="31" cy="29.6" r="1.5" fill="#ff5a36" />
+  </svg>
+);
+
 const SpringArcMark = ({ className = '' }) => (
   <svg
     className={className}
@@ -505,13 +560,17 @@ const ReboundDemo = () => {
             className="rb-nav__brand"
             onClick={(e) => scrollToSection(e, 'rb-hero')}
           >
-            <img
-              src={isLightHeader ? '/brand_logo.png' : '/images/brand_logo_light.png'}
-              alt={t('navbar.logoAlt')}
-              width="44"
-              height="44"
-              className="rb-nav__logo"
-            />
+            {isLightHeader ? (
+              <img
+                src="/brand_logo.png"
+                alt={t('navbar.logoAlt')}
+                width="44"
+                height="44"
+                className="rb-nav__logo"
+              />
+            ) : (
+              <ReboundBrandMark className="rb-nav__logo" />
+            )}
             <span className="rb-nav__brand-name">{DEMO_COPY.brandTitle}</span>
           </a>
 
@@ -1268,13 +1327,17 @@ const ReboundDemo = () => {
       <footer className="rb-footer">
         <div className="rb-wrap rb-footer__inner">
           <div className="rb-footer__brand">
-            <img
-              src={isLightHeader ? '/brand_logo.png' : '/images/brand_logo_light.png'}
-              alt=""
-              aria-hidden="true"
-              width="34"
-              height="34"
-            />
+            {isLightHeader ? (
+              <img
+                src="/brand_logo.png"
+                alt=""
+                aria-hidden="true"
+                width="34"
+                height="34"
+              />
+            ) : (
+              <ReboundBrandMark className="rb-footer__logo" />
+            )}
             <span>
               &copy; {new Date().getFullYear()} {t('footer.copyright')}
             </span>

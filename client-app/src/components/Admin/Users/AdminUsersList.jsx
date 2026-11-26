@@ -1,77 +1,109 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { toast } from 'react-toastify';
+import { FaEdit, FaTrashAlt, FaSearch, FaPlus } from 'react-icons/fa';
 import UserService from '../../../services/UserServices';
+import AdminConfirmModal from '../shared/AdminConfirmModal';
 import AdminUserModal from './AdminUserModal';
 import './AdminUsers.scss';
-import { FaEdit, FaTrashAlt, FaSearch, FaPlus, FaSpinner } from 'react-icons/fa';
+
+const PAGE_SIZE = 25;
 
 const AdminUsersList = () => {
   const { t } = useTranslation();
-  const [users, setUsers] = useState([]);
+  const [searchInput, setSearchInput] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
+  const [page, setPage] = useState(1);
+
+  const [pagedResult, setPagedResult] = useState({
+    Users: [],
+    Page: 1,
+    PageSize: PAGE_SIZE,
+    TotalCount: 0,
+    TotalPages: 0,
+    HasPreviousPage: false,
+    HasNextPage: false,
+  });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [actionError, setActionError] = useState('');
-  const [searchTerm, setSearchTerm] = useState('');
-  const [successMessage, setSuccessMessage] = useState('');
+
   const [selectedUser, setSelectedUser] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
-    const fetchUsers = async () => {
-      try {
-        const response = await UserService.getAllUsers();
-        let usersData = Array.isArray(response) ? response : (response?.Users || response?.data?.Users || []);
-        // Make sure the backend response includes a 'Role' property for each user
-        setUsers(usersData);
-      } catch (err) {
-        console.error('Error fetching users:', err);
-        setError(err.message || t('admin.users.loadError'));
-        setUsers([]);
-      } finally {
-        setLoading(false);
+    const timer = window.setTimeout(() => {
+      setDebouncedSearch(searchInput.trim());
+      setPage(1);
+    }, 300);
+    return () => window.clearTimeout(timer);
+  }, [searchInput]);
+
+  const fetchUsers = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await UserService.getUsersPaged({
+        page,
+        pageSize: PAGE_SIZE,
+        search: debouncedSearch || undefined,
+      });
+
+      if (Array.isArray(response)) {
+        setPagedResult({
+          Users: response,
+          Page: 1,
+          PageSize: response.length || PAGE_SIZE,
+          TotalCount: response.length,
+          TotalPages: 1,
+          HasPreviousPage: false,
+          HasNextPage: false,
+        });
+      } else {
+        setPagedResult(response);
       }
-    };
+    } catch (err) {
+      setError(err?.response?.data?.message || err?.message || t('admin.users.loadError'));
+    } finally {
+      setLoading(false);
+    }
+  }, [page, debouncedSearch, t]);
+
+  useEffect(() => {
     fetchUsers();
-  }, [t]);
-
-  const handleViewUser = (user) => {
-    setSelectedUser(user);
-    setIsModalOpen(true);
-  };
-
-  const handleCloseModal = () => {
-    setIsModalOpen(false);
-    setSelectedUser(null);
-  };
+  }, [fetchUsers]);
 
   const handleSaveUser = async (updatedUser) => {
-    setActionError('');
     const savedUser = await UserService.updateUser(updatedUser.Id, updatedUser);
     const mergedUser = savedUser?.Id ? savedUser : updatedUser;
-    setUsers(prev => prev.map(user => (user.Id === mergedUser.Id ? mergedUser : user)));
+    setPagedResult((prev) => ({
+      ...prev,
+      Users: (prev.Users || []).map((u) => (u.Id === mergedUser.Id ? mergedUser : u)),
+    }));
     setSelectedUser(mergedUser);
-    setSuccessMessage(t('admin.users.updateSuccess'));
-    setTimeout(() => setSuccessMessage(''), 3000);
+    toast.success(t('admin.users.updateSuccess'));
   };
 
-  const handleDeleteUser = async (userId) => {
-    if (!window.confirm(t('admin.users.deleteConfirm'))) {
-      return;
-    }
-    setActionError('');
+  const handleConfirmDelete = async () => {
+    if (!deleteTarget) return;
+    setIsDeleting(true);
     try {
-      await UserService.deleteUser(userId);
-      setUsers(prev => prev.filter(user => user.Id !== userId));
-      setSuccessMessage(t('admin.users.deleteSuccess'));
-      setTimeout(() => setSuccessMessage(''), 3000);
+      await UserService.deleteUser(deleteTarget.Id);
+      toast.success(t('admin.users.deleteSuccess'));
+      setDeleteTarget(null);
+      setIsModalOpen(false);
+      setSelectedUser(null);
+      fetchUsers();
     } catch (err) {
       const serverMessage =
         err?.response?.data?.message ||
         err?.response?.data?.Message ||
         err?.message;
-      setActionError(serverMessage || t('admin.users.deleteError'));
-      setTimeout(() => setActionError(''), 5000);
+      toast.error(serverMessage || t('admin.users.deleteError'));
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -84,126 +116,162 @@ const AdminUsersList = () => {
     return role;
   };
 
-  const filteredUsers = users.filter(user => {
-    const search = searchTerm.toLowerCase();
-    return (
-      (user?.Username?.toLowerCase() || '').includes(search) ||
-      (user?.Email?.toLowerCase() || '').includes(search) ||
-      (user?.FirstName?.toLowerCase() || '').includes(search) ||
-      (user?.LastName?.toLowerCase() || '').includes(search) ||
-      (user?.Role?.toLowerCase() || '').includes(search) ||
-      getRoleLabel(user?.Role).toLowerCase().includes(search)
-    );
-  });
-
-  if (loading) {
-    return (
-      <div className="state-message loading-state">
-        <FaSpinner className="spinner-icon" />
-        <p>{t('admin.users.loading')}</p>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="state-message error-state">
-        <p>{t('admin.common.errorPrefix')} {error}</p>
-        <button className="btn-reload" onClick={() => window.location.reload()}>{t('admin.common.tryAgain')}</button>
-      </div>
-    );
-  }
+  const users = pagedResult?.Users || [];
 
   return (
-    <div className="admin-users-container">
-      <header className="page-header">
-        <h2 className="page-title">{t('admin.users.title')}</h2>
-        <div className="actions-bar">
-          <div className="search-group">
-            <FaSearch className="search-icon" />
-            <input
-              type="text"
-              placeholder={t('admin.users.searchPlaceholder')}
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="search-input"
-              aria-label={t('admin.users.searchAriaLabel')}
-            />
-          </div>
-          <Link to="/admin/users/new" className="btn-primary">
-            <FaPlus className="btn-icon" /> {t('admin.users.addNew')}
+    <div className="admin-users-page">
+      <div className="adm-page-header">
+        <div className="adm-title-group">
+          <h1>{t('admin.users.title')}</h1>
+          <p>{t('admin.users.subtitle')}</p>
+        </div>
+
+        <div className="adm-header-actions">
+          <Link to="/admin/users/new" className="adm-btn adm-btn--primary">
+            <FaPlus aria-hidden="true" /> {t('admin.users.addNew').replace(/^\+\s*/, '')}
           </Link>
         </div>
-      </header>
-
-      {successMessage && (
-        <div className="message-alert success-alert">
-          {successMessage}
-        </div>
-      )}
-
-      {actionError && (
-        <div className="message-alert error-alert">
-          {actionError}
-        </div>
-      )}
-
-      <div className="users-table-wrapper">
-        <table className="users-table">
-          <thead>
-            <tr>
-              <th>{t('admin.users.table.username')}</th>
-              <th>{t('admin.users.table.email')}</th>
-              <th>{t('admin.users.table.fullName')}</th>
-              <th>{t('admin.users.table.role')}</th>
-              <th>{t('admin.users.table.actions')}</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filteredUsers.length > 0 ? (
-              filteredUsers.map(user => (
-                <tr key={user.Id} className="user-row">
-                  <td data-label={t('admin.users.table.username')}>{user.Username || '-'}</td>
-                  <td data-label={t('admin.users.table.email')}>{user.Email || '-'}</td>
-                  <td data-label={t('admin.users.table.fullName')}>{`${user.FirstName || ''} ${user.LastName || ''}`.trim() || '-'}</td>
-                  <td data-label={t('admin.users.table.role')}>{getRoleLabel(user.Role)}</td>
-                  <td className="actions" data-label={t('admin.users.table.actions')}>
-                    <button 
-                      className="action-btn btn-edit"
-                      onClick={() => handleViewUser(user)}
-                      aria-label={t('admin.users.editAriaLabel')}
-                    >
-                      <FaEdit />
-                    </button>
-                    <button 
-                      className="action-btn btn-delete"
-                      onClick={() => handleDeleteUser(user.Id)}
-                      aria-label={t('admin.users.deleteAriaLabel')}
-                    >
-                      <FaTrashAlt />
-                    </button>
-                  </td>
-                </tr>
-              ))
-            ) : (
-              <tr>
-                <td colSpan="5" className="no-results-cell">
-                  {users.length === 0 ? t('admin.users.noUsers') : t('admin.users.noMatchingUsers')}
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
       </div>
 
+      <div className="adm-card users-toolbar">
+        <div className="adm-search-field">
+          <FaSearch className="adm-search-icon" aria-hidden="true" />
+          <input
+            type="text"
+            className="adm-input"
+            placeholder={t('admin.users.searchPlaceholder')}
+            value={searchInput}
+            onChange={(e) => setSearchInput(e.target.value)}
+            aria-label={t('admin.users.searchAriaLabel')}
+          />
+        </div>
+      </div>
+
+      {error && (
+        <div className="adm-alert adm-alert--error">
+          {t('admin.common.errorPrefix')} {error}
+        </div>
+      )}
+
+      {loading ? (
+        <div className="adm-loading" role="status">{t('admin.users.loading')}</div>
+      ) : users.length === 0 ? (
+        <div className="adm-empty">
+          <h3>{debouncedSearch ? t('admin.users.noMatchingUsers') : t('admin.users.noUsers')}</h3>
+        </div>
+      ) : (
+        <>
+          <div className="adm-card users-table-card">
+            <table className="users-table">
+              <thead>
+                <tr>
+                  <th>{t('admin.users.table.username')}</th>
+                  <th>{t('admin.users.table.email')}</th>
+                  <th>{t('admin.users.table.fullName')}</th>
+                  <th>{t('admin.users.table.role')}</th>
+                  <th>{t('admin.users.table.actions')}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {users.map((user) => (
+                  <tr key={user.Id}>
+                    <td><strong>{user.Username || '-'}</strong></td>
+                    <td>{user.Email || '-'}</td>
+                    <td>{`${user.FirstName || ''} ${user.LastName || ''}`.trim() || '-'}</td>
+                    <td>
+                      <span className={`role-pill ${(user.Role || '').toLowerCase()}`}>
+                        {getRoleLabel(user.Role)}
+                      </span>
+                    </td>
+                    <td>
+                      <div className="row-actions">
+                        <button
+                          type="button"
+                          className="adm-btn adm-btn--secondary adm-btn--sm"
+                          onClick={() => {
+                            setSelectedUser(user);
+                            setIsModalOpen(true);
+                          }}
+                          aria-label={t('admin.users.editAriaLabel')}
+                        >
+                          <FaEdit aria-hidden="true" /> {t('admin.common.edit')}
+                        </button>
+                        <button
+                          type="button"
+                          className="adm-btn adm-btn--danger-soft adm-btn--sm"
+                          onClick={() => setDeleteTarget(user)}
+                          aria-label={t('admin.users.deleteAriaLabel')}
+                        >
+                          <FaTrashAlt aria-hidden="true" />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          {pagedResult.TotalPages > 1 && (
+            <div className="adm-pagination">
+              <span className="tabular-nums">
+                {t('admin.common.pageInfo', {
+                  page: pagedResult.Page,
+                  totalPages: pagedResult.TotalPages,
+                  totalCount: pagedResult.TotalCount,
+                })}
+              </span>
+              <div className="adm-pagination-controls">
+                <button
+                  type="button"
+                  className="adm-btn adm-btn--secondary adm-btn--sm"
+                  disabled={!pagedResult.HasPreviousPage}
+                  onClick={() => setPage((p) => Math.max(1, p - 1))}
+                >
+                  {t('admin.common.previousPage')}
+                </button>
+                <button
+                  type="button"
+                  className="adm-btn adm-btn--secondary adm-btn--sm"
+                  disabled={!pagedResult.HasNextPage}
+                  onClick={() => setPage((p) => p + 1)}
+                >
+                  {t('admin.common.nextPage')}
+                </button>
+              </div>
+            </div>
+          )}
+        </>
+      )}
+
       {isModalOpen && selectedUser && (
-        <AdminUserModal 
+        <AdminUserModal
           user={selectedUser}
-          onClose={handleCloseModal}
+          onClose={() => {
+            setIsModalOpen(false);
+            setSelectedUser(null);
+          }}
           onSave={handleSaveUser}
-          onDelete={handleDeleteUser}
+          onDelete={() => setDeleteTarget(selectedUser)}
         />
       )}
+
+      <AdminConfirmModal
+        isOpen={Boolean(deleteTarget)}
+        title={t('admin.users.deleteModal.title')}
+        message={
+          deleteTarget
+            ? t('admin.users.deleteModal.prompt', {
+                username: deleteTarget.Username || deleteTarget.Email,
+              })
+            : ''
+        }
+        warning={t('admin.users.deleteModal.warning')}
+        confirmLabel={t('admin.users.deleteModal.confirm')}
+        isSubmitting={isDeleting}
+        onConfirm={handleConfirmDelete}
+        onCancel={() => !isDeleting && setDeleteTarget(null)}
+      />
     </div>
   );
 };

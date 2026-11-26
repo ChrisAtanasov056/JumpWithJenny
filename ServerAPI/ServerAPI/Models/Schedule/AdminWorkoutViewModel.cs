@@ -11,6 +11,9 @@ namespace ServerAPI.Models.Schedule
 
     public CardType ?CardType { get; set; } 
     public int AvailableSpots { get; set; }
+    public int TakenSpots { get; set; }
+    public int TotalSpots { get; set; }
+    public int AttendedCount { get; set; }
 
     public DateTime Date { get; set; }
 

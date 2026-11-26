@@ -317,6 +317,7 @@
       height: 42px;
       object-fit: contain;
       display: block;
+      flex-shrink: 0;
     }
 
     &__brand-name {
@@ -1542,6 +1543,14 @@
       gap: 16px;
     }
 
+    &__logo {
+      width: 34px;
+      height: 34px;
+      object-fit: contain;
+      display: block;
+      flex-shrink: 0;
+    }
+
     &__brand {
       display: inline-flex;
       align-items: center;
@@ -1840,13 +1849,26 @@
     }
 
     .rb-switcher-dock {
-      padding: 5px;
+      left: 10px;
+      right: 64px;
+      transform: none;
+      max-width: none;
+      border-radius: 18px;
+      padding: 6px;
+      gap: 6px;
+      flex-wrap: wrap;
+      justify-content: space-between;
+    }
+
+    .rb-switcher-dock__pills {
+      flex: 1 1 auto;
+      flex-wrap: wrap;
       gap: 4px;
     }
 
     .rb-switcher-btn {
-      padding: 7px 10px;
-      font-size: 0.76rem;
+      padding: 6px 9px;
+      font-size: 0.74rem;
 
       &__dots {
         display: none;
@@ -1854,8 +1876,21 @@
     }
 
     .rb-switcher-dock__back {
-      padding: 7px 10px;
-      font-size: 0.74rem;
+      padding: 6px 9px;
+      font-size: 0.72rem;
+      border-left: 0;
+    }
+
+    .rb-week-tab {
+      padding: 8px 12px;
+
+      strong {
+        font-size: 0.82rem;
+      }
+
+      span {
+        font-size: 0.7rem;
+      }
     }
   }
 

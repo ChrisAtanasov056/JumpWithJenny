@@ -133,6 +133,9 @@ namespace ServerAPI.Migrations
                     b.Property<string>("Id")
                         .HasColumnType("text");
 
+                    b.Property<DateTime?>("AttendedAt")
+                        .HasColumnType("timestamp without time zone");
+
                     b.Property<string>("CancellationToken")
                         .IsRequired()
                         .HasMaxLength(128)
@@ -148,7 +151,6 @@ namespace ServerAPI.Migrations
                         .HasColumnType("timestamp without time zone");
 
                     b.Property<string>("Email")
-                        .IsRequired()
                         .HasMaxLength(254)
                         .HasColumnType("character varying(254)");
 
@@ -156,6 +158,9 @@ namespace ServerAPI.Migrations
                         .IsRequired()
                         .HasMaxLength(120)
                         .HasColumnType("character varying(120)");
+
+                    b.Property<bool>("IsAttended")
+                        .HasColumnType("boolean");
 
                     b.Property<bool>("IsConfirmed")
                         .HasColumnType("boolean");
@@ -167,7 +172,6 @@ namespace ServerAPI.Migrations
                         .HasColumnType("timestamp without time zone");
 
                     b.Property<string>("NormalizedEmail")
-                        .IsRequired()
                         .HasMaxLength(254)
                         .HasColumnType("character varying(254)");
 
@@ -200,11 +204,13 @@ namespace ServerAPI.Migrations
 
                     b.HasIndex("NormalizedEmail", "IsDeleted");
 
+                    b.HasIndex("PhoneNumber", "IsDeleted");
+
                     b.HasIndex("WorkoutId", "IsDeleted");
 
                     b.HasIndex("WorkoutId", "NormalizedEmail")
                         .IsUnique()
-                        .HasFilter("\"IsDeleted\" = false");
+                        .HasFilter("\"NormalizedEmail\" IS NOT NULL AND \"IsDeleted\" = false");
 
                     b.HasIndex("WorkoutId", "ShoeId")
                         .IsUnique()

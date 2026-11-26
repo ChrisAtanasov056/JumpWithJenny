@@ -1,134 +1,43 @@
-@use "sass:color";
-/* Color Palette & Fonts */
-$primary-color: #0069d9;
-$secondary-color: #545b62;
-$success-color: #218838;
-$danger-color: #c82333;
-$light-bg: #f8f9fa;
-$white-bg: #ffffff;
-$border-color: #ced4da;
-$text-color: #2c3e50;
-$light-text-color: #5a6268;
-
-// Mobile breakpoint
-$mobile-breakpoint: 600px;
-
-/* New User Form Container */
-.new-user-container {
-  max-width: 600px;
-  margin: 2rem auto;
-  padding: 2rem;
-  background-color: $white-bg;
-  border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-}
-
-.form-title {
-  font-size: 2rem;
-  font-weight: 600;
-  margin-bottom: 2rem;
-  text-align: center;
-  color: $text-color;
-}
-
-.new-user-form {
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
-}
-
-/* Form Groups (Label and Input) */
-.form-group {
-  display: flex;
-  flex-direction: column;
-
-  label {
-    font-weight: 500;
-    margin-bottom: 0.5rem;
-    color: $secondary-color;
+.admin-new-user-page {
+  .new-user-card {
+    padding: 24px;
+    max-width: 780px;
   }
 
-  input,
-  select {
-    padding: 0.75rem;
-    border: 1px solid $border-color;
-    border-radius: 8px;
-    font-size: 1rem;
-    transition: all 0.3s ease;
-    color: $text-color;
-    background-color: $white-bg;
-
-    &:focus {
-      outline: none;
-      border-color: $primary-color;
-      box-shadow: 0 0 0 3px rgba($primary-color, 0.1);
-    }
-  }
-}
-
-/* Submit Button */
-button[type="submit"] {
-  padding: 1rem;
-  background-color: $primary-color;
-  color: $white-bg;
-  border: none;
-  border-radius: 8px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background-color 0.3s ease, transform 0.2s ease;
-
-  &:hover:not(:disabled) {
-    background-color: color.adjust($primary-color, $lightness: -10%);
-    transform: translateY(-2px);
+  .form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 18px;
   }
 
-  &:disabled {
-    background-color: $secondary-color;
-    cursor: not-allowed;
-    opacity: 0.7;
-  }
-}
+  .form-field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
 
-/* State Messages */
-.error-message {
-  padding: 1rem;
-  background-color: color.adjust($danger-color, $lightness: 40%);
-  color: $danger-color;
-  border: 1px solid color.adjust($danger-color, $lightness: 30%);
-  border-radius: 8px;
-  text-align: center;
-}
-
-// ----------------------------------------------------
-// Mobile Styles (@media query)
-// ----------------------------------------------------
-@media (max-width: $mobile-breakpoint) {
-  .new-user-container {
-    margin: 1rem auto;
-    padding: 1.5rem;
-  }
-
-  .form-title {
-    font-size: 1.5rem;
-    margin-bottom: 1.5rem;
-  }
-
-  .new-user-form {
-    gap: 1rem;
-  }
-
-  .form-group {
     label {
-      font-size: 0.9rem;
+      font-size: 0.88rem;
+      font-weight: 600;
     }
 
-    input, select {
-      padding: 0.65rem;
-      font-size: 0.9rem;
+    .field-hint {
+      font-size: 0.78rem;
+      color: var(--adm-text-subtle);
     }
   }
 
-  button[type="submit"] {
-    padding: 0.75rem;
+  .form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 22px;
+    padding-top: 18px;
+    border-top: 1px solid var(--adm-border);
+  }
+}
+
+@media (max-width: 680px) {
+  .admin-new-user-page .form-grid {
+    grid-template-columns: 1fr;
   }
 }

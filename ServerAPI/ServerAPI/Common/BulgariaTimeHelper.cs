@@ -34,17 +34,19 @@ namespace ServerAPI.Common
             if (date.Kind == DateTimeKind.Utc)
             {
                 var sofia = TimeZoneInfo.ConvertTimeFromUtc(date, BulgariaTimeZone);
-                return DateTime.SpecifyKind(sofia, DateTimeKind.Unspecified);
+                date = DateTime.SpecifyKind(sofia, DateTimeKind.Unspecified);
             }
-
-            if (date.Kind == DateTimeKind.Local)
+            else if (date.Kind == DateTimeKind.Local)
             {
                 var sofia = TimeZoneInfo.ConvertTimeFromUtc(date.ToUniversalTime(), BulgariaTimeZone);
-                return DateTime.SpecifyKind(sofia, DateTimeKind.Unspecified);
+                date = DateTime.SpecifyKind(sofia, DateTimeKind.Unspecified);
+            }
+            else
+            {
+                date = DateTime.SpecifyKind(date, DateTimeKind.Unspecified);
             }
 
-            if (date.TimeOfDay == TimeSpan.Zero &&
-                !string.IsNullOrWhiteSpace(time) &&
+            if (!string.IsNullOrWhiteSpace(time) &&
                 TimeSpan.TryParse(time.Trim(), out var parsedTime))
             {
                 date = date.Date.Add(parsedTime);
