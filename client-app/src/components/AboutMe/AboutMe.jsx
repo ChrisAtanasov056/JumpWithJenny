@@ -21,18 +21,20 @@ const AboutMe = () => {
 
         <div className="about-grid">
           <div className="about-portrait-wrap">
-            <picture>
-              <source srcSet="/images/jenny.webp" type="image/webp" />
-              <img
-                src="/images/jenny.jpg"
-                alt={t('about.title')}
-                className="about-portrait"
-                loading="lazy"
-                decoding="async"
-                width={640}
-                height={640}
-              />
-            </picture>
+            <div className="about-portrait-frame">
+              <picture>
+                <source srcSet="/images/jenny.webp" type="image/webp" />
+                <img
+                  src="/images/jenny.jpg"
+                  alt={t('about.title')}
+                  className="about-portrait"
+                  loading="lazy"
+                  decoding="async"
+                  width={1200}
+                  height={900}
+                />
+              </picture>
+            </div>
           </div>
 
           <div className="about-story">

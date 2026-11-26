@@ -1,25 +1,41 @@
 .about-grid {
   display: grid;
-  grid-template-columns: minmax(0, 0.78fr) minmax(0, 1.22fr);
-  gap: 40px;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.12fr);
+  gap: clamp(28px, 3.5vw, 44px);
   align-items: center;
 }
 
 .about-portrait-wrap {
   display: flex;
   justify-content: center;
+  width: 100%;
+}
+
+.about-portrait-frame {
+  width: min(500px, 100%);
+  padding: 10px;
+  border-radius: 30px;
+  background: rgba(255, 255, 255, 0.16);
+  backdrop-filter: blur(18px) saturate(1.4);
+  -webkit-backdrop-filter: blur(18px) saturate(1.4);
+  border: 1px solid rgba(255, 255, 255, 0.36);
+  box-shadow:
+    0 24px 56px rgba(10, 18, 48, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.35);
+
+  picture {
+    display: block;
+    width: 100%;
+  }
 }
 
 .about-portrait {
-  width: min(360px, 100%);
-  aspect-ratio: 1;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 4 / 3;
   object-fit: cover;
-  object-position: 50% 25%;
-  border-radius: 50%;
-  border: 6px solid rgba(255, 255, 255, 0.92);
-  box-shadow:
-    0 24px 60px rgba(10, 18, 48, 0.32),
-    0 0 0 10px rgba(255, 255, 255, 0.14);
+  object-position: 54% 20%;
+  border-radius: 21px;
   display: block;
 }
 
@@ -29,6 +45,7 @@
   color: #ffffff;
   margin: 0 0 22px;
   font-weight: 500;
+  text-shadow: 0 2px 14px rgba(16, 32, 74, 0.24);
 }
 
 .about-highlights {
@@ -74,7 +91,13 @@
     gap: 28px;
   }
 
+  .about-portrait-frame {
+    width: min(460px, 100%);
+    padding: 8px;
+    border-radius: 26px;
+  }
+
   .about-portrait {
-    width: min(260px, 76vw);
+    border-radius: 19px;
   }
 }
