@@ -96,6 +96,12 @@ const AdminDashboard = () => {
                   {getTranslatedDay(nextWorkout.Day)}, {formatWorkoutDateBg(nextWorkout.Date)} ·{' '}
                   <span className="tabular-nums">{nextWorkout.Time}</span>
                 </h2>
+                {nextWorkout.TrainerNote && (
+                  <div className="hero-note-pill">
+                    <span aria-hidden="true">💬</span>
+                    <span>{nextWorkout.TrainerNote}</span>
+                  </div>
+                )}
                 <div className="hero-badges">
                   <span className={`adm-status-badge ${(nextWorkout.Status || '').toLowerCase()}`}>
                     {getTranslatedStatus(nextWorkout.Status)}

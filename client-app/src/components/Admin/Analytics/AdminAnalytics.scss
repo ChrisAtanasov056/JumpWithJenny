@@ -1,0 +1,428 @@
+.admin-analytics-page {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+
+  .analytics-filter-bar {
+    padding: 14px 18px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    flex-wrap: wrap;
+
+    .range-pills {
+      display: inline-flex;
+      flex-wrap: wrap;
+      gap: 4px;
+      background: var(--adm-slate-bg);
+      padding: 4px;
+      border-radius: 10px;
+    }
+
+    .range-pill {
+      border: none;
+      background: transparent;
+      padding: 7px 13px;
+      border-radius: 7px;
+      font-size: 0.86rem;
+      font-weight: 600;
+      color: var(--adm-text-muted);
+      cursor: pointer;
+
+      &.active {
+        background: var(--adm-surface);
+        color: var(--adm-navy);
+        box-shadow: var(--adm-shadow-sm);
+      }
+    }
+
+    .custom-range-form {
+      display: flex;
+      align-items: flex-end;
+      gap: 10px;
+      flex-wrap: wrap;
+
+      label {
+        display: flex;
+        flex-direction: column;
+        gap: 3px;
+        font-size: 0.78rem;
+        font-weight: 600;
+        color: var(--adm-text-muted);
+
+        .adm-input {
+          min-height: 36px;
+          padding: 5px 10px;
+          font-size: 0.86rem;
+        }
+      }
+    }
+  }
+
+  .empty-period-banner {
+    padding: 16px 20px;
+    background: var(--adm-warning-bg);
+    border-color: #fde68a;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    flex-wrap: wrap;
+
+    strong {
+      display: block;
+      color: #92400e;
+    }
+
+    p {
+      margin: 2px 0 0;
+      font-size: 0.88rem;
+      color: #b45309;
+    }
+  }
+
+  .analytics-kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 14px;
+  }
+
+  .akpi-card {
+    padding: 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+
+    .akpi-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+
+      .akpi-label {
+        font-size: 0.84rem;
+        font-weight: 600;
+        color: var(--adm-text-muted);
+      }
+
+      .akpi-icon {
+        font-size: 1.05rem;
+
+        &.navy {
+          color: var(--adm-navy);
+        }
+        &.coral {
+          color: var(--adm-coral);
+        }
+        &.emerald {
+          color: var(--adm-success);
+        }
+        &.amber {
+          color: var(--adm-warning);
+        }
+      }
+    }
+
+    .akpi-value-row {
+      display: flex;
+      align-items: baseline;
+      gap: 10px;
+
+      strong {
+        font-family: 'Rubik', sans-serif;
+        font-size: 1.7rem;
+        font-weight: 700;
+        line-height: 1.15;
+      }
+
+      .delta-pill {
+        padding: 2px 8px;
+        border-radius: 999px;
+        font-size: 0.76rem;
+        font-weight: 700;
+
+        &.up {
+          background: var(--adm-success-bg);
+          color: var(--adm-success);
+        }
+
+        &.down {
+          background: var(--adm-danger-bg);
+          color: var(--adm-danger);
+        }
+      }
+    }
+
+    .akpi-sub {
+      font-size: 0.8rem;
+      color: var(--adm-text-subtle);
+    }
+  }
+
+  .analytics-panel {
+    padding: 20px;
+
+    .panel-head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-bottom: 16px;
+
+      h2 {
+        margin: 0;
+        font-size: 1.08rem;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      p {
+        margin: 3px 0 0;
+        font-size: 0.84rem;
+        color: var(--adm-text-muted);
+      }
+    }
+
+    .panel-empty {
+      margin: 0;
+      font-size: 0.9rem;
+      color: var(--adm-text-subtle);
+    }
+  }
+
+  .chart-legend {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--adm-text-muted);
+
+    .legend-dot {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+
+      &::before {
+        content: '';
+        width: 10px;
+        height: 10px;
+        border-radius: 3px;
+      }
+
+      &.bookings::before {
+        background: var(--adm-navy);
+      }
+
+      &.occupancy::before {
+        background: var(--adm-coral);
+      }
+    }
+  }
+
+  .trend-chart-wrap {
+    overflow-x: auto;
+
+    .trend-svg {
+      display: block;
+      width: 100%;
+      min-width: 480px;
+      height: auto;
+    }
+  }
+
+  .analytics-two-col {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+  }
+
+  .bars-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .bar-item {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+
+    .bar-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      flex-wrap: wrap;
+      font-size: 0.86rem;
+
+      span {
+        color: var(--adm-text-muted);
+      }
+    }
+
+    .bar-track {
+      height: 8px;
+      border-radius: 999px;
+      background: var(--adm-slate-bg);
+      overflow: hidden;
+
+      .bar-fill {
+        height: 100%;
+        border-radius: 999px;
+
+        &.coral {
+          background: var(--adm-coral);
+        }
+        &.navy {
+          background: var(--adm-navy);
+        }
+        &.emerald {
+          background: var(--adm-success);
+        }
+      }
+    }
+  }
+
+  .shoes-split-chips {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 14px;
+
+    .split-chip {
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 0.8rem;
+      font-weight: 600;
+
+      &.studio {
+        background: var(--adm-navy-soft);
+        color: var(--adm-navy);
+      }
+
+      &.own {
+        background: var(--adm-slate-bg);
+        color: var(--adm-text-muted);
+      }
+    }
+  }
+
+  .size-title-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    .shoe-badge {
+      padding: 2px 8px;
+      border-radius: 6px;
+      background: var(--adm-navy);
+      color: #ffffff;
+      font-weight: 700;
+      font-size: 0.78rem;
+    }
+  }
+
+  .soldout-badge {
+    padding: 2px 8px;
+    border-radius: 999px;
+    background: var(--adm-warning-bg);
+    color: var(--adm-warning);
+    font-size: 0.75rem;
+    font-weight: 600;
+
+    &.high {
+      background: var(--adm-danger-bg);
+      color: var(--adm-danger);
+    }
+  }
+
+  .clients-mini-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .client-mini-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 10px 12px;
+    border-radius: 10px;
+    background: var(--adm-surface-muted);
+    border: 1px solid var(--adm-border);
+
+    .cm-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 0;
+
+      strong {
+        display: block;
+        font-size: 0.92rem;
+      }
+
+      .cm-meta {
+        display: block;
+        font-size: 0.79rem;
+        color: var(--adm-text-muted);
+      }
+    }
+
+    .rank-badge {
+      width: 26px;
+      height: 26px;
+      border-radius: 7px;
+      background: var(--adm-navy);
+      color: #ffffff;
+      display: grid;
+      place-items: center;
+      font-size: 0.78rem;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+
+    .cm-actions {
+      display: flex;
+      gap: 6px;
+      flex-shrink: 0;
+    }
+
+    .contact-icon-btn {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      background: var(--adm-navy-soft);
+      color: var(--adm-navy);
+      display: grid;
+      place-items: center;
+      font-size: 0.8rem;
+      flex-shrink: 0;
+    }
+  }
+}
+
+@media (max-width: 960px) {
+  .admin-analytics-page {
+    .analytics-kpi-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .analytics-two-col {
+      grid-template-columns: 1fr;
+    }
+  }
+}
+
+@media (max-width: 560px) {
+  .admin-analytics-page {
+    .analytics-kpi-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+}

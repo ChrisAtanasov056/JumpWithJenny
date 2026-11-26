@@ -70,6 +70,31 @@ namespace ServerAPI.Controllers
             return Ok(matches);
         }
 
+        // GET: api/admin/analytics
+        [HttpGet("analytics")]
+        public async Task<IActionResult> GetAnalytics(
+            [FromQuery] string range = "30d",
+            [FromQuery] DateTime? from = null,
+            [FromQuery] DateTime? to = null,
+            CancellationToken cancellationToken = default)
+        {
+            var analytics = await _adminInsightsService.GetAnalyticsAsync(range, from, to, cancellationToken);
+            return Ok(analytics);
+        }
+
+        // GET: api/admin/analytics/export
+        [HttpGet("analytics/export")]
+        public async Task<IActionResult> ExportAnalyticsCsv(
+            [FromQuery] string type = "workouts",
+            [FromQuery] string range = "30d",
+            [FromQuery] DateTime? from = null,
+            [FromQuery] DateTime? to = null,
+            CancellationToken cancellationToken = default)
+        {
+            var (content, fileName) = await _adminInsightsService.ExportAnalyticsCsvAsync(type, range, from, to, cancellationToken);
+            return File(content, "text/csv; charset=utf-8", fileName);
+        }
+
         // POST: api/admin/users/create
         [HttpPost("users/create")]
         public async Task<IActionResult> CreateUser([FromBody] UserCreateViewModel userModel)

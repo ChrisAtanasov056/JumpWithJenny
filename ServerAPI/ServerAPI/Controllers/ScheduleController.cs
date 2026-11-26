@@ -54,6 +54,7 @@ namespace ServerAPI.Controllers
                     workout.AvailableSpots,
                     workout.TakenSpots,
                     workout.TotalSpots,
+                    workout.TrainerNote,
                     Shoes = (workout.WorkoutShoes ?? Enumerable.Empty<Models.WorkoutShoes>())
                         .Where(s => s.Shoe != null)
                         .Select(s => new

@@ -94,6 +94,7 @@ namespace ServerAPI.Services.Workouts
             var derivedTime = TimeSpan.TryParse(dto.Time.Trim(), out _)
                 ? normalizedDate.ToString("HH:mm")
                 : dto.Time.Trim();
+            var trainerNote = NormalizeTrainerNote(dto.TrainerNote);
 
             var workout = new Workout
             {
@@ -101,7 +102,8 @@ namespace ServerAPI.Services.Workouts
                 Time = derivedTime,
                 Date = normalizedDate,
                 Status = status,
-                AvailableSpots = dto.AvailableSpots
+                AvailableSpots = dto.AvailableSpots,
+                TrainerNote = trainerNote,
             };
 
             await _workoutRepository.AddAsync(workout);
@@ -134,6 +136,7 @@ namespace ServerAPI.Services.Workouts
                 Date = BulgariaTimeHelper.SofiaToUtc(workout.Date),
                 Status = workout.Status,
                 AvailableSpots = workout.AvailableSpots,
+                TrainerNote = workout.TrainerNote,
             };
         }
 
@@ -150,6 +153,7 @@ namespace ServerAPI.Services.Workouts
                     Date = w.Date,
                     Status = w.Status,
                     AvailableSpots = w.AvailableSpots,
+                    TrainerNote = w.TrainerNote,
                     WorkoutShoes = w.WorkoutShoes
                         .Where(ws => !ws.IsDeleted && ws.Shoe != null && !ws.Shoe.IsDeleted)
                         .Select(ws => new WorkoutShoes
@@ -323,12 +327,14 @@ namespace ServerAPI.Services.Workouts
             var derivedTime = TimeSpan.TryParse(dto.Time.Trim(), out _)
                 ? normalizedDate.ToString("HH:mm")
                 : dto.Time.Trim();
+            var trainerNote = NormalizeTrainerNote(dto.TrainerNote);
 
             workout.Day = derivedDay;
             workout.Time = derivedTime;
             workout.Date = normalizedDate;
             workout.Status = nextStatus;
             workout.AvailableSpots = dto.AvailableSpots;
+            workout.TrainerNote = trainerNote;
 
             await _workoutRepository.SaveChangesAsync();
 
@@ -339,7 +345,8 @@ namespace ServerAPI.Services.Workouts
                 Time = workout.Time,
                 Date = BulgariaTimeHelper.SofiaToUtc(workout.Date),
                 Status = workout.Status,
-                AvailableSpots = workout.AvailableSpots
+                AvailableSpots = workout.AvailableSpots,
+                TrainerNote = workout.TrainerNote,
             };
         }
 
@@ -386,6 +393,7 @@ namespace ServerAPI.Services.Workouts
                     (mappedDay != null && w.Day != null && w.Day.ToLower().Contains(mappedDay)) ||
                     (w.Time != null && w.Time.ToLower().Contains(term)) ||
                     (w.Status != null && w.Status.ToLower().Contains(term)) ||
+                    (w.TrainerNote != null && w.TrainerNote.ToLower().Contains(term)) ||
                     w.Appointments.Any(a =>
                         !a.IsDeleted &&
                         ((a.FullName != null && a.FullName.ToLower().Contains(term)) ||
@@ -410,6 +418,7 @@ namespace ServerAPI.Services.Workouts
                     Date = w.Date,
                     Status = w.Status,
                     AvailableSpots = w.AvailableSpots,
+                    TrainerNote = w.TrainerNote,
                     WorkoutShoes = w.WorkoutShoes
                         .Where(ws => !ws.IsDeleted && ws.Shoe != null && !ws.Shoe.IsDeleted)
                         .Select(ws => new WorkoutShoes
@@ -484,6 +493,7 @@ namespace ServerAPI.Services.Workouts
                     w.Time,
                     w.Date,
                     w.AvailableSpots,
+                    w.TrainerNote,
                     ActiveAppointments = w.Appointments.Count(a => !a.IsDeleted)
                 })
                 .FirstOrDefaultAsync();
@@ -518,6 +528,7 @@ namespace ServerAPI.Services.Workouts
                 Date = targetDate,
                 Status = "Available",
                 AvailableSpots = capacity,
+                TrainerNote = request?.CopyTrainerNote == true ? source.TrainerNote : null,
             };
 
             await using var transaction = await _context.Database.BeginTransactionAsync();
@@ -704,6 +715,22 @@ namespace ServerAPI.Services.Workouts
             }
 
             return null;
+        }
+
+        private static string NormalizeTrainerNote(string note)
+        {
+            if (string.IsNullOrWhiteSpace(note))
+            {
+                return null;
+            }
+
+            var trimmed = note.Trim();
+            if (trimmed.Length > 200)
+            {
+                throw new ArgumentException("Trainer note cannot exceed 200 characters.");
+            }
+
+            return trimmed;
         }
     }
 }

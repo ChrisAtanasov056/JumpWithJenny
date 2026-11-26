@@ -12,6 +12,8 @@
 
         public DateTime Date { get; set; }
 
+        public string TrainerNote { get; set; }
+
         // Only relevant shoe details
         //public List<int> ShoesIds { get; set; } = new List<int>();
 

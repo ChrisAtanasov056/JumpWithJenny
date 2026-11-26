@@ -51,6 +51,19 @@ const ScheduleContent = ({ state }) => {
   const [selectedWeekKey, setSelectedWeekKey] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedWorkout, setSelectedWorkout] = useState(null);
+  const [expandedNoteIds, setExpandedNoteIds] = useState(() => new Set());
+
+  const toggleNoteExpand = (workoutId) => {
+    setExpandedNoteIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(workoutId)) {
+        next.delete(workoutId);
+      } else {
+        next.add(workoutId);
+      }
+      return next;
+    });
+  };
 
   const cloudRefs = useRef(new Map());
   const innerRefs = useRef(new Map());
@@ -267,15 +280,39 @@ const ScheduleContent = ({ state }) => {
                       : t('altitude.schedule.bookBtn')
                     : t('altitude.schedule.fullClassBtn');
 
+                const trainerNote = workout?.TrainerNote?.trim() || '';
+                const isNoteExpanded = Boolean(workout?.Id && expandedNoteIds.has(workout.Id));
+                const isLongNote = trainerNote.length > 65;
+
                 return (
                   <article
                     key={workout.Id || `${workout.Date}-${workout.Time}`}
                     ref={setCloudRef(workout.Id)}
                     data-speed={speed}
-                    className={`schedule-cloud ${isBookedByMe ? 'is-booked' : ''}`}
+                    className={`schedule-cloud ${isBookedByMe ? 'is-booked' : ''} ${trainerNote ? 'has-note' : ''}`}
                     style={{ '--cloud-y': `${staggerY}px` }}
                   >
                     <div className="schedule-cloud__inner" ref={setInnerRef(workout.Id)}>
+                      {trainerNote && (
+                        isLongNote ? (
+                          <button
+                            type="button"
+                            className={`schedule-cloud__note-bubble ${isNoteExpanded ? 'is-expanded' : ''}`}
+                            onClick={() => toggleNoteExpand(workout.Id)}
+                            aria-expanded={isNoteExpanded}
+                            title={trainerNote}
+                          >
+                            <span className="note-bubble-icon" aria-hidden="true">💬</span>
+                            <span className="note-bubble-text">{trainerNote}</span>
+                          </button>
+                        ) : (
+                          <div className="schedule-cloud__note-bubble" role="note">
+                            <span className="note-bubble-icon" aria-hidden="true">💬</span>
+                            <span className="note-bubble-text">{trainerNote}</span>
+                          </div>
+                        )
+                      )}
+
                       <div className="schedule-cloud__glass">
                         <div className="schedule-cloud__top">
                           <span className="schedule-cloud__date">{shortDate}</span>

@@ -22,6 +22,7 @@ const WorkoutForm = () => {
   const [timePart, setTimePart] = useState('18:00');
   const [status, setStatus] = useState('Available');
   const [availableSpots, setAvailableSpots] = useState(20);
+  const [trainerNote, setTrainerNote] = useState('');
   const [takenCount, setTakenCount] = useState(0);
 
   const [initialLoading, setInitialLoading] = useState(Boolean(id));
@@ -40,6 +41,7 @@ const WorkoutForm = () => {
         setTimePart(data.Time || parts.timePart || '18:00');
         setStatus(data.Status || 'Available');
         setAvailableSpots(Number(data.AvailableSpots ?? 0));
+        setTrainerNote(data.TrainerNote || '');
         setTakenCount(data.TakenSpots ?? data.Appointments?.length ?? 0);
       } catch (err) {
         const msg = err?.response?.data?.message || err?.message;
@@ -70,6 +72,7 @@ const WorkoutForm = () => {
       Date: `${datePart}T${normalizedTime}:00`,
       Status: status,
       AvailableSpots: Number(availableSpots),
+      TrainerNote: trainerNote.trim() || null,
     };
 
     try {
@@ -193,6 +196,43 @@ const WorkoutForm = () => {
               onChange={(e) => setAvailableSpots(e.target.value)}
               required
             />
+          </div>
+
+          <div className="form-field form-field--full">
+            <div className="note-label-row">
+              <label htmlFor="workout-trainer-note">{t('admin.workouts.trainerNoteLabel')}</label>
+              <span className="note-counter tabular-nums">{trainerNote.length} / 200</span>
+            </div>
+            <textarea
+              id="workout-trainer-note"
+              className="adm-input trainer-note-textarea"
+              rows={2}
+              maxLength={200}
+              placeholder={t('admin.workouts.trainerNotePlaceholder')}
+              value={trainerNote}
+              onChange={(e) => setTrainerNote(e.target.value)}
+            />
+            <div className="note-helper-row">
+              <span className="field-hint">{t('admin.workouts.trainerNoteHint')}</span>
+              {trainerNote.trim() && (
+                <button
+                  type="button"
+                  className="clear-note-btn"
+                  onClick={() => setTrainerNote('')}
+                >
+                  {t('admin.workouts.trainerNoteClear')}
+                </button>
+              )}
+            </div>
+            {trainerNote.trim() && (
+              <div className="note-preview-wrap">
+                <span className="preview-label">{t('admin.workouts.trainerNotePreview')}</span>
+                <div className="note-bubble-preview">
+                  <span aria-hidden="true">💬</span>
+                  <span>{trainerNote.trim()}</span>
+                </div>
+              </div>
+            )}
           </div>
         </div>
 

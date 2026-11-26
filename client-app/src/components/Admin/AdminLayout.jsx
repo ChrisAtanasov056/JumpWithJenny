@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { ToastContainer } from 'react-toastify';
 import {
   FaHome,
+  FaChartBar,
   FaCalendarAlt,
   FaUserFriends,
   FaShoePrints,
@@ -47,6 +48,7 @@ const AdminLayout = () => {
 
   const navItems = [
     { to: '/admin', end: true, icon: <FaHome aria-hidden="true" />, label: t('admin.sidebar.dashboard') },
+    { to: '/admin/analytics', icon: <FaChartBar aria-hidden="true" />, label: t('admin.sidebar.analytics') },
     { to: '/admin/workouts', icon: <FaCalendarAlt aria-hidden="true" />, label: t('admin.sidebar.workouts') },
     { to: '/admin/clients', icon: <FaUserFriends aria-hidden="true" />, label: t('admin.sidebar.clients') },
     { to: '/admin/shoes', icon: <FaShoePrints aria-hidden="true" />, label: t('admin.sidebar.shoes') },

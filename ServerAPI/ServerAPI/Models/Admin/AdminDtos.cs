@@ -60,6 +60,8 @@ namespace ServerAPI.Models.Admin
         public DateTime? TargetDate { get; set; }
 
         public int? AvailableSpots { get; set; }
+
+        public bool CopyTrainerNote { get; set; } = false;
     }
 
     public class BatchWorkoutSlotItem

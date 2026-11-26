@@ -23,6 +23,8 @@ namespace ServerAPI.Services
         public string CancellationToken { get; set; }
 
         public string Language { get; set; } = "bg";
+
+        public string TrainerNote { get; set; }
     }
 
     public interface IEmailService

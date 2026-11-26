@@ -79,6 +79,32 @@
   }
 }
 
+.cancel-trainer-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px 14px;
+  margin-bottom: 16px;
+  border-radius: 16px;
+  background: linear-gradient(135deg, #fffdf0 0%, #fff3c4 100%);
+  border: 1.5px solid #ffd23f;
+  color: #10204a;
+
+  strong {
+    display: block;
+    font-size: 0.8rem;
+    color: #c2410c;
+    margin-bottom: 2px;
+  }
+
+  p {
+    margin: 0;
+    font-size: 0.92rem;
+    font-weight: 600;
+    line-height: 1.4;
+  }
+}
+
 .booking-summary {
   background: #f4f7fd;
   border-radius: 18px;

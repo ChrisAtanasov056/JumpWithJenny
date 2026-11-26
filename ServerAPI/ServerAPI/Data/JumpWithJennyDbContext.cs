@@ -79,6 +79,9 @@
                 .HasIndex(a => new { a.PhoneNumber, a.IsDeleted });
 
             builder.Entity<Appointment>()
+                .HasIndex(a => new { a.IsCancelled, a.CancelledAt });
+
+            builder.Entity<Appointment>()
                 .HasIndex(a => new { a.WorkoutId, a.ShoeId })
                 .IsUnique()
                 .HasFilter("\"ShoeId\" IS NOT NULL AND \"IsDeleted\" = false");

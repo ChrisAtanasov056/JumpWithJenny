@@ -25,5 +25,7 @@ namespace ServerAPI.Models.Schedule
         public bool UsesOwnShoes { get; set; }
 
         public bool CanCancel { get; set; }
+
+        public string TrainerNote { get; set; }
     }
 }

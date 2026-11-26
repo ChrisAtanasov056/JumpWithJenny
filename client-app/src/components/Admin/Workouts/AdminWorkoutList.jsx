@@ -289,6 +289,11 @@ const AdminWorkoutsList = () => {
                           <span>
                             {getTranslatedDay(workout.Day)} · <strong className="tabular-nums">{workout.Time}</strong>
                           </span>
+                          {workout.TrainerNote && (
+                            <span className="workout-note-chip" title={workout.TrainerNote}>
+                              💬 {workout.TrainerNote}
+                            </span>
+                          )}
                         </div>
                       </td>
                       <td>
@@ -390,6 +395,11 @@ const AdminWorkoutsList = () => {
                         {getTranslatedDay(workout.Day)}, {formatWorkoutDateBg(workout.Date)}
                       </strong>
                       <div className="mobile-time tabular-nums">{workout.Time}</div>
+                      {workout.TrainerNote && (
+                        <div className="workout-note-chip" title={workout.TrainerNote}>
+                          💬 {workout.TrainerNote}
+                        </div>
+                      )}
                     </div>
                     <span className={`adm-status-badge ${(workout.Status || '').toLowerCase()}`}>
                       {getTranslatedStatus(workout.Status)}

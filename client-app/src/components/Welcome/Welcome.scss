@@ -168,6 +168,18 @@
     font-size: 0.76rem;
     opacity: 0.88;
   }
+
+  &__note {
+    display: block;
+    margin-top: 3px;
+    font-size: 0.76rem;
+    font-weight: 600;
+    color: var(--alt-sun);
+    max-width: 280px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
 }
 
 .welcome-pulse-dot {

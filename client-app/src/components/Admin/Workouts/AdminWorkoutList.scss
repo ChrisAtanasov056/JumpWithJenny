@@ -100,6 +100,22 @@
         color: var(--adm-text-muted);
       }
     }
+
+    .workout-note-chip {
+      display: inline-block;
+      margin-top: 4px;
+      max-width: 240px;
+      padding: 2px 8px;
+      border-radius: 6px;
+      background: #fff8db;
+      border: 1px solid #fde68a;
+      color: var(--adm-navy);
+      font-size: 0.76rem;
+      font-weight: 600;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
   }
 
   .occupancy-cell {

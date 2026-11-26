@@ -17,5 +17,18 @@ namespace ServerAPI.Services.Admin
         Task<IReadOnlyList<AdminClientAutocompleteDto>> AutocompleteClientsAsync(
             string query,
             CancellationToken cancellationToken = default);
+
+        Task<AdminAnalyticsDto> GetAnalyticsAsync(
+            string range = "30d",
+            DateTime? from = null,
+            DateTime? to = null,
+            CancellationToken cancellationToken = default);
+
+        Task<(byte[] Content, string FileName)> ExportAnalyticsCsvAsync(
+            string type = "workouts",
+            string range = "30d",
+            DateTime? from = null,
+            DateTime? to = null,
+            CancellationToken cancellationToken = default);
     }
 }

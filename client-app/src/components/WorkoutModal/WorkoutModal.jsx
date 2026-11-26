@@ -358,6 +358,16 @@ const WorkoutModal = ({
             </div>
 
             <div className="alt-modal-body">
+              {selectedWorkout?.TrainerNote && (
+                <div className="alt-modal-trainer-note" role="note">
+                  <span className="trainer-note-icon" aria-hidden="true">💬</span>
+                  <div className="trainer-note-body">
+                    <strong>{t('bookingForm.trainerNoteLabel')}</strong>
+                    <p>{selectedWorkout.TrainerNote}</p>
+                  </div>
+                </div>
+              )}
+
               {isCheckingRegistration ? (
                 <div className="alt-modal-status" role="status">
                   <FaInfoCircle className="alt-modal-status__icon" aria-hidden="true" />

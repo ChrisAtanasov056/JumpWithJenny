@@ -141,6 +141,42 @@ const WorkoutService = {
     });
     return response.data;
   },
+
+  getAnalytics: async ({ range = '30d', from, to } = {}) => {
+    const params = {
+      range,
+      ...(from ? { from } : {}),
+      ...(to ? { to } : {}),
+    };
+    const response = await api.get('/api/Admin/analytics', { params });
+    return response.data;
+  },
+
+  exportAnalyticsCsv: async ({ type = 'workouts', range = '30d', from, to } = {}) => {
+    const params = {
+      type,
+      range,
+      ...(from ? { from } : {}),
+      ...(to ? { to } : {}),
+    };
+    const response = await api.get('/api/Admin/analytics/export', {
+      params,
+      responseType: 'blob',
+    });
+
+    const contentDisposition = response.headers?.['content-disposition'] || '';
+    const match = contentDisposition.match(/filename\*?=(?:UTF-8'')?"?([^";]+)"?/i);
+    const fileName = match?.[1] ? decodeURIComponent(match[1]) : `jwj-${type}-${range}.csv`;
+
+    const url = window.URL.createObjectURL(new Blob([response.data], { type: 'text/csv;charset=utf-8;' }));
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', fileName);
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    window.URL.revokeObjectURL(url);
+  },
 };
 
 export default WorkoutService;

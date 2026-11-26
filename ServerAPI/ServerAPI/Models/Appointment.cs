@@ -46,5 +46,9 @@
         public bool IsAttended { get; set; } = false;
 
         public DateTime? AttendedAt { get; set; }
+
+        public bool IsCancelled { get; set; } = false;
+
+        public DateTime? CancelledAt { get; set; }
     }
 }

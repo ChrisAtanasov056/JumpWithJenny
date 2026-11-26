@@ -27,6 +27,9 @@
         [Required]
         public int AvailableSpots { get; set; }
 
+        [MaxLength(200)]
+        public string TrainerNote { get; set; }
+
         public ICollection<WorkoutShoes> WorkoutShoes { get; set; }
         public ICollection<WorkoutCardType> WorkoutCardTypes { get; set; }
         public ICollection<Appointment> Appointments { get; set; }

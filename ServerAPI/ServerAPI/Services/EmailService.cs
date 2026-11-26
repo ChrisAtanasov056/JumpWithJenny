@@ -128,10 +128,17 @@ namespace ServerAPI.Services
                     </td></tr>
                 </table>";
 
+            var trainerNoteBlock = !string.IsNullOrWhiteSpace(model.TrainerNote)
+                ? $@"<div style='background-color: #fffbeb; border-left: 4px solid #ff6a3d; padding: 12px 14px; border-radius: 6px; margin: 16px 0; color: #10204a;'>
+                        <strong>{WebUtility.HtmlEncode(Text("TrainerNoteLabel"))}:</strong> {WebUtility.HtmlEncode(model.TrainerNote.Trim())}
+                    </div>"
+                : string.Empty;
+
             var bodyContent = $@"
                 <h1>{WebUtility.HtmlEncode(Text("Heading"))}</h1>
                 <p>{WebUtility.HtmlEncode(Text("Greeting"))}, {safeName}!</p>
                 <p>{WebUtility.HtmlEncode(Text("Intro"))}</p>
+                {trainerNoteBlock}
                 {detailsBlock}
                 <p>{WebUtility.HtmlEncode(Text("CancelInstructions"))}</p>
                 {cancelButton}

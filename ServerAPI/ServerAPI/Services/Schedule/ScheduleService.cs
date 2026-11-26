@@ -112,6 +112,7 @@ namespace ServerAPI.Services.Schedule
             var workoutDay = string.Empty;
             var workoutTime = string.Empty;
             var workoutDateSofia = default(DateTime);
+            string workoutTrainerNote = null;
             WorkoutViewModels resultViewModel;
 
             await using (var transaction = await _context.Database.BeginTransactionAsync())
@@ -142,13 +143,12 @@ namespace ServerAPI.Services.Schedule
                         "Cannot register for a workout that has already started or passed.");
                 }
 
-                Appointment existingAppointment = null;
                 if (normalizedEmail != null)
                 {
-                    existingAppointment = await _appointmentRepository.AllWithDeleted()
-                        .FirstOrDefaultAsync(a => a.WorkoutId == workoutId && a.NormalizedEmail == normalizedEmail);
+                    var alreadyRegistered = await _appointmentRepository.All()
+                        .AnyAsync(a => a.WorkoutId == workoutId && a.NormalizedEmail == normalizedEmail);
 
-                    if (existingAppointment != null && !existingAppointment.IsDeleted)
+                    if (alreadyRegistered)
                     {
                         throw new ScheduleBookingException(
                             BookingErrorCode.AlreadyRegistered,
@@ -242,52 +242,30 @@ namespace ServerAPI.Services.Schedule
                     workoutShoeToUpdate.IsTaken = true;
                 }
 
-                if (existingAppointment != null && existingAppointment.IsDeleted)
+                var appointment = new Appointment
                 {
-                    _appointmentRepository.Undelete(existingAppointment);
-                    existingAppointment.UserId = null;
-                    existingAppointment.FullName = trimmedName;
-                    existingAppointment.Email = trimmedEmail;
-                    existingAppointment.NormalizedEmail = normalizedEmail;
-                    existingAppointment.PhoneNumber = trimmedPhone;
-                    existingAppointment.CancellationToken = cancellationToken;
-                    existingAppointment.CardType = null;
-                    existingAppointment.ShoeId = assignedShoe?.Id;
-                    existingAppointment.UsesOwnShoes = request.UsesOwnShoes;
-                    existingAppointment.IsConfirmed = true;
-                    existingAppointment.IsAttended = false;
-                    existingAppointment.AttendedAt = null;
+                    UserId = null,
+                    WorkoutId = workoutId,
+                    FullName = trimmedName,
+                    Email = trimmedEmail,
+                    NormalizedEmail = normalizedEmail,
+                    PhoneNumber = trimmedPhone,
+                    CancellationToken = cancellationToken,
+                    CardType = null,
+                    ShoeId = assignedShoe?.Id,
+                    UsesOwnShoes = request.UsesOwnShoes,
+                    IsConfirmed = true,
+                    IsAttended = false,
+                    AttendedAt = null,
+                    IsCancelled = false,
+                    CancelledAt = null,
+                };
 
-                    if (!workout.Appointments.Any(a => a.Id == existingAppointment.Id))
-                    {
-                        workout.Appointments.Add(existingAppointment);
-                    }
-                }
-                else
+                await _appointmentRepository.AddAsync(appointment);
+
+                if (!workout.Appointments.Contains(appointment))
                 {
-                    var appointment = new Appointment
-                    {
-                        UserId = null,
-                        WorkoutId = workoutId,
-                        FullName = trimmedName,
-                        Email = trimmedEmail,
-                        NormalizedEmail = normalizedEmail,
-                        PhoneNumber = trimmedPhone,
-                        CancellationToken = cancellationToken,
-                        CardType = null,
-                        ShoeId = assignedShoe?.Id,
-                        UsesOwnShoes = request.UsesOwnShoes,
-                        IsConfirmed = true,
-                        IsAttended = false,
-                        AttendedAt = null,
-                    };
-
-                    await _appointmentRepository.AddAsync(appointment);
-
-                    if (!workout.Appointments.Contains(appointment))
-                    {
-                        workout.Appointments.Add(appointment);
-                    }
+                    workout.Appointments.Add(appointment);
                 }
 
                 if (workout.AvailableSpots > 0)
@@ -343,6 +321,7 @@ namespace ServerAPI.Services.Schedule
                 workoutDay = workout.Day;
                 workoutTime = workout.Time;
                 workoutDateSofia = workout.Date;
+                workoutTrainerNote = workout.TrainerNote;
                 resultViewModel = MapToWorkoutViewModel(workout);
             }
 
@@ -362,6 +341,7 @@ namespace ServerAPI.Services.Schedule
                         UsesOwnShoes = request.UsesOwnShoes,
                         CancellationToken = cancellationToken,
                         Language = request.Language,
+                        TrainerNote = workoutTrainerNote,
                     });
 
                     if (!emailSent)
@@ -662,6 +642,7 @@ namespace ServerAPI.Services.Schedule
                 ShoeSize = appointment.Shoe?.Size,
                 UsesOwnShoes = appointment.UsesOwnShoes,
                 CanCancel = appointment.Workout.Date > BulgariaTimeHelper.GetCurrentSofiaTime(),
+                TrainerNote = appointment.Workout.TrainerNote,
             };
         }
 
@@ -761,7 +742,9 @@ namespace ServerAPI.Services.Schedule
                 }
             }
 
-            _appointmentRepository.HardDelete(appointment);
+            appointment.IsCancelled = true;
+            appointment.CancelledAt = DateTime.UtcNow;
+            _appointmentRepository.Delete(appointment);
 
             try
             {
@@ -837,6 +820,7 @@ namespace ServerAPI.Services.Schedule
                 TakenSpots = activeAppointmentsCount,
                 TotalSpots = totalSpots,
                 Date = BulgariaTimeHelper.SofiaToUtc(workout.Date),
+                TrainerNote = workout.TrainerNote,
                 WorkoutShoes = (workout.WorkoutShoes ?? Enumerable.Empty<WorkoutShoes>())
                     .Where(ws => !ws.IsDeleted && ws.Shoe != null && !ws.Shoe.IsDeleted)
                     .Select(ws => new WorkoutShoes

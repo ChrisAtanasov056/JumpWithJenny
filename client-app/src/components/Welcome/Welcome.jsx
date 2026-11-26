@@ -242,6 +242,11 @@ const Welcome = ({ workouts = [], loadingWorkouts = false }) => {
                         ? t('altitude.spotsAvailableSingular', { count: availableSpots })
                         : t('altitude.spotsAvailablePlural', { count: availableSpots })}
                     </span>
+                    {nextWorkout.TrainerNote && (
+                      <span className="welcome-next-chip__note">
+                        💬 {nextWorkout.TrainerNote}
+                      </span>
+                    )}
                   </>
                 ) : (
                   <>

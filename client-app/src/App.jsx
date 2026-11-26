@@ -22,6 +22,7 @@ import './styles/altitude-tokens.scss';
 
 const AdminLayout = lazy(() => import('./components/Admin/AdminLayout'));
 const AdminDashboard = lazy(() => import('./components/Admin/Dashboard/AdminDashboard'));
+const AdminAnalytics = lazy(() => import('./components/Admin/Analytics/AdminAnalytics'));
 const AdminClientsList = lazy(() => import('./components/Admin/Clients/AdminClientsList'));
 const AdminUsersList = lazy(() => import('./components/Admin/Users/AdminUsersList'));
 const AdminNewUser = lazy(() => import('./components/Admin/Users/AdminNewUser.jsx'));
@@ -187,7 +188,7 @@ const AppContent = () => {
         <Route path="shoes/new" element={<AdminShoeForm />} />
         <Route path="shoes/:id" element={<AdminShoeForm />} />
         <Route path="shoes/details/:id" element={<ShoeDetailsView />} />
-        <Route path="analytics" element={<Navigate to="/admin" replace />} />
+        <Route path="analytics" element={<AdminAnalytics />} />
       </Route>
 
       <Route path="*" element={<NotFoundPage />} />

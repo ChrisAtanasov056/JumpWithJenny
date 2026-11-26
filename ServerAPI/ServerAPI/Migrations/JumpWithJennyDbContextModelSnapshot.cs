@@ -141,6 +141,9 @@ namespace ServerAPI.Migrations
                         .HasMaxLength(128)
                         .HasColumnType("character varying(128)");
 
+                    b.Property<DateTime?>("CancelledAt")
+                        .HasColumnType("timestamp without time zone");
+
                     b.Property<int?>("CardType")
                         .HasColumnType("integer");
 
@@ -160,6 +163,9 @@ namespace ServerAPI.Migrations
                         .HasColumnType("character varying(120)");
 
                     b.Property<bool>("IsAttended")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("IsCancelled")
                         .HasColumnType("boolean");
 
                     b.Property<bool>("IsConfirmed")
@@ -201,6 +207,8 @@ namespace ServerAPI.Migrations
                     b.HasIndex("ShoeId");
 
                     b.HasIndex("UserId");
+
+                    b.HasIndex("IsCancelled", "CancelledAt");
 
                     b.HasIndex("NormalizedEmail", "IsDeleted");
 
@@ -515,6 +523,10 @@ namespace ServerAPI.Migrations
                     b.Property<string>("Time")
                         .IsRequired()
                         .HasColumnType("text");
+
+                    b.Property<string>("TrainerNote")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
 
                     b.Property<uint>("xmin")
                         .IsConcurrencyToken()

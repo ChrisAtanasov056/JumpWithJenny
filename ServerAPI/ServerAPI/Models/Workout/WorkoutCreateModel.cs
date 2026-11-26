@@ -1,3 +1,5 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace ServerAPI.ViewModels
 {
     public class WorkoutCreateModel
@@ -8,6 +10,9 @@ namespace ServerAPI.ViewModels
         public string Status { get; set; }
         public int AvailableSpots { get; set; }
 
-        public DateTime Date { get; set; } 
+        public DateTime Date { get; set; }
+
+        [MaxLength(200)]
+        public string TrainerNote { get; set; }
     }
 }

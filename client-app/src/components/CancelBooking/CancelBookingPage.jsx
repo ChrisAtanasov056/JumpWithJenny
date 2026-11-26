@@ -140,6 +140,16 @@ const CancelBookingPage = () => {
               <p>{t('cancelBooking.subtitle')}</p>
             </div>
 
+            {details.TrainerNote && (
+              <div className="cancel-trainer-note" role="note">
+                <span aria-hidden="true">💬</span>
+                <div>
+                  <strong>{t('cancelBooking.trainerNoteLabel')}</strong>
+                  <p>{details.TrainerNote}</p>
+                </div>
+              </div>
+            )}
+
             <div className="booking-summary">
               <div className="summary-row">
                 <span className="summary-label">{t('cancelBooking.participantLabel')}</span>

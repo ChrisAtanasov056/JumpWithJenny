@@ -38,6 +38,50 @@
     }
   }
 
+  .hub-trainer-note-card {
+    padding: 14px 18px;
+    background: linear-gradient(135deg, #fffef6 0%, #fff6d6 100%);
+    border-color: #fde68a;
+
+    .hub-note-display {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .hub-note-bubble {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      color: var(--adm-navy);
+      font-size: 0.94rem;
+      line-height: 1.4;
+    }
+
+    .hub-note-form {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+
+      .note-form-top {
+        display: flex;
+        justify-content: space-between;
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: var(--adm-navy);
+      }
+
+      .note-form-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 8px;
+        flex-wrap: wrap;
+      }
+    }
+  }
+
   .hub-summary-grid {
     display: grid;
     grid-template-columns: 1fr 1.6fr;
@@ -372,7 +416,51 @@
 
 @media (max-width: 960px) {
   .workout-hub-page {
-    .hub-summary-grid {
+    .hub-trainer-note-card {
+    padding: 14px 18px;
+    background: linear-gradient(135deg, #fffef6 0%, #fff6d6 100%);
+    border-color: #fde68a;
+
+    .hub-note-display {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .hub-note-bubble {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      color: var(--adm-navy);
+      font-size: 0.94rem;
+      line-height: 1.4;
+    }
+
+    .hub-note-form {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+
+      .note-form-top {
+        display: flex;
+        justify-content: space-between;
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: var(--adm-navy);
+      }
+
+      .note-form-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 8px;
+        flex-wrap: wrap;
+      }
+    }
+  }
+
+  .hub-summary-grid {
       grid-template-columns: 1fr;
     }
   }

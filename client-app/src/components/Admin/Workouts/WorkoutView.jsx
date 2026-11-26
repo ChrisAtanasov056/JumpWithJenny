@@ -44,6 +44,9 @@ const WorkoutView = () => {
   const [isRemoving, setIsRemoving] = useState(false);
   const [updatingStatus, setUpdatingStatus] = useState(false);
   const [duplicating, setDuplicating] = useState(false);
+  const [editingNote, setEditingNote] = useState(false);
+  const [noteDraft, setNoteDraft] = useState('');
+  const [savingNote, setSavingNote] = useState(false);
 
   const fetchWorkout = useCallback(async () => {
     setLoading(true);
@@ -113,6 +116,7 @@ const WorkoutView = () => {
         Date: `${parts.datePart}T${workout.Time || parts.timePart}:00`,
         Status: nextStatus,
         AvailableSpots: workout.AvailableSpots,
+        TrainerNote: workout.TrainerNote || null,
       });
       setWorkout((prev) => (prev ? { ...prev, Status: nextStatus } : prev));
       toast.success(t('admin.workouts.view.statusUpdated'));
@@ -121,6 +125,38 @@ const WorkoutView = () => {
       toast.error(msg || t('admin.workouts.view.statusUpdateError'));
     } finally {
       setUpdatingStatus(false);
+    }
+  };
+
+  const handleOpenNoteEditor = () => {
+    setNoteDraft(workout?.TrainerNote || '');
+    setEditingNote(true);
+  };
+
+  const handleSaveNote = async (e) => {
+    e.preventDefault();
+    if (!workout) return;
+    setSavingNote(true);
+    try {
+      const parts = getSofiaDateParts(workout.Date);
+      const trimmed = noteDraft.trim() || null;
+      await WorkoutService.updateWorkout(workout.Id, {
+        Id: workout.Id,
+        Day: workout.Day || parts.dayName,
+        Time: workout.Time || parts.timePart,
+        Date: `${parts.datePart}T${workout.Time || parts.timePart}:00`,
+        Status: workout.Status,
+        AvailableSpots: workout.AvailableSpots,
+        TrainerNote: trimmed,
+      });
+      setWorkout((prev) => (prev ? { ...prev, TrainerNote: trimmed } : prev));
+      setEditingNote(false);
+      toast.success(t('admin.workouts.saveNoteSuccess'));
+    } catch (err) {
+      const msg = err?.response?.data?.message || err?.message;
+      toast.error(msg || t('admin.workouts.saveNoteError'));
+    } finally {
+      setSavingNote(false);
     }
   };
 
@@ -280,6 +316,14 @@ const WorkoutView = () => {
             <FaCopy aria-hidden="true" /> {t('admin.workouts.duplicateBtn')}
           </button>
 
+          <button
+            type="button"
+            className="adm-btn adm-btn--secondary"
+            onClick={handleOpenNoteEditor}
+          >
+            💬 {workout.TrainerNote ? t('admin.workouts.editNoteBtn') : t('admin.workouts.addNoteBtn')}
+          </button>
+
           <Link to={`/admin/workouts/${workout.Id}`} className="adm-btn adm-btn--secondary">
             <FaEdit aria-hidden="true" /> {t('admin.workouts.view.editWorkoutBtn')}
           </Link>
@@ -301,6 +345,72 @@ const WorkoutView = () => {
           </button>
         </div>
       </div>
+
+      {(workout.TrainerNote || editingNote) && (
+        <section className="adm-card hub-trainer-note-card no-print">
+          {editingNote ? (
+            <form onSubmit={handleSaveNote} className="hub-note-form">
+              <div className="note-form-top">
+                <label htmlFor="hub-trainer-note-input">{t('admin.workouts.trainerNoteLabel')}</label>
+                <span className="tabular-nums">{noteDraft.length} / 200</span>
+              </div>
+              <textarea
+                id="hub-trainer-note-input"
+                className="adm-input"
+                rows={2}
+                maxLength={200}
+                placeholder={t('admin.workouts.trainerNotePlaceholder')}
+                value={noteDraft}
+                onChange={(e) => setNoteDraft(e.target.value)}
+              />
+              <div className="note-form-actions">
+                {noteDraft.trim() && (
+                  <button
+                    type="button"
+                    className="adm-btn adm-btn--ghost adm-btn--sm"
+                    onClick={() => setNoteDraft('')}
+                    disabled={savingNote}
+                  >
+                    {t('admin.workouts.trainerNoteClear')}
+                  </button>
+                )}
+                <button
+                  type="button"
+                  className="adm-btn adm-btn--secondary adm-btn--sm"
+                  onClick={() => setEditingNote(false)}
+                  disabled={savingNote}
+                >
+                  {t('admin.common.cancel')}
+                </button>
+                <button
+                  type="submit"
+                  className="adm-btn adm-btn--primary adm-btn--sm"
+                  disabled={savingNote}
+                >
+                  {savingNote ? t('admin.common.saving') : t('admin.common.save')}
+                </button>
+              </div>
+            </form>
+          ) : (
+            <div className="hub-note-display">
+              <div className="hub-note-bubble">
+                <span aria-hidden="true">💬</span>
+                <div>
+                  <strong>{t('bookingForm.trainerNoteLabel')}:</strong>{' '}
+                  <span>{workout.TrainerNote}</span>
+                </div>
+              </div>
+              <button
+                type="button"
+                className="adm-btn adm-btn--secondary adm-btn--sm"
+                onClick={handleOpenNoteEditor}
+              >
+                <FaEdit aria-hidden="true" /> {t('admin.workouts.editNoteBtn')}
+              </button>
+            </div>
+          )}
+        </section>
+      )}
 
       {/* Summary + Shoes Row */}
       <div className="hub-summary-grid">
