@@ -39,6 +39,7 @@
                 new WorkoutSeeder(),
                 new AccountSeeder(),
                 new ImageSeeder(),
+                new ReviewSeeder(),
             }; 
 
             // Execute each seeder

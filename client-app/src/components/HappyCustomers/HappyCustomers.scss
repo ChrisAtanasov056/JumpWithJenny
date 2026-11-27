@@ -26,9 +26,10 @@
   width: 100%;
   aspect-ratio: 0.88;
   border-radius: 50% 50% 48% 48% / 44% 44% 56% 56%;
-  padding: 34px 26px 28px;
+  padding: 28px 24px 24px;
   display: grid;
   place-content: center;
+  justify-items: center;
   text-align: center;
   position: relative;
   color: #ffffff;
@@ -60,21 +61,37 @@
   color: var(--alt-sun);
   font-size: 0.85rem;
   letter-spacing: 2px;
-  margin-bottom: 8px;
+  margin-bottom: 6px;
 }
 
 .balloon-quote {
   margin: 0;
-  font-size: 0.92rem;
-  line-height: 1.38;
+  font-size: 0.88rem;
+  line-height: 1.34;
   color: #ffffff;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .balloon-author {
   display: block;
-  margin-top: 10px;
-  font-size: 0.82rem;
+  margin-top: 8px;
+  font-size: 0.8rem;
   opacity: 0.92;
+}
+
+.balloon-source-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 6px;
+  padding: 2px 9px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.18);
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: #ffffff;
 }
 
 .balloon-knot {
@@ -95,34 +112,71 @@
   animation-delay: calc(var(--k) * -0.9s);
 }
 
-.balloons-actions {
-  display: flex;
-  justify-content: center;
-  margin-top: 26px;
+.balloons-empty {
+  text-align: center;
+  color: rgba(255, 255, 255, 0.88);
+  font-size: 1rem;
+  margin: 12px 0 0;
 }
 
-.balloons-toggle-btn {
-  padding: 12px 24px;
+.balloons-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+  margin-top: 28px;
+}
+
+.balloons-toggle-btn,
+.balloons-cta-btn,
+.balloons-google-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 46px;
+  padding: 11px 22px;
   border-radius: 999px;
+  font-family: 'Golos Text', sans-serif;
+  font-weight: 600;
+  font-size: 0.94rem;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background-color 180ms ease, transform 150ms ease, box-shadow 180ms ease;
+
+  &:active {
+    transform: scale(0.97);
+  }
+}
+
+.balloons-toggle-btn,
+.balloons-google-btn {
   border: 1px solid rgba(255, 255, 255, 0.36);
   background: rgba(255, 255, 255, 0.14);
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
   color: #ffffff;
-  font-family: 'Golos Text', sans-serif;
-  font-weight: 600;
-  font-size: 0.94rem;
-  cursor: pointer;
-  transition: background-color 180ms ease, transform 150ms ease;
 
   @media (hover: hover) and (pointer: fine) {
     &:hover {
       background: rgba(255, 255, 255, 0.24);
+      color: #ffffff;
     }
   }
+}
 
-  &:active {
-    transform: scale(0.97);
+.balloons-cta-btn {
+  border: 0;
+  background: var(--alt-coral, #ff6a3d);
+  color: #ffffff;
+  font-weight: 700;
+  box-shadow: 0 12px 28px rgba(255, 106, 61, 0.34);
+
+  @media (hover: hover) and (pointer: fine) {
+    &:hover {
+      background: #ff7f58;
+    }
   }
 }
 
@@ -144,6 +198,17 @@
 @media (max-width: 700px) {
   .balloon-item {
     margin-top: 0;
+  }
+
+  .balloons-actions {
+    flex-direction: column;
+    align-items: stretch;
+
+    .balloons-toggle-btn,
+    .balloons-cta-btn,
+    .balloons-google-btn {
+      width: 100%;
+    }
   }
 }
 

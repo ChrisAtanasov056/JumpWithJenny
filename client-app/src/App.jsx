@@ -31,6 +31,7 @@ const AdminWorkoutsList = lazy(() => import('./components/Admin/Workouts/AdminWo
 const WorkoutForm = lazy(() => import('./components/Admin/Workouts/WorkoutForm'));
 const WorkoutView = lazy(() => import('./components/Admin/Workouts/WorkoutView'));
 const PhotosManagement = lazy(() => import('./components/Admin/PhotosManagement/PhotosManagement'));
+const AdminReviewsList = lazy(() => import('./components/Admin/Reviews/AdminReviewsList'));
 const AdminShoesList = lazy(() => import('./components/Admin/Shoes/AdminShoesList'));
 const AdminShoeForm = lazy(() => import('./components/Admin/Shoes/AdminShoeForm'));
 const ShoeDetailsView = lazy(() => import('./components/Admin/Shoes/ShoeDetailsView'));
@@ -184,6 +185,7 @@ const AppContent = () => {
         <Route path="workouts/:id" element={<WorkoutForm />} />
         <Route path="workouts/:id/view" element={<WorkoutView />} />
         <Route path="photos" element={<PhotosManagement />} />
+        <Route path="reviews" element={<AdminReviewsList />} />
         <Route path="shoes" element={<AdminShoesList />} />
         <Route path="shoes/new" element={<AdminShoeForm />} />
         <Route path="shoes/:id" element={<AdminShoeForm />} />

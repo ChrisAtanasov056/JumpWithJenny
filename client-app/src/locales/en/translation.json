@@ -429,6 +429,7 @@
             "clients": "Clients",
             "shoes": "Shoes",
             "photos": "Gallery",
+            "reviews": "Reviews",
             "users": "Administrators",
             "signedInAs": "Signed in as",
             "backToSite": "Back to Main Site",
@@ -903,6 +904,95 @@
                 "warning": "It will immediately disappear from the public website.",
                 "confirm": "Delete Photo"
             }
+        },
+        "reviews": {
+            "title": "Customer Reviews",
+            "subtitle": "Moderate on-site reviews and add reviews imported from Google.",
+            "addButton": "+ Add Review",
+            "loading": "Loading reviews...",
+            "loadError": "Failed to load reviews. Please try again.",
+            "searchPlaceholder": "Search by author or comment...",
+            "emptyAll": "No reviews added yet.",
+            "emptyFiltered": "No reviews match your current filters.",
+            "tabs": {
+                "all": "All",
+                "pending": "Pending",
+                "approved": "Approved",
+                "rejected": "Rejected"
+            },
+            "status": {
+                "Pending": "Pending",
+                "Approved": "Approved",
+                "Rejected": "Rejected"
+            },
+            "source": {
+                "Site": "Site",
+                "Google": "Google",
+                "Admin": "Admin"
+            },
+            "actions": {
+                "approve": "Approve",
+                "reject": "Hide",
+                "edit": "Edit",
+                "delete": "Delete"
+            },
+            "toasts": {
+                "approved": "Review approved and published.",
+                "rejected": "Review hidden.",
+                "created": "Review added successfully.",
+                "updated": "Review updated successfully.",
+                "deleted": "Review deleted.",
+                "actionError": "Failed to save changes."
+            },
+            "form": {
+                "createTitle": "Add Review",
+                "editTitle": "Edit Review",
+                "authorLabel": "Client Name",
+                "authorPlaceholder": "e.g. Maria Ivanova",
+                "ratingLabel": "Rating",
+                "commentLabel": "Comment",
+                "commentPlaceholder": "Write the review (up to 200 characters)...",
+                "sourceLabel": "Source",
+                "statusLabel": "Status",
+                "save": "Save Changes",
+                "create": "Add Review",
+                "errorAuthor": "Name must be between 2 and 80 characters.",
+                "errorComment": "Comment must be between 10 and 200 characters."
+            },
+            "deleteModal": {
+                "title": "Delete Review",
+                "prompt": "Are you sure you want to delete the review by \"{{name}}\"?",
+                "warning": "It will immediately disappear from the website.",
+                "confirm": "Delete Review"
+            }
+        }
+    },
+    "reviewModal": {
+        "eyebrow": "Share your experience",
+        "title": "Leave a Review",
+        "subtitle": "Tell others in a few words how your workout with Jenny went.",
+        "ratingLabel": "Your rating",
+        "starAria": "{{count}} out of 5 stars",
+        "nameLabel": "Your name",
+        "namePlaceholder": "e.g. Maria I.",
+        "commentLabel": "Your review",
+        "commentPlaceholder": "Share how you felt during the class...",
+        "charCount": "{{current}} / {{max}}",
+        "moderationHint": "Your review will appear on the website after approval.",
+        "submit": "Submit Review",
+        "submitting": "Submitting...",
+        "successTitle": "Thank you for your review!",
+        "successMessage": "Your review has been submitted and will appear on the site right after approval.",
+        "googlePrompt": "If you have 30 seconds, support us with a review on Google too:",
+        "googleButton": "Review us on Google",
+        "close": "Close",
+        "errors": {
+            "INVALID_AUTHOR_NAME": "Please enter a name between 2 and 80 characters.",
+            "INVALID_COMMENT": "Please write a review between 10 and 200 characters.",
+            "INVALID_RATING": "Please choose a rating from 1 to 5 stars.",
+            "LINKS_NOT_ALLOWED": "Links are not allowed in reviews.",
+            "RATE_LIMITED": "Too many reviews submitted. Please try again later.",
+            "GENERIC": "We couldn't submit your review. Please try again."
         }
     },
     "altitude": {
@@ -961,7 +1051,11 @@
         },
         "reviews": {
             "showMore": "Show more reviews",
-            "showLess": "Show fewer"
+            "showLess": "Show fewer",
+            "leaveReview": "Leave a review",
+            "googleReviewCta": "Review us on Google",
+            "emptyState": "No reviews yet. Be the first!",
+            "googleBadge": "Google"
         },
         "workoutMetrics": {
             "title": "The Workout in Numbers",

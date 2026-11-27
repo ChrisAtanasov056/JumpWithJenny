@@ -9,6 +9,7 @@ import {
   FaUserFriends,
   FaShoePrints,
   FaImages,
+  FaStar,
   FaUserShield,
   FaExternalLinkAlt,
   FaSignOutAlt,
@@ -17,6 +18,7 @@ import {
 } from 'react-icons/fa';
 import { useAuth } from '../../services/AuthContext';
 import useModalAccessibility from '../../services/useModalAccessibility';
+import { getPendingReviewsCount, REVIEWS_CHANGED_EVENT } from '../../services/ReviewService';
 import 'react-toastify/dist/ReactToastify.css';
 import './shared/admin-tokens.scss';
 import './AdminLayout.scss';
@@ -27,13 +29,29 @@ const AdminLayout = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [pendingReviewsCount, setPendingReviewsCount] = useState(0);
   const drawerRef = useRef(null);
 
   const closeDrawer = useCallback(() => setDrawerOpen(false), []);
 
+  const refreshPendingReviews = useCallback(async () => {
+    try {
+      const count = await getPendingReviewsCount();
+      setPendingReviewsCount(count);
+    } catch {
+      // Non-blocking badge fetch
+    }
+  }, []);
+
   useEffect(() => {
     setDrawerOpen(false);
-  }, [location.pathname]);
+    refreshPendingReviews();
+  }, [location.pathname, refreshPendingReviews]);
+
+  useEffect(() => {
+    window.addEventListener(REVIEWS_CHANGED_EVENT, refreshPendingReviews);
+    return () => window.removeEventListener(REVIEWS_CHANGED_EVENT, refreshPendingReviews);
+  }, [refreshPendingReviews]);
 
   useModalAccessibility({
     isOpen: drawerOpen,
@@ -53,6 +71,7 @@ const AdminLayout = () => {
     { to: '/admin/clients', icon: <FaUserFriends aria-hidden="true" />, label: t('admin.sidebar.clients') },
     { to: '/admin/shoes', icon: <FaShoePrints aria-hidden="true" />, label: t('admin.sidebar.shoes') },
     { to: '/admin/photos', icon: <FaImages aria-hidden="true" />, label: t('admin.sidebar.photos') },
+    { to: '/admin/reviews', icon: <FaStar aria-hidden="true" />, label: t('admin.sidebar.reviews'), badge: pendingReviewsCount },
     { to: '/admin/users', icon: <FaUserShield aria-hidden="true" />, label: t('admin.sidebar.users') },
   ];
 
@@ -95,7 +114,10 @@ const AdminLayout = () => {
                 onClick={isMobileDrawer ? closeDrawer : undefined}
               >
                 <span className="nav-icon">{item.icon}</span>
-                <span>{item.label}</span>
+                <span className="nav-label">{item.label}</span>
+                {item.badge > 0 && (
+                  <span className="nav-badge tabular-nums">{item.badge}</span>
+                )}
               </NavLink>
             </li>
           ))}

@@ -35,6 +35,8 @@
 
         public DbSet<RefreshToken> RefreshTokens { get; set; }
 
+        public DbSet<Review> Reviews { get; set; }
+
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
@@ -138,6 +140,9 @@
 
             builder.Entity<ImageModel>()
                 .HasIndex(i => i.CreatedAt);
+
+            builder.Entity<Review>()
+                .HasIndex(r => new { r.IsDeleted, r.Status, r.CreatedOn });
 
             builder.Entity<IdentityUserRole<string>>(entity =>
             {

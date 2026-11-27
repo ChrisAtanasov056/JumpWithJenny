@@ -1,0 +1,343 @@
+.review-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1250;
+  background: rgba(8, 14, 34, 0.72);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.review-modal-sheet {
+  position: relative;
+  width: min(500px, 100%);
+  max-height: min(92dvh, 780px);
+  display: flex;
+  flex-direction: column;
+  background: #ffffff;
+  color: #10204a;
+  border-radius: 28px;
+  box-shadow: 0 32px 80px rgba(8, 14, 34, 0.45);
+  overflow: hidden;
+}
+
+.review-modal-close {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  border: 0;
+  background: rgba(16, 32, 74, 0.08);
+  color: #10204a;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  z-index: 2;
+  transition: background-color 160ms ease, transform 160ms ease;
+
+  @media (hover: hover) and (pointer: fine) {
+    &:hover {
+      background: rgba(16, 32, 74, 0.16);
+    }
+  }
+
+  &:active {
+    transform: scale(0.94);
+  }
+}
+
+.review-modal-header {
+  padding: 24px 56px 18px 26px;
+  border-bottom: 1px solid rgba(16, 32, 74, 0.1);
+  background: linear-gradient(135deg, rgba(47, 125, 225, 0.09), rgba(255, 106, 61, 0.08));
+
+  &__eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: #ff6a3d;
+    margin-bottom: 6px;
+  }
+
+  h2 {
+    margin: 0;
+    font-family: 'Rubik', sans-serif;
+    font-weight: 800;
+    font-size: 1.5rem;
+    line-height: 1.15;
+    color: #10204a;
+  }
+
+  &__subtitle {
+    margin: 6px 0 0;
+    font-size: 0.9rem;
+    color: rgba(16, 32, 74, 0.72);
+    line-height: 1.4;
+  }
+}
+
+.review-modal-body {
+  padding: 20px 26px 26px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+
+  form {
+    display: grid;
+    gap: 15px;
+  }
+}
+
+.review-modal-field {
+  display: grid;
+  gap: 6px;
+
+  input,
+  textarea {
+    width: 100%;
+    padding: 11px 14px;
+    border-radius: 14px;
+    border: 1.5px solid rgba(16, 32, 74, 0.18);
+    background: #f8faff;
+    color: #10204a;
+    font-family: 'Golos Text', sans-serif;
+    font-size: 1rem;
+    transition: border-color 180ms ease, background-color 180ms ease;
+
+    &:focus {
+      outline: none;
+      border-color: #ff6a3d;
+      background: #ffffff;
+    }
+  }
+
+  input {
+    min-height: 46px;
+  }
+
+  textarea {
+    resize: vertical;
+    min-height: 108px;
+    line-height: 1.45;
+  }
+}
+
+.review-modal-label-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.review-modal-label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: rgba(16, 32, 74, 0.84);
+}
+
+.review-modal-counter {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: rgba(16, 32, 74, 0.56);
+  font-variant-numeric: tabular-nums;
+}
+
+.review-modal-stars {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.review-star-btn {
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  border: 1.5px solid rgba(16, 32, 74, 0.14);
+  background: #f8faff;
+  color: rgba(16, 32, 74, 0.24);
+  display: grid;
+  place-items: center;
+  font-size: 1.2rem;
+  cursor: pointer;
+  transition: transform 140ms ease, color 140ms ease, background-color 140ms ease, border-color 140ms ease;
+
+  &.is-filled {
+    color: #f59e0b;
+    background: rgba(255, 210, 63, 0.16);
+    border-color: rgba(245, 158, 11, 0.45);
+  }
+
+  &:active {
+    transform: scale(0.92);
+  }
+
+  &:focus-visible {
+    outline: 2px solid #ff6a3d;
+    outline-offset: 2px;
+  }
+}
+
+.review-modal-honeypot {
+  position: absolute;
+  left: -9999px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.review-modal-hint {
+  margin: 0;
+  font-size: 0.84rem;
+  color: rgba(16, 32, 74, 0.68);
+  line-height: 1.4;
+}
+
+.review-modal-error {
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: rgba(231, 76, 60, 0.12);
+  border: 1px solid rgba(231, 76, 60, 0.35);
+  color: #a92d20;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.review-modal-primary-btn,
+.review-modal-secondary-btn,
+.review-modal-google-btn {
+  width: 100%;
+  min-height: 48px;
+  border: 0;
+  border-radius: 999px;
+  font-family: 'Golos Text', sans-serif;
+  font-weight: 700;
+  font-size: 1rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  text-decoration: none;
+  cursor: pointer;
+  transition: transform 160ms ease, background-color 180ms ease;
+
+  &:active:not(:disabled) {
+    transform: scale(0.97);
+  }
+
+  &:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+  }
+}
+
+.review-modal-primary-btn {
+  background: #ff6a3d;
+  color: #ffffff;
+
+  @media (hover: hover) and (pointer: fine) {
+    &:hover:not(:disabled) {
+      background: #ff7f58;
+    }
+  }
+}
+
+.review-modal-secondary-btn {
+  background: rgba(16, 32, 74, 0.08);
+  color: #10204a;
+
+  @media (hover: hover) and (pointer: fine) {
+    &:hover {
+      background: rgba(16, 32, 74, 0.14);
+    }
+  }
+}
+
+.review-modal-google-btn {
+  background: #10204a;
+  color: #ffffff;
+
+  @media (hover: hover) and (pointer: fine) {
+    &:hover {
+      background: #192d63;
+    }
+  }
+}
+
+.review-modal-success {
+  text-align: center;
+  display: grid;
+  gap: 14px;
+  justify-items: center;
+  padding: 8px 0 4px;
+
+  &__icon {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: rgba(13, 159, 110, 0.14);
+    color: #0d9f6e;
+    display: grid;
+    place-items: center;
+    font-size: 1.5rem;
+  }
+
+  h3 {
+    margin: 0;
+    font-family: 'Rubik', sans-serif;
+    font-weight: 700;
+    font-size: 1.25rem;
+    color: #10204a;
+  }
+
+  p {
+    margin: 0;
+    font-size: 0.94rem;
+    color: rgba(16, 32, 74, 0.76);
+    line-height: 1.45;
+  }
+}
+
+.review-modal-google-card {
+  width: 100%;
+  padding: 14px 16px;
+  border-radius: 18px;
+  background: linear-gradient(135deg, rgba(47, 125, 225, 0.08), rgba(255, 210, 63, 0.14));
+  border: 1px solid rgba(16, 32, 74, 0.12);
+  display: grid;
+  gap: 10px;
+
+  p {
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: #10204a;
+  }
+}
+
+@media (max-width: 640px) {
+  .review-modal-overlay {
+    align-items: flex-end;
+    padding: 0;
+  }
+
+  .review-modal-sheet {
+    width: 100%;
+    max-height: 94dvh;
+    border-radius: 26px 26px 0 0;
+  }
+
+  .review-modal-header {
+    padding: 22px 52px 16px 20px;
+  }
+
+  .review-modal-body {
+    padding: 18px 20px calc(24px + env(safe-area-inset-bottom));
+  }
+}

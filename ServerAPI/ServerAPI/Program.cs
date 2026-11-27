@@ -17,6 +17,7 @@ using ServerAPI.Services;
 using ServerAPI.Services.Admin;
 using ServerAPI.Services.AuthService;
 using ServerAPI.Services.Contacts;
+using ServerAPI.Services.Reviews;
 using ServerAPI.Services.Schedule;
 using ServerAPI.Services.Users;
 using ServerAPI.Services.Workouts;
@@ -154,6 +155,16 @@ public partial class Program
                         Window = TimeSpan.FromMinutes(1),
                         QueueLimit = 0
                     }));
+
+            options.AddPolicy("ReviewPolicy", httpContext =>
+                RateLimitPartition.GetFixedWindowLimiter(
+                    partitionKey: httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+                    factory: _ => new FixedWindowRateLimiterOptions
+                    {
+                        PermitLimit = 3,
+                        Window = TimeSpan.FromMinutes(15),
+                        QueueLimit = 0
+                    }));
         });
 
         services.AddProblemDetails(options =>
@@ -263,6 +274,7 @@ public partial class Program
         services.AddScoped<IContactService, ContactService>();
         services.AddScoped<IShoesService, ShoesService>();
         services.AddScoped<IAdminInsightsService, AdminInsightsService>();
+        services.AddScoped<IReviewService, ReviewService>();
 
         // Swagger
         services.AddEndpointsApiExplorer();
