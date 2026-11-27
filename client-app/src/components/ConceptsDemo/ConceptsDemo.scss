@@ -187,11 +187,6 @@
     .bento-slot-card {
       background: rgba(22, 28, 44, 0.82);
       backdrop-filter: blur(12px);
-      border-left: 3px solid rgba(129, 140, 248, 0.55);
-
-      &.is-registered {
-        border-left-color: var(--accent-avail);
-      }
     }
 
     .day-pill.is-active {
@@ -745,8 +740,6 @@
 
   .about-quote {
     margin: 0 0 26px;
-    padding-left: 16px;
-    border-left: 3px solid var(--accent-primary);
     font-weight: 600;
     font-size: 1.02rem;
     line-height: 1.5;

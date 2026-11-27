@@ -129,7 +129,7 @@ namespace ServerAPI.Services
                 </table>";
 
             var trainerNoteBlock = !string.IsNullOrWhiteSpace(model.TrainerNote)
-                ? $@"<div style='background-color: #fffbeb; border-left: 4px solid #ff6a3d; padding: 12px 14px; border-radius: 6px; margin: 16px 0; color: #10204a;'>
+                ? $@"<div style='background-color: #fffbeb; border: 1px solid #fde68a; padding: 12px 14px; border-radius: 8px; margin: 16px 0; color: #10204a;'>
                         <strong>{WebUtility.HtmlEncode(Text("TrainerNoteLabel"))}:</strong> {WebUtility.HtmlEncode(model.TrainerNote.Trim())}
                     </div>"
                 : string.Empty;
