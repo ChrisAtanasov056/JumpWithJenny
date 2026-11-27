@@ -1,0 +1,574 @@
+.jwj-cookie-banner {
+  position: fixed;
+  left: 50%;
+  bottom: max(18px, env(safe-area-inset-bottom));
+  transform: translateX(-50%);
+  width: min(780px, calc(100% - 28px));
+  z-index: 1150;
+  padding: 18px 20px;
+  border-radius: 26px;
+  background: rgba(16, 28, 64, 0.88);
+  backdrop-filter: blur(22px) saturate(1.4);
+  -webkit-backdrop-filter: blur(22px) saturate(1.4);
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  box-shadow: 0 24px 60px rgba(8, 14, 34, 0.46);
+  color: #ffffff;
+  display: grid;
+  gap: 14px;
+  animation: jwjCookieBannerEnter 260ms var(--alt-ease-out, cubic-bezier(0.23, 1, 0.32, 1)) both;
+
+  &__content {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+  }
+
+  &__badge {
+    flex: none;
+    width: 42px;
+    height: 42px;
+    border-radius: 14px;
+    background: linear-gradient(135deg, rgba(255, 210, 63, 0.22), rgba(255, 106, 61, 0.24));
+    border: 1px solid rgba(255, 210, 63, 0.4);
+    color: var(--alt-sun, #ffd23f);
+    display: grid;
+    place-items: center;
+    font-size: 1.2rem;
+  }
+
+  &__copy {
+    min-width: 0;
+  }
+
+  &__title {
+    margin: 0 0 4px;
+    font-family: 'Rubik', 'Golos Text', sans-serif;
+    font-weight: 800;
+    font-size: 1.06rem;
+    line-height: 1.25;
+    color: #ffffff;
+  }
+
+  &__text {
+    margin: 0;
+    font-size: 0.9rem;
+    line-height: 1.48;
+    color: rgba(255, 255, 255, 0.88);
+  }
+
+  &__link {
+    color: var(--alt-sun, #ffd23f);
+    font-weight: 600;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+
+    @media (hover: hover) and (pointer: fine) {
+      &:hover {
+        color: #ffffff;
+      }
+    }
+  }
+
+  &__actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 10px;
+  }
+}
+
+.jwj-cookie-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  min-height: 42px;
+  padding: 10px 18px;
+  border-radius: 999px;
+  font-family: 'Golos Text', sans-serif;
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: transform 160ms var(--alt-ease-out, cubic-bezier(0.23, 1, 0.32, 1)),
+    background-color 180ms var(--alt-ease-out, cubic-bezier(0.23, 1, 0.32, 1)),
+    border-color 180ms var(--alt-ease-out, cubic-bezier(0.23, 1, 0.32, 1));
+
+  &:active {
+    transform: scale(0.97);
+  }
+
+  &--primary {
+    border: 0;
+    background: var(--alt-coral, #ff6a3d);
+    color: #ffffff;
+
+    @media (hover: hover) and (pointer: fine) {
+      &:hover {
+        background: var(--alt-coral-hover, #ff7f58);
+        transform: translateY(-1px);
+      }
+    }
+  }
+
+  &--secondary {
+    border: 1px solid rgba(255, 255, 255, 0.38);
+    background: rgba(255, 255, 255, 0.14);
+    color: #ffffff;
+
+    @media (hover: hover) and (pointer: fine) {
+      &:hover {
+        background: rgba(255, 255, 255, 0.24);
+        transform: translateY(-1px);
+      }
+    }
+  }
+
+  &--ghost {
+    border: 1px solid rgba(255, 255, 255, 0.22);
+    background: transparent;
+    color: rgba(255, 255, 255, 0.92);
+    margin-right: auto;
+
+    @media (hover: hover) and (pointer: fine) {
+      &:hover {
+        background: rgba(255, 255, 255, 0.12);
+        color: #ffffff;
+      }
+    }
+  }
+}
+
+@keyframes jwjCookieBannerEnter {
+  from {
+    opacity: 0;
+    transform: translate(-50%, 16px);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+}
+
+@keyframes jwjCookieBannerFade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Native top-layer <dialog> preferences modal */
+.jwj-cookie-dialog {
+  margin: auto;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  width: min(560px, calc(100vw - 24px));
+  max-width: 100%;
+  max-height: min(90dvh, 760px);
+  color: #10204a;
+  overflow: visible;
+  opacity: 0;
+  transition-property: opacity, transform, display, overlay;
+  transition-duration: 240ms;
+  transition-timing-function: var(--alt-ease-out, cubic-bezier(0.23, 1, 0.32, 1));
+  transition-behavior: allow-discrete;
+
+  @media (prefers-reduced-motion: no-preference) {
+    transform: translateY(10px) scale(0.96);
+  }
+
+  &:modal {
+    overscroll-behavior: contain;
+  }
+
+  &::backdrop {
+    background-color: rgba(8, 14, 34, 0);
+    backdrop-filter: blur(0px);
+    -webkit-backdrop-filter: blur(0px);
+    overflow: hidden;
+    overscroll-behavior: contain;
+    transition-property: background-color, backdrop-filter, display, overlay;
+    transition-duration: 240ms;
+    transition-timing-function: var(--alt-ease-out, cubic-bezier(0.23, 1, 0.32, 1));
+    transition-behavior: allow-discrete;
+  }
+
+  &[open] {
+    display: flex;
+    flex-direction: column;
+  }
+
+  &[open]:not([data-closing]) {
+    opacity: 1;
+
+    @starting-style {
+      opacity: 0;
+    }
+
+    @media (prefers-reduced-motion: no-preference) {
+      transform: translateY(0) scale(1);
+
+      @starting-style {
+        transform: translateY(10px) scale(0.96);
+      }
+    }
+
+    &::backdrop {
+      background-color: rgba(8, 14, 34, 0.72);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+
+      @starting-style {
+        background-color: rgba(8, 14, 34, 0);
+        backdrop-filter: blur(0px);
+        -webkit-backdrop-filter: blur(0px);
+      }
+    }
+  }
+
+  &__sheet {
+    position: relative;
+    width: 100%;
+    max-height: min(90dvh, 760px);
+    display: flex;
+    flex-direction: column;
+    background: #ffffff;
+    color: #10204a;
+    border-radius: 28px;
+    box-shadow: 0 32px 80px rgba(8, 14, 34, 0.45);
+    overflow: hidden;
+  }
+
+  &__close {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    border: 0;
+    background: rgba(16, 32, 74, 0.08);
+    color: #10204a;
+    display: grid;
+    place-items: center;
+    cursor: pointer;
+    z-index: 2;
+    transition: background-color 160ms var(--alt-ease-out, cubic-bezier(0.23, 1, 0.32, 1)),
+      transform 160ms var(--alt-ease-out, cubic-bezier(0.23, 1, 0.32, 1));
+
+    @media (hover: hover) and (pointer: fine) {
+      &:hover {
+        background: rgba(16, 32, 74, 0.16);
+      }
+    }
+
+    &:active {
+      transform: scale(0.94);
+    }
+
+    &:focus-visible {
+      outline: 3px solid #10204a;
+      outline-offset: 2px;
+    }
+  }
+
+  &__header {
+    padding: 24px 56px 18px 26px;
+    border-bottom: 1px solid rgba(16, 32, 74, 0.1);
+    background: linear-gradient(135deg, rgba(47, 125, 225, 0.09), rgba(255, 106, 61, 0.08));
+  }
+
+  &__eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: #ff6a3d;
+    margin-bottom: 6px;
+  }
+
+  &__title {
+    margin: 0;
+    font-family: 'Rubik', 'Golos Text', sans-serif;
+    font-weight: 800;
+    font-size: 1.48rem;
+    line-height: 1.15;
+    color: #10204a;
+  }
+
+  &__subtitle {
+    margin: 6px 0 0;
+    font-size: 0.92rem;
+    line-height: 1.45;
+    color: rgba(16, 32, 74, 0.74);
+  }
+
+  &__body {
+    padding: 18px 26px;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+
+  &__policy-row {
+    margin: 14px 0 0;
+    text-align: center;
+    font-size: 0.88rem;
+  }
+
+  &__policy-link {
+    color: #10204a;
+    font-weight: 600;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+
+    @media (hover: hover) and (pointer: fine) {
+      &:hover {
+        color: #ff6a3d;
+      }
+    }
+  }
+
+  &__footer {
+    padding: 16px 26px 22px;
+    border-top: 1px solid rgba(16, 32, 74, 0.1);
+    background: #ffffff;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 10px;
+  }
+}
+
+.jwj-cookie-categories {
+  display: grid;
+  gap: 12px;
+}
+
+.jwj-cookie-category {
+  padding: 14px 16px;
+  border-radius: 18px;
+  background: #f4f7fd;
+  border: 1px solid rgba(16, 32, 74, 0.08);
+  display: grid;
+  gap: 8px;
+
+  &__top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+
+  &__heading {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    margin: 0;
+    cursor: pointer;
+  }
+
+  &__icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 10px;
+    display: grid;
+    place-items: center;
+    font-size: 0.95rem;
+    flex: none;
+
+    &.is-necessary {
+      background: rgba(30, 132, 73, 0.14);
+      color: #1e8449;
+    }
+
+    &.is-functional {
+      background: rgba(47, 125, 225, 0.14);
+      color: #2f7de1;
+    }
+
+    &.is-analytics {
+      background: rgba(255, 106, 61, 0.14);
+      color: #ff6a3d;
+    }
+  }
+
+  &__name {
+    font-family: 'Rubik', 'Golos Text', sans-serif;
+    font-weight: 700;
+    font-size: 0.98rem;
+    color: #10204a;
+  }
+
+  &__pill {
+    padding: 5px 11px;
+    border-radius: 999px;
+    background: rgba(30, 132, 73, 0.14);
+    color: #166534;
+    font-size: 0.78rem;
+    font-weight: 700;
+    white-space: nowrap;
+  }
+
+  &__desc {
+    margin: 0;
+    font-size: 0.88rem;
+    line-height: 1.48;
+    color: rgba(16, 32, 74, 0.78);
+  }
+}
+
+.jwj-cookie-switch {
+  appearance: none;
+  -webkit-appearance: none;
+  position: relative;
+  width: 48px;
+  height: 28px;
+  margin: 0;
+  border-radius: 999px;
+  background: rgba(16, 32, 74, 0.24);
+  cursor: pointer;
+  flex: none;
+  transition: background-color 180ms var(--alt-ease-out, cubic-bezier(0.23, 1, 0.32, 1));
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: #ffffff;
+    box-shadow: 0 2px 6px rgba(16, 32, 74, 0.25);
+    transition: transform 180ms var(--alt-ease-out, cubic-bezier(0.23, 1, 0.32, 1));
+  }
+
+  &:checked {
+    background: #ff6a3d;
+
+    &::before {
+      transform: translateX(20px);
+    }
+  }
+
+  &:focus-visible {
+    outline: 3px solid #10204a;
+    outline-offset: 3px;
+  }
+}
+
+.jwj-cookie-modal-btn {
+  min-height: 44px;
+  padding: 10px 14px;
+  border-radius: 999px;
+  font-family: 'Golos Text', sans-serif;
+  font-weight: 700;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: transform 160ms var(--alt-ease-out, cubic-bezier(0.23, 1, 0.32, 1)),
+    background-color 180ms var(--alt-ease-out, cubic-bezier(0.23, 1, 0.32, 1));
+
+  &:active {
+    transform: scale(0.97);
+  }
+
+  &:focus-visible {
+    outline: 3px solid #10204a;
+    outline-offset: 2px;
+  }
+
+  &--primary {
+    border: 0;
+    background: #ff6a3d;
+    color: #ffffff;
+
+    @media (hover: hover) and (pointer: fine) {
+      &:hover {
+        background: #ff7f58;
+      }
+    }
+  }
+
+  &--outline {
+    border: 1.5px solid #10204a;
+    background: #ffffff;
+    color: #10204a;
+
+    @media (hover: hover) and (pointer: fine) {
+      &:hover {
+        background: rgba(16, 32, 74, 0.07);
+      }
+    }
+  }
+
+  &--secondary {
+    border: 0;
+    background: rgba(16, 32, 74, 0.1);
+    color: #10204a;
+
+    @media (hover: hover) and (pointer: fine) {
+      &:hover {
+        background: rgba(16, 32, 74, 0.16);
+      }
+    }
+  }
+}
+
+@media (max-width: 640px) {
+  .jwj-cookie-banner {
+    width: calc(100% - 20px);
+    bottom: max(12px, env(safe-area-inset-bottom));
+    padding: 16px;
+    border-radius: 22px;
+
+    &__actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+    }
+
+    .jwj-cookie-btn--ghost {
+      grid-column: 1 / -1;
+      margin-right: 0;
+    }
+  }
+
+  .jwj-cookie-dialog {
+    width: 100%;
+    max-width: 100%;
+    margin: auto 0 0;
+    max-height: 92dvh;
+
+    &__sheet {
+      max-height: 92dvh;
+      border-radius: 26px 26px 0 0;
+    }
+
+    &__header {
+      padding: 22px 52px 16px 20px;
+    }
+
+    &__body {
+      padding: 16px 20px;
+    }
+
+    &__footer {
+      grid-template-columns: 1fr;
+      padding: 14px 20px calc(20px + env(safe-area-inset-bottom));
+    }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .jwj-cookie-banner {
+    animation-name: jwjCookieBannerFade;
+    animation-duration: 140ms;
+  }
+
+  .jwj-cookie-dialog,
+  .jwj-cookie-dialog::backdrop {
+    transition-duration: 100ms;
+  }
+}

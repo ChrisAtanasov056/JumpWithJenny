@@ -1,12 +1,14 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { FaEnvelope, FaPhoneAlt, FaMapMarkerAlt } from 'react-icons/fa';
+import { FaEnvelope, FaPhoneAlt, FaMapMarkerAlt, FaExternalLinkAlt } from 'react-icons/fa';
 import { sendContactForm } from '../../services/ContactService';
+import { useCookieConsent } from '../../services/CookieConsentContext';
 import SuccessModal from './SuccessModal';
 import './Contacts.scss';
 
 const Contacts = () => {
   const { t } = useTranslation();
+  const { functionalAllowed, enableFunctional } = useCookieConsent();
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const [formData, setFormData] = useState({
@@ -168,12 +170,40 @@ const Contacts = () => {
             <div className="contact-glass-card">
               <h3>{t('contacts.location')}</h3>
               <div className="contact-map-wrap">
-                <iframe
-                  title={t('contacts.location')}
-                  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d526.4989883006733!2d27.466541253362816!3d42.519356308306406!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x40a695df713ef1f3%3A0x7d40c314b363a210!2z0J_Rg9C70YEg0JLQuNGC0LDQuyDRgdC_0L7RgNGC!5e1!3m2!1sbg!2sbg!4v1729614985370!5m2!1sbg!2sbg"
-                  loading="lazy"
-                  allowFullScreen
-                />
+                {functionalAllowed ? (
+                  <iframe
+                    title={t('contacts.location')}
+                    src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d526.4989883006733!2d27.466541253362816!3d42.519356308306406!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x40a695df713ef1f3%3A0x7d40c314b363a210!2z0J_Rg9C70YEg0JLQuNGC0LDQuyDRgdC_0L7RgNGC!5e1!3m2!1sbg!2sbg!4v1729614985370!5m2!1sbg!2sbg"
+                    loading="lazy"
+                    allowFullScreen
+                  />
+                ) : (
+                  <div className="contact-map-placeholder">
+                    <div className="contact-map-placeholder__pin" aria-hidden="true">
+                      <FaMapMarkerAlt />
+                    </div>
+                    <p className="contact-map-placeholder__address">{t('contacts.address')}</p>
+                    <p className="contact-map-placeholder__desc">{t('cookies.mapBlockedDescription')}</p>
+                    <div className="contact-map-placeholder__actions">
+                      <button
+                        type="button"
+                        className="alt-btn contact-map-placeholder__btn"
+                        onClick={enableFunctional}
+                      >
+                        {t('cookies.mapEnableButton')}
+                      </button>
+                      <a
+                        href="https://maps.google.com/?q=42.5193563,27.4665412"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="contact-map-placeholder__link"
+                      >
+                        <span>{t('cookies.mapOpenExternal')}</span>
+                        <FaExternalLinkAlt aria-hidden="true" />
+                      </a>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
 

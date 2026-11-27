@@ -2,10 +2,12 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { FaFacebook, FaTiktok, FaInstagram } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
+import { useCookieConsent } from '../../services/CookieConsentContext';
 import './Footer.scss';
 
 const Footer = () => {
   const { t } = useTranslation();
+  const { openSettings } = useCookieConsent();
 
   return (
     <footer className="alt-footer">
@@ -57,13 +59,14 @@ const Footer = () => {
 
         <div className="alt-footer__legal">
           <Link to="/data-deletion">{t('footer.dataDeletion')}</Link>
-          <a
-            href="https://www.iubenda.com/privacy-policy/60706541/cookie-policy"
-            target="_blank"
-            rel="noopener noreferrer"
+          <Link to="/cookie-policy">{t('footer.cookiePolicy')}</Link>
+          <button
+            type="button"
+            className="alt-footer__legal-btn"
+            onClick={openSettings}
           >
-            {t('footer.cookiePolicy')}
-          </a>
+            {t('footer.cookieSettings')}
+          </button>
           <a
             href="https://www.iubenda.com/privacy-policy/60706541"
             target="_blank"

@@ -18,6 +18,9 @@ import AdminLoginPage from './components/Admin/Login/AdminLoginPage';
 import { HelmetProvider, Helmet } from 'react-helmet-async';
 import NotFoundPage from './components/404/NotFoundPage';
 import AltitudeShell from './components/AltitudeShell/AltitudeShell';
+import CookieConsent from './components/CookieConsent/CookieConsent';
+import CookiePolicyPage from './components/CookiePolicyPage/CookiePolicyPage';
+import { CookieConsentProvider } from './services/CookieConsentContext';
 import './styles/altitude-tokens.scss';
 
 const AdminLayout = lazy(() => import('./components/Admin/AdminLayout'));
@@ -49,11 +52,13 @@ function App() {
 
   return (
     <AuthProvider>
-      <HelmetProvider>
-        <Router>
-          <AppContent />
-        </Router>
-      </HelmetProvider>
+      <CookieConsentProvider>
+        <HelmetProvider>
+          <Router>
+            <AppContent />
+          </Router>
+        </HelmetProvider>
+      </CookieConsentProvider>
     </AuthProvider>
   );
 }
@@ -77,6 +82,7 @@ const StandaloneSection = ({ children }) => (
 
 const NO_INDEX_PAGES = [
   '/data-deletion',
+  '/cookie-policy',
   '/privacy-policy',
   '/terms-of-service',
   '/reset-password',
@@ -159,6 +165,7 @@ const AppContent = () => {
       <Route path="/cancel-booking/:token" element={<StandaloneSection><CancelBookingPage /></StandaloneSection>} />
       <Route path="/reset-password" element={<ResetPassword />} />
       <Route path="/data-deletion" element={<DataDeletion />} />
+      <Route path="/cookie-policy" element={<StandaloneSection><CookiePolicyPage /></StandaloneSection>} />
 
       {/* Hidden admin login route */}
       <Route path="/admin/login" element={<AdminLoginPage />} />
@@ -201,6 +208,7 @@ const AppContent = () => {
     <AltitudeShell showAltimeter={location.pathname === '/'}>
       <Navbar />
       <main id="main-content">{routesElement}</main>
+      <CookieConsent />
     </AltitudeShell>
   );
 

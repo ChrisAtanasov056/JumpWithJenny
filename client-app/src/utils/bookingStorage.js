@@ -1,3 +1,5 @@
+import { hasFunctionalConsent } from '../services/cookieConsent';
+
 const BOOKING_PREFS_KEY = 'jwj_booking_prefs_v2';
 const LEGACY_BOOKING_PREFS_KEY = 'jwj_booking_prefs_v1';
 const MY_BOOKINGS_KEY = 'jwj_my_bookings_v1';
@@ -12,6 +14,10 @@ const DEFAULT_PREFS = {
 };
 
 export const loadBookingPreferences = () => {
+  if (!hasFunctionalConsent()) {
+    return { ...DEFAULT_PREFS };
+  }
+
   try {
     const raw =
       window.localStorage.getItem(BOOKING_PREFS_KEY) ||
@@ -42,6 +48,10 @@ export const loadBookingPreferences = () => {
 };
 
 export const saveBookingPreferences = ({ fullName, email, phoneNumber, shoeSize, usesOwnShoes }) => {
+  if (!hasFunctionalConsent()) {
+    return;
+  }
+
   try {
     const existing = loadBookingPreferences();
     const payload = {

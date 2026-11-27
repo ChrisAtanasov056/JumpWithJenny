@@ -1345,13 +1345,7 @@ const ReboundDemo = () => {
 
           <div className="rb-footer__legal">
             <Link to="/data-deletion">{t('footer.dataDeletion')}</Link>
-            <a
-              href="https://www.iubenda.com/privacy-policy/60706541/cookie-policy"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              {t('footer.cookiePolicy')}
-            </a>
+            <Link to="/cookie-policy">{t('footer.cookiePolicy')}</Link>
             <a
               href="https://www.iubenda.com/privacy-policy/60706541"
               target="_blank"

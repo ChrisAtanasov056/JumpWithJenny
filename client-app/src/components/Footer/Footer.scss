@@ -59,9 +59,11 @@
   &__legal {
     display: flex;
     flex-wrap: wrap;
+    align-items: center;
     gap: 16px;
 
-    a {
+    a,
+    &-btn {
       color: rgba(255, 255, 255, 0.82);
       text-decoration: none;
       transition: color 160ms ease;
@@ -71,6 +73,14 @@
           color: var(--alt-sun);
         }
       }
+    }
+
+    &-btn {
+      border: 0;
+      padding: 0;
+      background: transparent;
+      font: inherit;
+      cursor: pointer;
     }
   }
 }

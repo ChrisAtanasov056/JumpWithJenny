@@ -308,6 +308,7 @@
         "copyright": "Jump With Jenny",
         "dataDeletion": "Data Deletion",
         "cookiePolicy": "Cookie Policy",
+        "cookieSettings": "Cookie Settings",
         "privacyPolicy": "Privacy Policy"
     },
     "dataDeletion": {
@@ -1127,6 +1128,108 @@
                 }
             ],
             "cta": "Book your first class"
+        }
+    },
+    "cookies": {
+        "banner": {
+            "title": "Cookies & Privacy",
+            "description": "We use strictly necessary storage for site operation and class bookings. With your permission, we enable the studio map, saved booking details, and anonymous analytics.",
+            "policyLink": "Cookie Policy",
+            "customize": "Settings",
+            "rejectOptional": "Necessary only",
+            "acceptAll": "Accept all"
+        },
+        "modal": {
+            "title": "Cookie Settings",
+            "subtitle": "Choose which optional technologies you allow. You can update your preferences at any time.",
+            "close": "Close cookie settings",
+            "alwaysActive": "Always active",
+            "saveSelection": "Save selection",
+            "acceptAll": "Accept all",
+            "rejectOptional": "Necessary only",
+            "policyLink": "Read the full Cookie Policy"
+        },
+        "categories": {
+            "necessary": {
+                "title": "Strictly Necessary",
+                "description": "Required for site security, language selection, storing your consent preferences, and managing your active workout booking cancellations."
+            },
+            "functional": {
+                "title": "Functional & Map",
+                "description": "Remembers your booking contact details and preferred Kangoo Jumps boot size, and loads the interactive Google Map for the studio."
+            },
+            "analytics": {
+                "title": "Analytics",
+                "description": "Anonymous traffic measurement via Google Analytics 4 to help us improve the class schedule and website experience."
+            }
+        },
+        "mapBlockedDescription": "The interactive Google Map requires your permission for functional cookies and third-party embeds.",
+        "mapEnableButton": "Load map",
+        "mapOpenExternal": "Open in Google Maps",
+        "policy": {
+            "metaTitle": "Cookie Policy | Jump With Jenny",
+            "title": "Cookie & Storage Policy",
+            "lastUpdated": "Last updated: November 27, 2026",
+            "intro": "At Jump With Jenny, we respect your privacy. On this page you can review the exact cookies and browser storage items used by this website and manage your consent at any time.",
+            "statusTitle": "Your current preferences",
+            "statusSaved": "Your preferences are saved locally in this browser.",
+            "statusDefault": "You have not made a choice yet — only strictly necessary technologies are active.",
+            "enabled": "Enabled",
+            "disabled": "Disabled",
+            "changeSettingsBtn": "Change cookie settings",
+            "categoriesTitle": "Cookie & storage categories",
+            "tableTitle": "What data this site stores",
+            "columns": {
+                "name": "Name",
+                "provider": "Provider",
+                "category": "Category",
+                "type": "Type",
+                "duration": "Duration",
+                "purpose": "Purpose"
+            },
+            "items": {
+                "consent": {
+                    "type": "Local Storage",
+                    "duration": "Until cleared",
+                    "purpose": "Stores your cookie consent choice."
+                },
+                "language": {
+                    "type": "Local Storage",
+                    "duration": "Persistent",
+                    "purpose": "Remembers your preferred interface language (Bulgarian or English)."
+                },
+                "bookings": {
+                    "type": "Local Storage",
+                    "duration": "60 days",
+                    "purpose": "Keeps cancellation tokens for your active class bookings on this device."
+                },
+                "auth": {
+                    "type": "Local Storage",
+                    "duration": "When signed in",
+                    "purpose": "Authenticates a signed-in user or studio administrator."
+                },
+                "prefs": {
+                    "type": "Local Storage",
+                    "duration": "Until disabled or cleared",
+                    "purpose": "Remembers your name, email, phone number, and boot size for faster booking."
+                },
+                "maps": {
+                    "type": "External Embed",
+                    "duration": "Per Google policy",
+                    "purpose": "Displays the interactive studio location map in Burgas."
+                },
+                "ga": {
+                    "type": "First-party Cookie",
+                    "duration": "Up to 2 years",
+                    "purpose": "Anonymous visit statistics via Google Analytics 4 (loaded only with consent)."
+                }
+            },
+            "browserTitle": "Browser controls",
+            "browserText": "In addition to the button above, you can delete or block cookies and local storage from your browser settings at any time. Disabling strictly necessary storage may prevent saving your language or administrator session.",
+            "contactTitle": "Questions & contact",
+            "contactText": "If you have any questions about cookies or personal data, contact us at",
+            "dataDeletionHint": "You can also view instructions for",
+            "backHome": "Back to home"
         }
     }
 }
